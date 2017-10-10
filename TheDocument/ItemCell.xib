@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="OpenSans-Bold.ttf">
+            <string>OpenSans-Bold</string>
+        </array>
+        <array key="OpenSans-Semibold.ttf">
+            <string>OpenSans-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="ItemTableViewCell" customModule="TheDocument" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="80"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="fcG-o1-2iQ">
+                    <rect key="frame" x="10" y="20" width="355" height="40"/>
+                    <subviews>
+                        <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cnk-Xv-SIo">
+                            <rect key="frame" x="0.0" y="3" width="14.5" height="34.5"/>
+                            <constraints>
+                                <constraint firstAttribute="width" relation="lessThanOrEqual" constant="30" id="iYw-L0-TRP"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="OpenSans-Bold" family="Open Sans" pointSize="25"/>
+                            <color key="textColor" red="0.019607843140000001" green="0.12549019610000001" blue="0.28627450980000002" alpha="1" colorSpace="calibratedRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EJp-zN-Hds">
+                            <rect key="frame" x="24.5" y="0.0" width="40" height="40"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LogoSmall" translatesAutoresizingMaskIntoConstraints="NO" id="YNI-Pq-aQJ" customClass="CircleImageView" customModule="TheDocument" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" constant="40" id="vDS-dI-qfd"/>
+                                        <constraint firstAttribute="height" constant="40" id="wYE-7g-xYB"/>
+                                    </constraints>
+                                </imageView>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SuccessIcon" translatesAutoresizingMaskIntoConstraints="NO" id="6HR-eM-AYU">
+                                    <rect key="frame" x="20" y="0.0" width="20" height="20"/>
+                                    <constraints>
+                                        <constraint firstAttribute="height" constant="20" id="grV-iD-Bfr"/>
+                                        <constraint firstAttribute="width" constant="20" id="iWY-CP-ax0"/>
+                                    </constraints>
+                                </imageView>
+                            </subviews>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstItem="YNI-Pq-aQJ" firstAttribute="top" secondItem="EJp-zN-Hds" secondAttribute="top" id="KQn-Mj-mUe"/>
+                                <constraint firstItem="6HR-eM-AYU" firstAttribute="top" secondItem="EJp-zN-Hds" secondAttribute="top" id="M5q-V8-QI6"/>
+                                <constraint firstAttribute="width" constant="40" id="O4M-zB-7EY"/>
+                                <constraint firstAttribute="trailing" secondItem="YNI-Pq-aQJ" secondAttribute="trailing" id="bbY-9B-dGR"/>
+                                <constraint firstAttribute="height" constant="40" id="cAw-5o-4TO"/>
+                                <constraint firstAttribute="trailing" secondItem="6HR-eM-AYU" secondAttribute="trailing" id="egv-ZJ-udE"/>
+                                <constraint firstItem="YNI-Pq-aQJ" firstAttribute="leading" secondItem="EJp-zN-Hds" secondAttribute="leading" id="j50-Ew-vu9"/>
+                                <constraint firstAttribute="bottom" secondItem="YNI-Pq-aQJ" secondAttribute="bottom" id="uaP-57-n2d"/>
+                            </constraints>
+                        </view>
+                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="vFd-eW-vel">
+                            <rect key="frame" x="74.5" y="0.0" width="210.5" height="40"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gw2-bh-svT">
+                                    <rect key="frame" x="0.0" y="0.0" width="210.5" height="0.0"/>
+                                    <fontDescription key="fontDescription" name="OpenSans-Bold" family="Open Sans" pointSize="17"/>
+                                    <color key="textColor" red="0.019607843140000001" green="0.12549019610000001" blue="0.28627450980000002" alpha="1" colorSpace="calibratedRGB"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jj5-Ld-yfp">
+                                    <rect key="frame" x="0.0" y="0.0" width="210.5" height="40"/>
+                                    <fontDescription key="fontDescription" name="OpenSans-Semibold" family="Open Sans" pointSize="12"/>
+                                    <color key="textColor" red="0.5450980392" green="0.59999999999999998" blue="0.62352941179999999" alpha="1" colorSpace="calibratedRGB"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                        </stackView>
+                        <button opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="x4y-J9-DQl" customClass="AcceptButton" customModule="TheDocument" customModuleProvider="target">
+                            <rect key="frame" x="295" y="6" width="60" height="28"/>
+                            <color key="backgroundColor" red="0.019607843140000001" green="0.12549019610000001" blue="0.28627450980000002" alpha="1" colorSpace="calibratedRGB"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="28" id="CjV-mz-gki"/>
+                                <constraint firstAttribute="width" priority="999" constant="60" id="rfE-JL-9nn"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="OpenSans-Bold" family="Open Sans" pointSize="12"/>
+                            <state key="normal" title="ACCEPT"/>
+                        </button>
+                    </subviews>
+                </stackView>
+                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="2r3-4C-X7S">
+                    <rect key="frame" x="44.5" y="30" width="20" height="20"/>
+                </activityIndicatorView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1lb-12-f4g">
+                    <rect key="frame" x="0.0" y="79" width="375" height="1"/>
+                    <color key="backgroundColor" red="0.91764705879999997" green="0.91764705879999997" blue="0.91764705879999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="1" id="UuS-FY-ylm"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="1lb-12-f4g" secondAttribute="bottom" id="022-ym-6IA"/>
+                <constraint firstAttribute="trailing" secondItem="fcG-o1-2iQ" secondAttribute="trailing" priority="999" constant="10" id="35T-Rb-n90"/>
+                <constraint firstItem="1lb-12-f4g" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="7W3-nE-jzM"/>
+                <constraint firstAttribute="trailing" secondItem="1lb-12-f4g" secondAttribute="trailing" id="GIR-qZ-q0h"/>
+                <constraint firstItem="fcG-o1-2iQ" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="20" id="O1X-QR-5jM"/>
+                <constraint firstAttribute="bottom" secondItem="fcG-o1-2iQ" secondAttribute="bottom" constant="20" id="SRz-bP-hUo"/>
+                <constraint firstItem="2r3-4C-X7S" firstAttribute="centerY" secondItem="EJp-zN-Hds" secondAttribute="centerY" id="mYC-VF-An5"/>
+                <constraint firstItem="2r3-4C-X7S" firstAttribute="centerX" secondItem="EJp-zN-Hds" secondAttribute="centerX" id="xKo-VK-ETN"/>
+                <constraint firstItem="fcG-o1-2iQ" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" priority="999" constant="10" id="xNl-sa-ZGB"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="acceptButton" destination="x4y-J9-DQl" id="v1C-uU-cDK"/>
+                <outlet property="bottomLabel" destination="jj5-Ld-yfp" id="kqS-ib-fIP"/>
+                <outlet property="cellId" destination="cnk-Xv-SIo" id="Hsj-f1-gvK"/>
+                <outlet property="itemImageView" destination="YNI-Pq-aQJ" id="b45-CB-N1P"/>
+                <outlet property="itemImageViewContainer" destination="EJp-zN-Hds" id="Aef-Vt-zxg"/>
+                <outlet property="loader" destination="2r3-4C-X7S" id="Hne-oX-R0U"/>
+                <outlet property="resultIconImageView" destination="6HR-eM-AYU" id="WUu-iK-Jdz"/>
+                <outlet property="topLabel" destination="gw2-bh-svT" id="gws-i8-YxH"/>
+            </connections>
+            <point key="canvasLocation" x="33.5" y="54"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="LogoSmall" width="25" height="20"/>
+        <image name="SuccessIcon" width="80" height="80"/>
+    </resources>
+</document>
