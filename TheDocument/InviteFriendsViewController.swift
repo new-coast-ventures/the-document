@@ -84,7 +84,6 @@ class InviteFriendsTableViewController: BaseTableViewController {
         self.startActivityIndicator()
         
         if case let Mode.group( group ) = self.mode {   //Invitation to group
-            print("GROUP")
             API().addFriendsToGroup(friends: friends.filter{ selectedFriendsIds.contains($0.id) }, group: group  ) { success in
                 self.stopActivityIndicator()
                 if success {
@@ -92,7 +91,6 @@ class InviteFriendsTableViewController: BaseTableViewController {
                 }
             }
         } else if case let Mode.challenge(challenge) = self.mode {   // Invitation to challenge
-            print("1-on-1")
             API().challengeFriends(challenge: challenge, friendsIds: selectedFriendsIds ) {
                 self.stopActivityIndicator()
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
@@ -100,7 +98,6 @@ class InviteFriendsTableViewController: BaseTableViewController {
                 return
             }
         } else if case let Mode.teamChallenge(challenge) = self.mode {   // Invitation to team challenge
-            print("2-on-2")
             if selectedTeammateIds.isEmpty {
                 self.stopActivityIndicator()
                 
@@ -118,13 +115,11 @@ class InviteFriendsTableViewController: BaseTableViewController {
                 tableView.reloadData()
                 
             } else {
-                print("Huh...")
                 selectedCompetitorIds = selectedFriendsIds
                 API().challengeTeams(challenge: challenge,
                                      teammateIds: selectedTeammateIds,
                                      competitorIds: selectedCompetitorIds ) {
                           
-                    //currentUser.futureChallenges.append(challenge)
                     self.stopActivityIndicator()
                     NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
                     self.dismiss(animated: true, completion: nil)
@@ -148,21 +143,9 @@ extension InviteFriendsTableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ItemTableViewCell") as! ItemTableViewCell
-     
         let item = searchController.isActive ? filteredFriends[indexPath.row] : friends[indexPath.row]
-        let imageId = item.id
-    
         cell.setup(item, selected: selectedFriendsIds.contains( item.id ) )
-        
-        if let imageData = downloadedImages[imageId] {
-            cell.setImage(imgData: imageData)
-        } else {
-            appDelegate.downloadImageFor(id: imageId, section: "photos"){[weak self] success in
-                guard success, let sSelf = self else { return }
-                sSelf.reloadRow(at : indexPath)
-            }
-        }
-        
+        setImage(id: item.id, forCell: cell)
         return cell
     }
     

@@ -66,7 +66,7 @@ class TDUser {
     }
     
     func asGroupMember() -> GroupMember {
-        return GroupMember(id: uid, name: name)
+        return GroupMember(id: uid, name: name, state: "member")
     }
 }
 
@@ -208,7 +208,7 @@ extension TDUser {
                         state = GroupState.invited
                     }
                     
-                    let group = Group(id: $0.key, name: groupData["name"] ?? "Old Group", uid: groupData["uid"] ?? currentUser.uid, state: state, members: [currentUser.asGroupMember()])
+                    let group = Group(id: $0.key, name: groupData["name"] ?? "Old Group", uid: groupData["uid"] ?? currentUser.uid, state: state, members: [currentUser.asGroupMember()], invitees: [])
                     if !self.groups.contains(group) {
                         self.groups.append(group)
                     }

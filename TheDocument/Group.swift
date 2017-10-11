@@ -21,25 +21,12 @@ struct Group {
     let uid:String
     var state: GroupState
     var members:[GroupMember]
+    var invitees:[GroupMember]
 }
-
-//extension Group: Decodable, FirebaseEncodable {
-//    static func decode(_ json: JSON) -> Decoded<Group> {
-//        return curry(Group.init)
-//        <^> json <| "id"
-//        <*> json <| "name"
-//        <*> json <| "admin"
-//        <*> (json <|| "members" <|> pure([String]()))
-//    }
-//    
-//    func simplify() -> [String : Any] {
-//        return ["id":id, "name":name, "admin":admin, "members":members]
-//    }
-//}
 
 extension Group {
     static func empty()->Group {
-        return Group(id: "", name: "", uid: "", state: .own, members: [])
+        return Group(id: "", name: "", uid: "", state: .own, members: [], invitees: [])
     }
 }
 
@@ -53,15 +40,17 @@ extension Group: Equatable {
 struct GroupMember {
     let id: String
     let name: String
+    let state: String
     
     var wins = -1
     var loses = -1
     var hWins = -1
     var hLoses = -1
     
-    init(id: String, name: String){
+    init(id: String, name: String, state: String){
         self.id = id
         self.name = name
+        self.state = state
         
         wins = -1
         loses = -1
@@ -73,6 +62,13 @@ struct GroupMember {
 extension GroupMember: Equatable {
     static public func ==(lhs: GroupMember, rhs: GroupMember) -> Bool {
         return lhs.id == rhs.id
+    }
+    
+    var isMember: Bool {
+        if state == "invited" {
+            return false
+        }
+        return true
     }
     
     var isFriend: Bool {

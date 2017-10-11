@@ -158,7 +158,9 @@ class ItemTableViewCell: UITableViewCell {
         topLabel.text = item.name
         acceptButton.isHidden = true
         
-        if item.isFriend {
+        if item.state == "invited" {
+            bottomLabel.text = "Invite Pending..."
+        } else if item.isFriend {
             bottomLabel.text = "\(item.score())   \(item.score(overall: false))"
         } else {
             bottomLabel.text = ""
@@ -202,13 +204,27 @@ class ItemTableViewCell: UITableViewCell {
         loader.startAnimating()
     }
     
+    func setGenericImage() {
+        loader.stopAnimating()
+
+        DispatchQueue.main.async {
+            self.itemImageView.backgroundColor = Constants.Theme.mainColor
+            self.itemImageView.image = UIImage(named: "LogoSmall")
+            self.itemImageView.contentMode = .scaleAspectFit
+            self.itemImageView.layer.cornerRadius = self.itemImageView.frame.size.height / 2.0
+            self.itemImageView.layer.masksToBounds = true
+            self.itemImageView.layer.borderWidth = 0
+            self.itemImageView.isHidden = false
+        }
+    }
+    
     func setImage(imgData:Data) {
         loader.stopAnimating()
         
-        //guard let currentImage = self.itemImageView.image, imgData != UIImagePNGRepresentation(currentImage) else { self.itemImageView.isHidden = false; return }
-        
         DispatchQueue.main.async {
+            self.itemImageView.backgroundColor = .clear
             self.itemImageView.image = UIImage(data: imgData)
+            self.itemImageView.contentMode = .scaleAspectFill
             self.itemImageView.layer.cornerRadius = self.itemImageView.frame.size.height / 2.0
             self.itemImageView.layer.masksToBounds = true
             self.itemImageView.layer.borderWidth = 0

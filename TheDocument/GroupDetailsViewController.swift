@@ -29,7 +29,9 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     @IBOutlet weak var commentFormBottomMargin: NSLayoutConstraint!
     
     let kSectionComments = 0
-    let kSectionLeaderboard = 1
+    let kSectionInvitees = 1
+    let kSectionLeaderboard = 2
+    
     let dismissKeyboardGesture = UITapGestureRecognizer(target: self, action: #selector(hideControls))
     
     var leaderboardReady: Bool = false
@@ -53,7 +55,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         
         let nib = UINib(nibName: "ItemCell", bundle: nil)
         tableView.register(nib, forCellReuseIdentifier: "ItemTableViewCell")
-//        tableView.contentInset    = UIEdgeInsets(top: 0, left: 0, bottom: 70.0, right: 0)
+        tableView.contentInset    = UIEdgeInsets(top: 0, left: 0, bottom: 70.0, right: 0)
         tableView.tableFooterView = UIView()
         tableView.refreshControl = UIRefreshControl()
         tableView.refreshControl?.addTarget(self, action: #selector(GroupDetailsViewController.refreshMembers), for: .valueChanged)
@@ -78,19 +80,25 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: .UIKeyboardWillHide, object: nil)
         
         groupNameLabel.text = group.name
-        groupImageView.isHidden = true
         
         appDelegate.downloadImageFor(id: group.id, section: "groups"){[weak self] success in
-            guard success, let sSelf = self else { return }
-            
-            if let imgData = downloadedImages[sSelf.group.id] {
-                sSelf.groupImageView.image = UIImage(data: imgData)
-                sSelf.groupImageView.layer.cornerRadius = sSelf.groupImageView.frame.size.height / 2.0
-                sSelf.groupImageView.layer.masksToBounds = true
-                sSelf.groupImageView.layer.borderWidth = 0
-                sSelf.groupImageView.isHidden = false
-            } else {
-                sSelf.groupImageView.isHidden = true
+            DispatchQueue.main.async {
+                guard let sSelf = self, let iv = sSelf.groupImageView else { return }
+                
+                iv.backgroundColor = .clear
+                iv.contentMode = .scaleAspectFill
+                iv.layer.cornerRadius = iv.frame.size.height / 2.0
+                iv.layer.masksToBounds = true
+                iv.layer.borderWidth = 0
+                iv.isHidden = false
+        
+                if success == false {
+                    iv.backgroundColor = Constants.Theme.mainColor
+                    iv.image = UIImage(named: "LogoSmall")
+                    iv.contentMode = .scaleAspectFit
+                } else if let imgData = downloadedImages[sSelf.group.id] {
+                    iv.image = UIImage(data: imgData)
+                }
             }
         }
         
@@ -189,7 +197,10 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         API().getGroupMembers(group: group){ members in
             self.tableView.refreshControl?.endRefreshing()
             self.stopActivityIndicator()
-            self.group.members = members
+            
+            self.group.members  = members.filter({ $0.state != "invited" })
+            self.group.invitees = members.filter({ $0.state == "invited" })
+            
             self.leaderboardDatasource = self.group.members.sorted(by: { $0.wins - $0.loses > $1.wins - $1.loses})
             self.tableView.reloadData()
         }
@@ -299,12 +310,14 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        return 3
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if section == kSectionComments && chatterMode {
             return comments.count
+        } else if section == kSectionInvitees && !chatterMode {
+            return group.invitees.count
         } else if section == kSectionLeaderboard && !chatterMode {
             return group.members.count
         } else {
@@ -321,7 +334,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
                 cell.authorLabel.text = String(describing: author)
                 cell.commentLabel.text = String(describing: commentText)
             }
-            
+        
             if let imageId = commentDict?["uid"] as? String {
                 if let imageData = downloadedImages[imageId] {
                     cell.setImage(imgData: imageData)
@@ -332,29 +345,52 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
                     }
                 }
             }
-            
             return cell
+            
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "ItemTableViewCell") as! ItemTableViewCell
-            if !chatterMode && indexPath.row < leaderboardDatasource.count {
+    
+            if indexPath.section == kSectionLeaderboard && indexPath.row < leaderboardDatasource.count {
                 let member = leaderboardDatasource[indexPath.row]
                 cell.setup(member, cellId: Int(indexPath.row) + 1)
                 setImage(id: member.id, forCell: cell)
+                
+            } else if indexPath.section == kSectionInvitees && indexPath.row < self.group.invitees.count {
+                let member = self.group.invitees[indexPath.row]
+                cell.setup(member)
+                setImage(id: member.id, forCell: cell)
             }
+            
             return cell
         }
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return self.group.state == .own && group.members[indexPath.row].id != currentUser.uid && indexPath.section == kSectionLeaderboard
+        switch indexPath.section {
+        case kSectionComments:
+            return false
+        case kSectionInvitees:
+            return group.state == .own && group.invitees[indexPath.row].id != currentUser.uid
+        case kSectionLeaderboard:
+            return group.state == .own && group.members[indexPath.row].id != currentUser.uid
+        default:
+            return false
+        }
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let member = group.members[indexPath.row]
-            group.members.removeObject(member)
-            tableView.reloadData()
             
+            var member: GroupMember
+            if indexPath.section == kSectionLeaderboard {
+                member = group.members[indexPath.row]
+                group.members.removeObject(member)
+            } else {
+                member = group.invitees[indexPath.row]
+                group.invitees.removeObject(member)
+            }
+            
+            tableView.reloadData()
             API().removeMemberFromGroup(member: member, group: group){[weak self] success in
                 if !success {
                     NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.groupsRefresh)"), object: nil)
@@ -365,15 +401,19 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard indexPath.section == kSectionLeaderboard, indexPath.row < leaderboardDatasource.count else { return }
-        
-        let friend = leaderboardDatasource[indexPath.row].asFriend()
-        self.performSegue(withIdentifier: "show_group_user_profile", sender: friend)
+        if indexPath.section == kSectionLeaderboard && indexPath.row < leaderboardDatasource.count {
+            let friend = leaderboardDatasource[indexPath.row].asFriend()
+            self.performSegue(withIdentifier: "show_group_user_profile", sender: friend)
+            
+        } else if indexPath.section == kSectionInvitees && indexPath.row < group.invitees.count {
+            let friend = group.invitees[indexPath.row].asFriend()
+            self.performSegue(withIdentifier: "show_group_user_profile", sender: friend)
+        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == Constants.inviteFriendsStoryboardIdentifier, let destinationVC = segue.destination as? InviteFriendsTableViewController {
-            destinationVC.selectedFriendsIds = Set(group.members.map{ $0.id  })
+            destinationVC.selectedFriendsIds = Set(group.members.map{ $0.id })
             destinationVC.mode = .group(group)
             
         } else if segue.identifier == "show_group_user_profile", let profileVC = segue.destination as? HeadToHeadViewController, let friend = sender as? Friend {

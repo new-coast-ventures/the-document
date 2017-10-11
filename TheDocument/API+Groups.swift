@@ -21,23 +21,27 @@ extension API {
     func getGroupMembers(group:Group, closure: @escaping ( [GroupMember] )->Void) {
         
         Database.database().reference().child("groups/\(group.id)/members/").observeSingleEvent(of: .value, with: { (snapshot) in
-            guard let membersData = snapshot.value as? [String:String] else { closure([]);  return   }
+            guard let membersData = snapshot.value as? [String:Any] else { closure([]);  return }
             
             var members = [GroupMember]()
             var notFriendsIds = [String]()
+            
             membersData.forEach{
-                var member = GroupMember(id:$0.key, name:$0.value)
                 
-                if member.isFriend {
-                    let friend = currentUser.friends[member.id]
-                    member.wins = friend.wins
-                    member.loses = friend.loses
-                    member.hWins = friend.lossesAgainst
-                    member.hLoses = friend.winsAgainst
-                } else {
-                    notFriendsIds.append(member.id)
+                if let memberInfo = $0.value as? [String: String], let name = memberInfo["name"], let state = memberInfo["state"] {
+                    var member = GroupMember(id:$0.key, name: name, state: state)
+                    
+                    if member.isFriend {
+                        let friend = currentUser.friends[member.id]
+                        member.wins = friend.wins
+                        member.loses = friend.loses
+                        member.hWins = friend.lossesAgainst
+                        member.hLoses = friend.winsAgainst
+                    } else {
+                        notFriendsIds.append(member.id)
+                    }
+                    members.append(member)
                 }
-                members.append(member)
             }
             
             if notFriendsIds.count == 0 {
@@ -60,11 +64,12 @@ extension API {
     func addGroup(name:String, desc: String, imgData: Data?, closure: @escaping ( Bool )->Void) {
         
         let key = Database.database().reference().child("groups").childByAutoId().key
-        let group : [String : Any] = ["uid": currentUser.uid, "name": name, "description": desc, "members": ["\(currentUser.uid)": "\(currentUser.name)"]]
-        let userGroup = ["name": name, "state": "own"]
+        
+        let group : [String : Any] = ["uid": currentUser.uid, "name": name, "description": desc,
+                                      "members": ["\(currentUser.uid)": ["name": "\(currentUser.name)", "state": "own"]]]
         
         let childUpdates : [String : Any] = ["/groups/\(key)": group,
-                                             "/users/\(currentUser.uid)/groups/\(key)": userGroup]
+                                             "/users/\(currentUser.uid)/groups/\(key)": ["name": name, "state": "own"]]
         
         Database.database().reference().updateChildValues(childUpdates) { (error, ref) in
             
@@ -80,8 +85,8 @@ extension API {
     func addFriendsToGroup(friends: [Friend], group: Group, closure: @escaping ( Bool )->Void) {
         
         for friend in friends {
-            let childUpdates : [String : Any] = ["/groups/\(group.id)/members/\(friend.id)": "\(friend.name)",
-                                                 "/users/\(friend.id)/groups/\(group.id)": ["name": "\(group.name)", "state": "invited"]]
+            let childUpdates : [String : Any] = ["/groups/\(group.id)/members/\(friend.id)": ["name": "\(friend.name)", "state": "invited"],
+                                                 "/users/\(friend.id)/groups/\(group.id)":   ["name": "\(group.name)",  "state": "invited"]]
             
             Database.database().reference().updateChildValues(childUpdates) { (error, ref) in
                 if error == nil {
@@ -97,30 +102,20 @@ extension API {
         guard group.state == .own else {  closure(false); return   }
         
         Database.database().reference().child("groups/\(group.id)/members/\(member.id)").removeValue()
-        Database.database().reference().child("users/\(currentUser.uid)/groups/\(group.id)").removeValue()
+        Database.database().reference().child("users/\(member.id)/groups/\(group.id)").removeValue()
         closure(true)
     }
     
     func acceptGroupInvitation(group: Group, closure: @escaping ( Bool )->Void) {
         
-        Database.database().reference().child("groups/\(group.id)").observeSingleEvent(of: .value, with: { snapshot in
-            
-//            guard snapshot.exists() else {
-//                Database.database().reference().child("users/\(currentUser.uid)/groups/invited/\(group.id)").removeValue()
-//                closure(false)
-//                return
-//            }
+        let childUpdates : [String : Any] = ["/groups/\(group.id)/members/\(currentUser.uid)":  ["name": "\(currentUser.name)", "state": "member"],
+                                             "/users/\(currentUser.uid)/groups/\(group.id)":    ["name": "\(group.name)", "state": "member"]]
         
-            Database.database().reference().child("groups/\(group.id)/members/\(currentUser.uid)/").setValue("\(currentUser.name)") { error, ref in
-                guard error == nil else { closure(false); return }
-                Database.database().reference().child("users/\(currentUser.uid)/groups/\(group.id)").setValue(["name": "\(group.name)", "state": "member"])
-                closure(true)
-            }
-        })
+        Database.database().reference().updateChildValues(childUpdates) { (error, ref) in
+            closure(true)
+        }
     }
     
-    //Removes self from group if not owner (Leaves)
-    //Removes whole group if owner
     func removeGroup(group: Group, closure: @escaping ( Bool )->Void) {
         if group.state == .own {
             getGroupMembers(group: group) { members in

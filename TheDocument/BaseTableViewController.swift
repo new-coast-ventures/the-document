@@ -46,7 +46,10 @@ class BaseTableViewController: UITableViewController {
             cell.setImageLoading()
             appDelegate.downloadImageFor(id: id, section: type) { success in
                 DispatchQueue.main.sync {
-                    guard success, let ip = self.tableView.indexPath(for: cell) else { return }
+                    guard success, let ip = self.tableView.indexPath(for: cell) else {
+                        cell.setGenericImage()
+                        return
+                    }
                     self.reloadRow(at: ip)
                 }
             }

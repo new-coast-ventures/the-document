@@ -77,7 +77,8 @@ class GroupPhotoViewController: BaseViewController {
             self.startActivityIndicator()
 
             var imageData: Data? = nil
-            if let image = groupPhotoImageView.image {
+            if let image = groupPhotoImageView.image, self.newImageSet == true {
+                // Only upload image data if it's set by the user
                 imageData = UIImageJPEGRepresentation(image, 0.9)
             }
             

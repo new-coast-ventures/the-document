@@ -308,17 +308,31 @@ var downloadedImages = [String:Data]()
 
 extension AppDelegate {
     func downloadImageFor(id:String, section:String, closure: ((Bool)->Void)? = nil) {
-        
         guard downloadedImages["\(id)"] == nil else { closure?(true); return }
-        
         guard let imageURL = URL(string: "\(Constants.FIRStoragePublicURL)\(section)%2F\(id)?alt=media") else { closure?(false); return }
         
         URLSession.shared.dataTask(with: imageURL, completionHandler: { (data, response, error) -> Void in
             
-            guard  let imgData = data , error == nil else {
+            guard let imgData = data, error == nil else {
                 print(error?.localizedDescription ?? "Error loading image \(imageURL)")
                 closure?(false)
                 return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                let statusCode = httpResponse.statusCode
+                if statusCode != 200 {
+                    print("Got status code ", statusCode)
+                    closure?(false)
+                    return
+                }
+            }
+            
+            if (id == "-Kw7Hx5KE6SoFZFGsSWJ") {
+                print("Setting image data")
+                print("Data: ", data.debugDescription)
+                print("Response: ", response.debugDescription)
+                print("Error: ", error.debugDescription)
             }
             
             downloadedImages["\(id)"] = imgData
