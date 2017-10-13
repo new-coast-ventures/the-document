@@ -17,12 +17,13 @@ var homeVC:HomeViewController? {
     return appDelegate.window?.rootViewController as? HomeViewController
 }
 
+let gcmMessageIDKey = "gcm.message_id"
+
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
     var justLogged = false
-    let gcmMessageIDKey = "gcm.message_id"
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
@@ -37,11 +38,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         Database.database().isPersistenceEnabled = true
         Auth.auth().addStateDidChangeListener(){self.authChanged(auth: $0, authUser: $1)}
         
-        UNUserNotificationCenter.current().delegate = self
-        Messaging.messaging().delegate = self
-        
         if !currentUser.isLogged { try? Auth.auth().signOut() }
         
+        // [START set_messaging_delegate]
+        Messaging.messaging().delegate = self
+        // [END set_messaging_delegate]
+        
+        // Register for remote notifications. This shows a permission dialog on first run, to
+        // show the dialog at a more appropriate time move this registration accordingly.
+        // [START register_for_notifications]
         if #available(iOS 10.0, *) {
             // For iOS 10 display notification (sent via APNS)
             UNUserNotificationCenter.current().delegate = self
@@ -55,6 +60,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil)
             application.registerUserNotificationSettings(settings)
         }
+        
+        application.registerForRemoteNotifications()
+        // [END register_for_notifications]
         
         let branch: Branch = Branch.getInstance()
         branch.initSession(launchOptions: launchOptions, andRegisterDeepLinkHandler: { params, error in
@@ -86,10 +94,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         return true
     }
-    
-//    func application(_ application: UIApplication, didReceiveRemoteNotification launchOptions: [AnyHashable: Any]) -> Void {
-//        Branch.getInstance().handlePushNotification(launchOptions)
-//    }
     
     func authChanged(auth:Auth, authUser:User?) -> Void {
         guard !justLogged else {  return  }
@@ -129,28 +133,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func applicationWillEnterForeground(_ application: UIApplication) {
-    
-    }
-    
-    //MARK: UNUserNotificationCenterDelegate (swizzled by Firebase)
-    public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-   
-        processNotification(title: notification.request.content.title, body: notification.request.content.body, userInfo: notification.request.content.userInfo)
-    }
-    
-    public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-
-        processNotification(title: response.notification.request.content.title, body: response.notification.request.content.body, userInfo: response.notification.request.content.userInfo)
-    }
-    
-    //MARK: MessageingDelegate
-
-    func messaging(_ messaging: Messaging, didRefreshRegistrationToken fcmToken: String) {
-        print("Firebase registration token: \(fcmToken)")
-    }
-    
-    func messaging(_ messaging: Messaging, didReceive remoteMessage: MessagingRemoteMessage) {
-        print("Received data message: \(remoteMessage.appData)")
     }
     
     // [START receive_message]
@@ -161,6 +143,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         // With swizzling disabled you must let Messaging know about the message, for Analytics
         // Messaging.messaging().appDidReceiveMessage(userInfo)
         // Print message ID.
+        
         if let messageID = userInfo[gcmMessageIDKey] {
             print("Message ID: \(messageID)")
         }
@@ -191,115 +174,62 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Unable to register for remote notifications: \(error.localizedDescription)")
     }
+}
+
+// [START ios_10_message_handling]
+@available(iOS 10, *)
+extension AppDelegate : UNUserNotificationCenterDelegate {
     
-    private func processNotification(title: String, body: String, userInfo: [AnyHashable: Any]) {
+    // Receive displayed notifications for iOS 10 devices.
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        let userInfo = notification.request.content.userInfo
         
-        guard let type = userInfo["type"] as? String,  let id = userInfo["id"] as? String else { print("Notification with no type or id. Skipping..."); return}
-        
-        var eventType = "\(UserEvents.showOverviewTab)"
-        
-        switch type {
-            case Constants.Messages.IDS.friendRequest.rawValue:
-                currentUser.getFriends()
-                eventType = "\(UserEvents.showFriendsTab)"
-            
-            case Constants.Messages.IDS.acceptFriendRequest.rawValue:
-                if let friendIndex = currentUser.friends.index(where: { $0.id == id}){
-                    if currentUser.friends[friendIndex].accepted == false {
-                        currentUser.friends[friendIndex].accepted = true
-                    }
-                    currentUser.getScores()
-                } else {
-                    currentUser.getFriends()
-                }
-                
-                eventType = "\(UserEvents.showFriendsTab)"
-            
-            case Constants.Messages.IDS.challengeRequest.rawValue:
-                currentUser.getChallenges()
-            
-            case Constants.Messages.IDS.acceptChallengeRequest.rawValue:
-                if let chIndex = currentUser.futureChallenges.index(where: { $0.id == id}){
-                    var newCurrentChallenge = currentUser.futureChallenges[chIndex]
-                    newCurrentChallenge.accepted = 1
-                    currentUser.futureChallenges.remove(at: chIndex)
-                    currentUser.currentChallenges.append(newCurrentChallenge)
-                    //NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                    
-                } else {
-                    currentUser.getChallenges()
-                }
-            
-            case Constants.Messages.IDS.declareWinner.rawValue:
-                
-                guard let winnerID = userInfo["winner"] as? String, let declaratorID = userInfo["declarator"] as? String else { currentUser.getChallenges(); return }
-                
-                if let chIndex = currentUser.currentChallenges.index(where: { $0.id == id}){
-                    if currentUser.currentChallenges[chIndex].winner != winnerID {
-                        currentUser.currentChallenges[chIndex].winner = winnerID
-                        currentUser.currentChallenges[chIndex].declarator = declaratorID
-                        //NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                    }
-                } else {
-                    currentUser.getChallenges();
-                }
-            
-            case Constants.Messages.IDS.confirmWinner.rawValue:
-                if let chIndex = currentUser.currentChallenges.index(where: { $0.id == id}){
-                   currentUser.currentChallenges.remove(at: chIndex)
-                   //NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                }
-                currentUser.getScores()
-            
-            case Constants.Messages.IDS.denyWinner.rawValue:
-                if let chIndex = currentUser.currentChallenges.index(where: { $0.id == id}){
-                    currentUser.currentChallenges[chIndex].winner = ""
-                    currentUser.currentChallenges[chIndex].declarator = ""
-                    //NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                }
-            
-            case Constants.Messages.IDS.rejectChallenge.rawValue:
-                if let chIndex = currentUser.futureChallenges.index(where: { $0.id == id}){
-                    currentUser.futureChallenges.remove(at: chIndex)
-                    //NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                }
-            
-            case Constants.Messages.IDS.cancelChallenge.rawValue:
-                if let chIndex = currentUser.currentChallenges.index(where: { $0.id == id}){
-                    var newFutureChallenge = currentUser.currentChallenges[chIndex]
-                    newFutureChallenge.accepted = 0
-                    //currentUser.currentChallenges.remove(at: chIndex)
-                    //currentUser.futureChallenges.append(newFutureChallenge)
-                    //NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                } else {
-                    currentUser.getChallenges()
-                }
-            case Constants.Messages.IDS.groupRequest.rawValue:
-                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.groupsRefresh)"), object: nil)
-                eventType = "\(UserEvents.showGroupsTab)"
-            default:
-                print("Notification with unknown type. Skipping...");
+        // With swizzling disabled you must let Messaging know about the message, for Analytics
+        // Messaging.messaging().appDidReceiveMessage(userInfo)
+        // Print message ID.
+        if let messageID = userInfo[gcmMessageIDKey] {
+            print("Message ID: \(messageID)")
         }
         
-        if currentUser.logged {
-            TDNotification.show(body, type: .info) { tapped in
-                if tapped {
-                    NotificationCenter.default.post(name: NSNotification.Name(rawValue: eventType), object: nil)
-                }
-            }
-            
-        } else {
-            UserDefaults.standard.set( body, forKey: "wokenNotification")
-            UserDefaults.standard.set( eventType, forKey: "wokenNotificationType")
-            UserDefaults.standard.synchronize()
-        }
+        // Print full message.
+        print(userInfo)
+        
+        // Change this to your preferred presentation option
+        completionHandler([])
     }
     
-    func applicationWillTerminate(_ application: UIApplication) {
-        UserDefaults.standard.set(nil, forKey: "wokenNotification")
-        UserDefaults.standard.set(nil, forKey: "wokenNotificationType")
-        UserDefaults.standard.synchronize()
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        let userInfo = response.notification.request.content.userInfo
+        // Print message ID.
+        if let messageID = userInfo[gcmMessageIDKey] {
+            print("Message ID: \(messageID)")
+        }
+        
+        // Print full message.
+        print(userInfo)
+        
+        completionHandler()
     }
+}
+// [END ios_10_message_handling]
+
+extension AppDelegate : MessagingDelegate {
+    // [START refresh_token]
+    func messaging(_ messaging: Messaging, didRefreshRegistrationToken fcmToken: String) {
+        print("Firebase registration token: \(fcmToken)")
+    }
+    // [END refresh_token]
+    // [START ios_10_data_message]
+    // Receive data messages on iOS 10+ directly from FCM (bypassing APNs) when the app is in the foreground.
+    // To enable direct data messages, you can set Messaging.messaging().shouldEstablishDirectChannel to true.
+    func messaging(_ messaging: Messaging, didReceive remoteMessage: MessagingRemoteMessage) {
+        print("Received data message: \(remoteMessage.appData)")
+    }
+    // [END ios_10_data_message]
 }
 
 //MARK: Remote resources

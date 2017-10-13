@@ -535,7 +535,6 @@
 				ECE9E9781E9E187500A87221 /* Resources */,
 				89223201C7C38780C8FA6658 /* [CP] Embed Pods Frameworks */,
 				A82904B1773C3FBFBE89B5FC /* [CP] Copy Pods Resources */,
-				6F8D47091F8D6C6200565C4A /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -554,7 +553,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
 				LastUpgradeCheck = 0900;
-				ORGANIZATIONNAME = Mruvka;
+				ORGANIZATIONNAME = "Refer To The Document";
 				TargetAttributes = {
 					ECE9E9791E9E187500A87221 = {
 						CreatedOnToolsVersion = 8.3.1;
@@ -641,19 +640,6 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
-		};
-		6F8D47091F8D6C6200565C4A /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "GOOGLE_APP_ID=1:757411012537:ios:959908fd1bac36c1\n\n\"${PODS_ROOT}\"/FirebaseCrash/upload-sym \"/Users/scottkacyn/Downloads/the-document-firebase-crashreporting-ic9y4-cf398ebcb5.json\"";
 		};
 		89223201C7C38780C8FA6658 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -939,6 +925,8 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = TheDocument/TheDocument.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = N9MP2E6553;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -952,6 +940,8 @@
 				OTHER_SWIFT_FLAGS = "\"-D\" \"COCOAPODS\" -Xfrontend -warn-long-function-bodies=50";
 				PRODUCT_BUNDLE_IDENTIFIER = com.refertothedocument.thedocument;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "TheDocument/TheDocument-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
@@ -966,6 +956,8 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = TheDocument/TheDocument.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = N9MP2E6553;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -977,6 +969,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.refertothedocument.thedocument;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "TheDocument/TheDocument-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;

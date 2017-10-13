@@ -254,6 +254,18 @@ extension Array where Element == Friend {
     }
 }
 
+extension Array where Element == Challenge {
+    mutating func completionSort() {
+        let challenges = self as Array<Challenge>
+        self = challenges.sorted { ($0.completedAt ?? 0) > ($1.completedAt ?? 0) }
+    }
+    
+    func completionSorted() -> [Challenge] {
+        let challenges = self as Array<Challenge>
+        return challenges.sorted { ($0.completedAt ?? 0) > ($1.completedAt ?? 0) }
+    }
+}
+
 extension UIImagePickerController {
     open override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()

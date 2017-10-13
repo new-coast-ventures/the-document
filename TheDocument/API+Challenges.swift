@@ -174,18 +174,41 @@ extension API {
         }
     }
     
-    func confirmWinner(challenge: Challenge, closure:@escaping (Bool)->Void) {
+    func confirmWinner(challenge: Challenge, result: String?, closure:@escaping (Bool)->Void) {
         
         var newPastChallenge = challenge
+        newPastChallenge.result = result ?? ""
         newPastChallenge.status = 2
         newPastChallenge.accepted = 1
         
+        var challengeHash = newPastChallenge.simplify()
+        challengeHash["completedAt"] = [".sv": "timestamp"]
+        
         var childUpdates: [String: Any] = [String: Any]()
         challenge.participantIds().forEach { uid in
-            childUpdates["/\(uid)/\(newPastChallenge.id)"] = newPastChallenge.simplify()
+            childUpdates["challenges/\(uid)/\(newPastChallenge.id)"] = challengeHash
+            
+            if currentUser.uid == uid {
+                if challenge.wonByMe() {
+                    currentUser.totalWins += 1
+                    childUpdates["users/\(uid)/totalWins"] = currentUser.totalWins
+                } else {
+                    currentUser.totalLosses += 1
+                    childUpdates["users/\(uid)/totalLosses"] = currentUser.totalLosses
+                }
+                
+            } else if let frIndex = currentUser.friends.index(where: { $0.id == uid }) {
+                if challenge.winner.contains(uid) {
+                    currentUser.friends[frIndex].wins += 1
+                    childUpdates["users/\(uid)/totalWins"] = currentUser.friends[frIndex].wins
+                } else {
+                    currentUser.friends[frIndex].loses += 1
+                    childUpdates["users/\(uid)/totalLosses"] = currentUser.friends[frIndex].loses
+                }
+            }
         }
         
-        Database.database().reference().child("challenges").updateChildValues(childUpdates) { (error, ref) in
+        Database.database().reference().updateChildValues(childUpdates) { (error, ref) in
             guard error == nil else { closure(false);return }
             Notifier().confirmWinner(challenge: newPastChallenge)
             closure(true)

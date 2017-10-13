@@ -91,10 +91,9 @@ class NewChallengeViewController: BaseViewController {
             challenge.toId = challengeToId
             self.startActivityIndicator()
             API().challengeFriends(challenge: challenge, friendsIds: [challenge.toId]) {
-                //currentUser.futureChallenges.append(self.challenge)
-                //NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.showOverviewTab)"), object: nil)
-                //NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                self.closeButtonTapped()
+                self.dismiss(animated: true, completion: {
+                    NCVAlertView().showSuccess("Challenge Created!", subTitle: "")
+                })
             }
         } else {
             performSegue(withIdentifier: Constants.inviteFriendsNewChallengeStoryboardIdentifier, sender: self)

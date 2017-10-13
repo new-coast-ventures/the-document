@@ -23,24 +23,44 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var detailsTabButton: TabButton!
     @IBOutlet weak var chatterTabButton: TabButton!
     
+    var playerOne: Friend!
+    @IBOutlet weak var playerOneStackView: UIStackView!
     @IBOutlet weak var playerOneImageView: CircleImageView!
+    @IBOutlet weak var playerOneLabel: UILabel!
+    
+    var playerTwo: Friend!
+    @IBOutlet weak var playerTwoStackView: UIStackView!
     @IBOutlet weak var playerTwoImageview: CircleImageView!
-    @IBOutlet weak var versusLabel: UILabel!
+    @IBOutlet weak var playerTwoLabel: UILabel!
+    
+    var playerThree: Friend?
+    @IBOutlet weak var playerThreeStackView: UIStackView!
+    @IBOutlet weak var playerThreeImageview: CircleImageView!
+    @IBOutlet weak var playerThreeLabel: UILabel!
+    
+    var playerFour: Friend?
+    @IBOutlet weak var playerFourStackView: UIStackView!
+    @IBOutlet weak var playerFourImageview: CircleImageView!
+    @IBOutlet weak var playerFourLabel: UILabel!
+    
     @IBOutlet weak var playersContainerView: UIView!
 
+    @IBOutlet weak var challengeNameLabel: UILabel!
     @IBOutlet weak var challengePriceLabel: UILabel!
     @IBOutlet weak var challengeLocationLabel: UILabel!
     @IBOutlet weak var challengeDateLabel: UILabel!
+    
+    @IBOutlet weak var teamAWinnerLabel: UILabel!
+    @IBOutlet weak var teamBWinnerLabel: UILabel!
+    @IBOutlet weak var resultStackView: UIStackView!
+    @IBOutlet weak var resultViewDivider: UIView!
+    @IBOutlet weak var challengeResultLabel: UILabel!
     
     @IBOutlet weak var wagerStackView: UIStackView!
     @IBOutlet weak var locationStackView: UIStackView!
     @IBOutlet weak var dateStackView: UIStackView!
     
     @IBOutlet weak var actionButton: UIButton!
-    
-    @IBOutlet weak var playerOneLabel: UILabel!
-    @IBOutlet weak var playerTwoLabel: UILabel!
-    
     @IBOutlet weak var commentFormContainer: UIView!
     @IBOutlet weak var chatterTable: UITableView!
     @IBOutlet weak var commentForm: UIStackView!
@@ -56,30 +76,29 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(hideControls)))
         
-        title = challenge.challengeName()
+        teamAWinnerLabel.isHidden = true
+        teamBWinnerLabel.isHidden = true
+        resultStackView.isHidden = true
+        resultViewDivider.isHidden = true
         
+        teamAWinnerLabel.layer.cornerRadius = 3.0
+        teamBWinnerLabel.layer.cornerRadius = 3.0
         playersContainerView.layer.dropShadow()
         
-        playerOneLabel.text = challenge.teammateNames()
-        playerTwoLabel.text = challenge.competitorNames()
-        
-        versusLabel.layer.cornerRadius = 20
-        versusLabel.layer.dropShadow()
-        versusLabel.clipsToBounds = true
+        // Load Player Information
+        setupTeams()
         
         // Set up the chatter table
         setupChatter()
-        
-        // Add competitor photos
-        setCompetitorPhotos()
  
         // Detail Labels
-        challengePriceLabel.text = (challenge.price == 0) ? "-" : "$\(challenge.price)"
+        challengeNameLabel.text = challenge.challengeName()
+        challengePriceLabel.text = (challenge.price == 0) ? "None" : "$\(challenge.price)"
         challengeLocationLabel.text = (challenge.location == "") ? "-" : challenge.location
         challengeDateLabel.text = (challenge.time == "") ? "-" : challenge.time
+        challengeResultLabel.text = challenge.result ?? "-"
 
         actionButton.isEnabled = true
         
@@ -103,6 +122,18 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             
         case (2, 1): // Past
             actionButton.setTitle("REQUEST REMATCH", for: .normal)
+            if challenge.wonByMe() {
+                teamAWinnerLabel.backgroundColor = UIColorFromHex(0x2DBE96)
+                teamBWinnerLabel.backgroundColor = .clear
+            } else {
+                teamAWinnerLabel.backgroundColor = .clear
+                teamBWinnerLabel.backgroundColor = UIColorFromHex(0x2DBE96)
+            }
+            
+            teamAWinnerLabel.isHidden = false
+            teamBWinnerLabel.isHidden = false
+            resultStackView.isHidden = false
+            resultViewDivider.isHidden = false
             
         default: // User chose winner, Rejected, Win, Other
             actionButton.isHidden = true
@@ -178,31 +209,18 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
         commentsRef = Database.database().reference().child("challenge-comments").child(challenge.id)
     }
     
-    fileprivate func setCompetitorPhotos() {
-        guard let challengerId = challenge.competitorId().components(separatedBy: ",").first else { return }
-        
-        if let imageData = downloadedImages[challengerId] {
-            setPlayerTwoImage(imgData: imageData)
+    fileprivate func setCompetitorPhoto(uid: String, imageView: CircleImageView) {
+        if let imageData = downloadedImages[uid] {
+            DispatchQueue.main.async {
+                imageView.image = UIImage(data: imageData)
+            }
         } else {
-            appDelegate.downloadImageFor(id: challengerId, section: "photos"){[weak self] success in
+            appDelegate.downloadImageFor(id: uid, section: "photos") { [weak self] success in
                 guard success, let sSelf = self, let imageData = downloadedImages[sSelf.challenge.fromId] else { return }
-                sSelf.setPlayerTwoImage(imgData: imageData)
+                DispatchQueue.main.async {
+                    imageView.image = UIImage(data: imageData)
+                }
             }
-        }
-        
-        if let imageData = downloadedImages["\(currentUser.uid)"] {
-            playerOneImageView.image = UIImage(data: imageData)
-        } else {
-            appDelegate.downloadImageFor(id: "\(currentUser.uid)", section: "photos"){[weak self] success in
-                guard success, let sSelf = self,  let imageData = downloadedImages["\(currentUser.uid)"]  else { return }
-                sSelf.playerOneImageView.image = UIImage(data: imageData)
-            }
-        }
-    }
-
-    func setPlayerTwoImage(imgData:Data){
-        DispatchQueue.main.async {
-            self.playerTwoImageview.image = UIImage(data: imgData)
         }
     }
     
@@ -235,7 +253,6 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func actionButtonTapped(_ sender: UIButton) {
-        self.startActivityIndicator()
         switch (challenge.status, challenge.accepted) {
         case (0, 0) where challenge.isMine() == false: // Pending invite
             acceptChallenge()
@@ -295,27 +312,63 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     }
     
     fileprivate func acceptChallenge() {
-        API().acceptChallenge(challenge: challenge) { success in
-            self.actionCompleted(success: success)
+        let alertView = ncvAlert()
+        alertView.addButton("Yes", backgroundColor: Constants.Theme.buttonBGColor) {
+            API().acceptChallenge(challenge: self.challenge) { success in
+                self.actionCompleted(success: success)
+            }
         }
+        alertView.addButton("No") {
+            print("No tapped")
+        }
+        alertView.showNotice("Accept Challenge?", subTitle: "Do you want to accept this challenge?")
     }
     
     fileprivate func rejectChallenge() {
-        API().rejectChallenge(challenge: self.challenge){ success in
-            self.actionCompleted(success: success)
+        let alertView = ncvAlert()
+        alertView.addButton("Yes", backgroundColor: Constants.Theme.buttonBGColor) {
+            API().rejectChallenge(challenge: self.challenge){ success in
+                self.actionCompleted(success: success)
+            }
         }
+        alertView.addButton("No") {
+            print("No tapped")
+        }
+        alertView.showNotice("Reject Challenge?", subTitle: "Are you sure you want to reject this challenge?")
     }
     
     fileprivate func cancelChallenge() {
-        API().cancelChallenge(challenge: self.challenge) { success in
-            self.actionCompleted(success: success)
+        let alertView = ncvAlert()
+        alertView.addButton("Yes", backgroundColor: Constants.Theme.buttonBGColor) {
+            API().cancelChallenge(challenge: self.challenge) { success in
+                self.actionCompleted(success: success)
+            }
         }
+        alertView.addButton("No") {
+            print("No tapped")
+        }
+        alertView.showNotice("Cancel Challenge?", subTitle: "Are you sure you want to cancel this challenge?")
     }
     
     fileprivate func requestRematch() {
-        API().rematchChallenge(challenge: self.challenge) { success in
-            self.actionCompleted(success: success)
+        let alertView = ncvAlert()
+        alertView.addButton("Yes", backgroundColor: Constants.Theme.buttonBGColor) {
+            API().rematchChallenge(challenge: self.challenge) { success in
+                self.actionCompleted(success: success)
+            }
         }
+        alertView.addButton("No") {
+            print("No tapped")
+        }
+        alertView.showNotice("Request Rematch?", subTitle: "Are you sure you want a rematch?")
+    }
+    
+    func ncvAlert() -> NCVAlertView {
+        let appearance = NCVAlertView.NCVAppearance(
+            showCloseButton: false,
+            showCircularIcon: false
+        )
+        return NCVAlertView(appearance: appearance)
     }
     
     fileprivate func actionCompleted(success: Bool) {
@@ -489,14 +542,57 @@ extension ChallengeDetailsViewController {
 
 //MARK: API Actions
 extension ChallengeDetailsViewController {
+    
+    func setupTeams() {
+        let teamA: [Friend] = challenge.teamA()
+        let teamB: [Friend] = challenge.teamB()
+        
+        playerOne   = teamA[0]
+        playerTwo   = teamB[0]
+        playerThree = teamA.count == 2 ? teamA[1] : nil
+        playerFour  = teamB.count == 2 ? teamB[1] : nil
+        
+        loadPlayerOne(player: playerOne)
+        loadPlayerTwo(player: playerTwo)
+        loadPlayerThree(player: playerThree)
+        loadPlayerFour(player: playerFour)
+    }
+    
+    func loadPlayerOne(player: Friend) {
+        playerOneLabel.text = player.name
+        setCompetitorPhoto(uid: player.id, imageView: self.playerOneImageView)
+    }
+    
+    func loadPlayerTwo(player: Friend) {
+        playerTwoLabel.text = player.name
+        setCompetitorPhoto(uid: player.id, imageView: self.playerTwoImageview)
+    }
+    
+    func loadPlayerThree(player: Friend?) {
+        if let p = player {
+            playerThreeLabel.text = p.name
+            setCompetitorPhoto(uid: p.id, imageView: self.playerThreeImageview)
+            playerThreeStackView.isHidden = false
+        } else {
+            playerThreeStackView.isHidden = true
+        }
+    }
+    
+    func loadPlayerFour(player: Friend?) {
+        if let p = player {
+            playerFourLabel.text = p.name
+            setCompetitorPhoto(uid: p.id, imageView: self.playerFourImageview)
+            playerFourStackView.isHidden = false
+        } else {
+            playerFourStackView.isHidden = true
+        }
+    }
  
     func declareWinner() {
         guard self.challenge.winner != "" else {self.showAlert(message: Constants.Errors.winnerNotSelected.rawValue); return}
         
         self.challenge.details = (self.declareSubview.viewWithTag(details_tag) as? UITextField)?.text ?? ""
-        self.startActivityIndicator()
         API().declareWinner(challenge: self.challenge) { success in
-            self.stopActivityIndicator()
             if success {
                 //currentUser.currentChallenges.removeObject(self.challenge)
                 //currentUser.currentChallenges.append(self.challenge)
@@ -510,10 +606,14 @@ extension ChallengeDetailsViewController {
     
     func confirmWinner() {
         self.challenge.accepted = 2
-        self.startActivityIndicator()
-        API().confirmWinner(challenge: self.challenge){ success in
-            self.stopActivityIndicator()
-            if success {
+        
+        let alert = customAlert()
+        let result = alert.addTextField("")
+        
+        alert.addButton("Done") {
+            API().confirmWinner(challenge: self.challenge, result: result.text) { success in
+                guard success else { self.showAlert(message: Constants.Errors.defaultError.rawValue); return }
+                
                 if self.challenge.winner.contains(currentUser.uid) {
                     currentUser.totalWins += 1
                     let users = self.challenge.competitorId().components(separatedBy: ",")
@@ -523,7 +623,6 @@ extension ChallengeDetailsViewController {
                             currentUser.friends[frIndex].winsAgainst += 1
                         }
                     }
-                    
                 } else {
                     currentUser.totalLosses += 1
                     let users = self.challenge.competitorId().components(separatedBy: ",")
@@ -534,22 +633,15 @@ extension ChallengeDetailsViewController {
                         }
                     }
                 }
-                
-                // We don't have to update this info, Firebase will handle for us
-                //currentUser.currentChallenges.removeObject(self.challenge)
-                //currentUser.pastChallenges.append(self.challenge)
-                
                 self.navigationController?.popViewController(animated: true)
-            } else {
-                self.showAlert(message: Constants.Errors.defaultError.rawValue)
             }
         }
+        
+        alert.showInfo("Record Result", subTitle: "Enter the final score or result of the challenge (optional)")
     }
     
     func denyWinner() {
-        self.startActivityIndicator()
         API().denyWinner(challenge: self.challenge){ success in
-            self.stopActivityIndicator()
             self.challenge.declarator = ""
             self.challenge.winner = ""
             if success {

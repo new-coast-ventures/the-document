@@ -98,7 +98,7 @@ extension TDUser {
             
             self.futureChallenges  = challenges.filter { $0.status == 0 }
             self.currentChallenges = challenges.filter { $0.status == 1 }
-            self.pastChallenges    = challenges.filter { $0.status == 2 }
+            self.pastChallenges    = challenges.filter { $0.status == 2 }.completionSorted()
             
             var headToHeadRecords: [String: [String: Int]?] = [:]
             self.pastChallenges.forEach({ (challenge: Challenge) in

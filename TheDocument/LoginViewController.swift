@@ -133,7 +133,6 @@ class LoginViewController: UIViewController {
                     
                     self.showAlert(message: Constants.Messages.resetPasswordSuccess.rawValue)
                 }
-            
         }))
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .destructive))

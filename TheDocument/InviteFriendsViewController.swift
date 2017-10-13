@@ -94,7 +94,9 @@ class InviteFriendsTableViewController: BaseTableViewController {
             API().challengeFriends(challenge: challenge, friendsIds: selectedFriendsIds ) {
                 self.stopActivityIndicator()
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                self.dismiss(animated: true, completion: nil)
+                self.dismiss(animated: true, completion: {
+                    NCVAlertView().showSuccess("Challenge Created!", subTitle: "")
+                })
                 return
             }
         } else if case let Mode.teamChallenge(challenge) = self.mode {   // Invitation to team challenge
@@ -118,11 +120,13 @@ class InviteFriendsTableViewController: BaseTableViewController {
                 selectedCompetitorIds = selectedFriendsIds
                 API().challengeTeams(challenge: challenge,
                                      teammateIds: selectedTeammateIds,
-                                     competitorIds: selectedCompetitorIds ) {
-                          
+                                     competitorIds: selectedCompetitorIds )
+                {
                     self.stopActivityIndicator()
                     NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                    self.dismiss(animated: true, completion: nil)
+                    self.dismiss(animated: true, completion: {
+                        NCVAlertView().showSuccess("Challenge Created!", subTitle: "")
+                    })
                     return
                 }
             }

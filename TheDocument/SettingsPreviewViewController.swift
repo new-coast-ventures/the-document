@@ -16,12 +16,14 @@ class SettingsPreviewViewController: BaseTableViewController {
     
     @IBOutlet weak var depositButton: UIButton!
     @IBOutlet weak var photoImageView: UIImageView!
+    @IBOutlet weak var userNameLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         depositButton.layer.cornerRadius = 3.0
         photoImageView.layer.cornerRadius = photoImageView.frame.width/2
+        userNameLabel.text = currentUser.name
         
         if let imageData = downloadedImages["\(currentUser.uid)"] {
             setPhotoWithData(imageData: imageData)
@@ -54,7 +56,7 @@ class SettingsPreviewViewController: BaseTableViewController {
         switch (indexPath.section, indexPath.row) {
         case (0, _): break
             // do nothing
-        case (1, 1):
+        case (1, 0):
             resetPasswordAction()
         case (1, _): break
             // do nothing
@@ -62,21 +64,6 @@ class SettingsPreviewViewController: BaseTableViewController {
             currentUser.logout()
         default:
             performSegue(withIdentifier: "open_webview", sender: nil)
-        }
-    }
-    
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch section {
-        case 0:
-            return currentUser.name
-        case 1:
-            return "Account"
-        case 2:
-            return "Support"
-        case 3:
-            return "About"
-        default:
-            return nil
         }
     }
 }

@@ -97,6 +97,9 @@ class ItemTableViewCell: UITableViewCell {
             bottomLabel.text = item.competitorNames()
             acceptButton.isHidden = true
         }
+        
+        // Don't show the button for now
+        acceptButton.isHidden = true
     }
     
     fileprivate func actionTitle(title: String) {
