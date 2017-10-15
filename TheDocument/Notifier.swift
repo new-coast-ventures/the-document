@@ -61,6 +61,18 @@ struct Notifier {
         }
     }
     
+    func sendGroupChatter(group: Group, _ closure : ((Bool) -> Void)? = nil) {
+        group.members.forEach { (member) in
+            let uid = member.id
+            let chatterNotification = ChatterNotification(toUID: uid, challengeId: "", challengeName: group.name)
+            FCMService().request(request: chatterNotification, success: { (responce) in
+                closure?(true)
+            }) { (error) in
+                closure?(false)
+            }
+        }
+    }
+    
     func declareWinner(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
         let competitors = challenge.competitorId().components(separatedBy: ",")
         competitors.forEach { (uid) in

@@ -1365,11 +1365,11 @@
                             <constraint firstItem="doq-Ln-QvP" firstAttribute="leading" secondItem="hJp-wQ-x31" secondAttribute="leading" id="2ef-25-Ib4"/>
                             <constraint firstItem="9X4-aw-Gy8" firstAttribute="top" secondItem="Bvw-aY-cRH" secondAttribute="bottom" constant="50" id="4Ul-Jb-4Ok"/>
                             <constraint firstItem="I1F-H8-r2S" firstAttribute="top" secondItem="7eY-AZ-jWs" secondAttribute="bottom" constant="4" id="4bE-kg-W9N"/>
-                            <constraint firstItem="9X4-aw-Gy8" firstAttribute="top" secondItem="doq-Ln-QvP" secondAttribute="bottom" id="CNR-Md-lxG"/>
                             <constraint firstItem="I1F-H8-r2S" firstAttribute="leading" secondItem="hJp-wQ-x31" secondAttribute="leading" id="Ght-kB-anD"/>
                             <constraint firstAttribute="trailing" secondItem="Bvw-aY-cRH" secondAttribute="trailing" id="LuM-lM-e5M"/>
                             <constraint firstItem="9X4-aw-Gy8" firstAttribute="top" secondItem="I1F-H8-r2S" secondAttribute="bottom" id="PcG-2v-z99"/>
                             <constraint firstItem="DNH-gf-T2J" firstAttribute="leading" secondItem="hJp-wQ-x31" secondAttribute="leading" id="UJG-xQ-lk4"/>
+                            <constraint firstItem="9X4-aw-Gy8" firstAttribute="top" secondItem="doq-Ln-QvP" secondAttribute="bottom" id="UPX-g1-Xrd"/>
                             <constraint firstAttribute="trailing" secondItem="0Ig-33-ka5" secondAttribute="trailing" id="YSq-RY-vvJ"/>
                             <constraint firstItem="DNH-gf-T2J" firstAttribute="top" secondItem="zxl-rN-iLp" secondAttribute="bottom" id="Zlz-BX-nfK"/>
                             <constraint firstItem="7eY-AZ-jWs" firstAttribute="top" secondItem="0Ig-33-ka5" secondAttribute="bottom" constant="10" id="apd-zb-twO"/>
@@ -1399,7 +1399,7 @@
                         <outlet property="chatterTable" destination="Bvw-aY-cRH" id="SDo-RW-pdO"/>
                         <outlet property="commentField" destination="wx7-p4-GEF" id="Aau-Dm-iJ3"/>
                         <outlet property="commentForm" destination="MAJ-Jz-KSW" id="23b-n6-xDP"/>
-                        <outlet property="commentFormBottomMargin" destination="CNR-Md-lxG" id="VnZ-KW-3D9"/>
+                        <outlet property="commentFormBottomMargin" destination="UPX-g1-Xrd" id="HrY-GA-RCM"/>
                         <outlet property="commentFormContainer" destination="doq-Ln-QvP" id="7fN-4h-MPx"/>
                         <outlet property="commentSendButton" destination="nLO-VS-IXk" id="m1d-nR-mnC"/>
                         <outlet property="dateStackView" destination="vYX-qF-bQY" id="PRc-Pk-Rm0"/>

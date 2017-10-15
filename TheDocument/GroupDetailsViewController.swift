@@ -273,7 +273,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
                 sender.isEnabled = true
                 if error == nil {
                     commentField.text = ""
-                    //Notifier().sendChatter(challenge: self.group)
+                    Notifier().sendGroupChatter(group: self.group)
                 }
             })
         }
@@ -285,9 +285,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     @objc func keyboardWillShow(notification: NSNotification) {
-        print("keyboardWillShow")
-        let keyboardRect = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as! NSValue).cgRectValue
-        print(keyboardRect.height)
+        let keyboardRect = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
         commentFormBottomMargin.constant = keyboardRect.height
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardRect.height + 10, right: 0)
         self.view.layoutIfNeeded()
@@ -295,7 +293,6 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     @objc func keyboardWillHide(notification: NSNotification) {
-        print("keyboardWillHide")
         commentFormBottomMargin.constant = 0
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 10, right: 0)
         self.view.layoutIfNeeded()

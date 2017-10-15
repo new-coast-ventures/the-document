@@ -408,7 +408,8 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func keyboardWillShow(notification: NSNotification) {
-        let keyboardRect = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as! NSValue).cgRectValue
+        let keyboardRect = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
+        print("Keyboard will show with height: \(keyboardRect.height)")
         commentFormBottomMargin.constant = keyboardRect.height
         chatterTable.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardRect.height + 10, right: 0)
         self.view.layoutIfNeeded()
@@ -418,6 +419,7 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     @objc func keyboardWillHide(notification: NSNotification) {
         commentFormBottomMargin.constant = 0
         chatterTable.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 10, right: 0)
+        print("Keyboard will hide and set margin to 0")
         self.view.layoutIfNeeded()
         self.scrollToMostRecentComment()
     }
