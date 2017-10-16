@@ -94,7 +94,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         
                 if success == false {
                     iv.backgroundColor = Constants.Theme.mainColor
-                    iv.image = UIImage(named: "LogoSmall")
+                    iv.image = UIImage(named: "logo-mark-square")
                     iv.contentMode = .scaleAspectFit
                 } else if let imgData = downloadedImages[sSelf.group.id] {
                     iv.image = UIImage(data: imgData)
@@ -200,8 +200,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
             
             self.group.members  = members.filter({ $0.state != "invited" })
             self.group.invitees = members.filter({ $0.state == "invited" })
-            
-            self.leaderboardDatasource = self.group.members.sorted(by: { $0.wins - $0.loses > $1.wins - $1.loses})
+            self.leaderboardDatasource = self.group.members.sortByWilsonRanking()
             self.tableView.reloadData()
         }
     }

@@ -212,7 +212,7 @@ class ItemTableViewCell: UITableViewCell {
 
         DispatchQueue.main.async {
             self.itemImageView.backgroundColor = Constants.Theme.mainColor
-            self.itemImageView.image = UIImage(named: "LogoSmall")
+            self.itemImageView.image = UIImage(named: "logo-mark-square")
             self.itemImageView.contentMode = .scaleAspectFit
             self.itemImageView.layer.cornerRadius = self.itemImageView.frame.size.height / 2.0
             self.itemImageView.layer.masksToBounds = true

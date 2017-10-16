@@ -83,6 +83,29 @@ extension Array where Element == Friend {
         
         return Friend.empty()
     }
+    
+    func wilsonConfidenceScore(wins: Int, losses: Int, confidence: Double = 0.95) -> Double {
+        guard case let n = Double(wins + losses), n != 0 else { return 0.0 }
+        
+        let z  = 1.96
+        let z² = (z * z)
+        let p̂  = 1.0 * Double(wins) / n
+        
+        let lhs = p̂ + z² / (2 * n)
+        let rhs = z * sqrt((p̂ * (1 - p̂) + z² / (4 * n)) / n)
+        let divisor = 1 + z² / n
+        
+        let lowerBound = (lhs - rhs) / divisor
+        
+        return lowerBound
+    }
+    
+    func sortByWilsonRanking() -> [Friend] {
+        return self.sorted {
+            return wilsonConfidenceScore(wins: $0.wins, losses: $0.loses) >
+                wilsonConfidenceScore(wins: $1.wins, losses: $1.loses)
+        }
+    }
 }
 
 extension Friend: Equatable, Hashable {

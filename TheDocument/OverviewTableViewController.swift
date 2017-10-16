@@ -175,7 +175,7 @@ extension OverviewTableViewController {
     }
     
     func buildLeaderboard() {
-        leaderboardDatasource = (currentUser.friends.filter{$0.accepted} + [currentUser.asFriend()]).sorted(by: { $0.wins - $0.loses > $1.wins - $1.loses})
+        leaderboardDatasource = (currentUser.friends.filter{$0.accepted} + [currentUser.asFriend()]).sortByWilsonRanking()
         if leaderboardMode {
             refresh()
         }
