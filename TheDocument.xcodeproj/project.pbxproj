@@ -18,6 +18,8 @@
 		6F8E79D11F1003EC00FDA983 /* Empty.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6F8E79D01F1003EC00FDA983 /* Empty.xib */; };
 		6F8E79D31F10065C00FDA983 /* Empty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8E79D21F10065C00FDA983 /* Empty.swift */; };
 		6F8EEE471F7312110011A178 /* TDWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8EEE461F7312110011A178 /* TDWebViewController.swift */; };
+		6F9365F61F97E875005683A4 /* HomeContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9365F51F97E875005683A4 /* HomeContainerViewController.swift */; };
+		6F9365F81F98110E005683A4 /* EmptySegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9365F71F98110E005683A4 /* EmptySegue.swift */; };
 		6FC9E83D1F0709FE00380D12 /* CreateAccountTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC9E83C1F0709FE00380D12 /* CreateAccountTableViewController.swift */; };
 		6FC9E83F1F070CAF00380D12 /* SSNTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC9E83E1F070CAF00380D12 /* SSNTableViewController.swift */; };
 		6FC9E8411F070CD300380D12 /* AddIDViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC9E8401F070CD300380D12 /* AddIDViewController.swift */; };
@@ -122,6 +124,8 @@
 		6F8E79D01F1003EC00FDA983 /* Empty.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Empty.xib; sourceTree = "<group>"; };
 		6F8E79D21F10065C00FDA983 /* Empty.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Empty.swift; sourceTree = "<group>"; };
 		6F8EEE461F7312110011A178 /* TDWebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TDWebViewController.swift; sourceTree = "<group>"; };
+		6F9365F51F97E875005683A4 /* HomeContainerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeContainerViewController.swift; sourceTree = "<group>"; };
+		6F9365F71F98110E005683A4 /* EmptySegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptySegue.swift; sourceTree = "<group>"; };
 		6FC9E83C1F0709FE00380D12 /* CreateAccountTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateAccountTableViewController.swift; sourceTree = "<group>"; };
 		6FC9E83E1F070CAF00380D12 /* SSNTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSNTableViewController.swift; sourceTree = "<group>"; };
 		6FC9E8401F070CD300380D12 /* AddIDViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddIDViewController.swift; sourceTree = "<group>"; };
@@ -391,6 +395,7 @@
 				6F18039B1F1ECAFE0002902C /* CommentTableViewCell.swift */,
 				6F18039C1F1ECAFE0002902C /* CommentTableViewCell.xib */,
 				ECE9E9811E9E187500A87221 /* Main.storyboard */,
+				6F9365F51F97E875005683A4 /* HomeContainerViewController.swift */,
 				ECE9E9861E9E187500A87221 /* LaunchScreen.storyboard */,
 				6F8E79D01F1003EC00FDA983 /* Empty.xib */,
 			);
@@ -470,6 +475,7 @@
 				EC445E271EB0BF6C00C843F0 /* TheDocument-Bridging-Header.h */,
 				6F8EEE461F7312110011A178 /* TDWebViewController.swift */,
 				6FD769651F8D5F4100086904 /* NCVAlertView.swift */,
+				6F9365F71F98110E005683A4 /* EmptySegue.swift */,
 			);
 			name = Global;
 			sourceTree = "<group>";
@@ -813,6 +819,7 @@
 				EC73495E1EC9E8840058CF0D /* FirebaseEncodable.swift in Sources */,
 				EC40EA1B1EF2CAC3002C62AC /* TDCache.swift in Sources */,
 				EC6B45751ED5891C00B2E277 /* ChallengeRequest.swift in Sources */,
+				6F9365F81F98110E005683A4 /* EmptySegue.swift in Sources */,
 				ECE9E9931E9E1B0E00A87221 /* LoginViewController.swift in Sources */,
 				EC957D491ECC94200098B0EE /* ChallengeDetailsViewController.swift in Sources */,
 				EC6B456A1ED56EC000B2E277 /* FCMRequest.swift in Sources */,
@@ -834,6 +841,7 @@
 				6F25C82F1F098C5300E345C5 /* BankLoginTableViewController.swift in Sources */,
 				EC957D451ECB11E40098B0EE /* Group.swift in Sources */,
 				EC40BD1D1EB9EE6000BB8899 /* FriendsTableViewController.swift in Sources */,
+				6F9365F61F97E875005683A4 /* HomeContainerViewController.swift in Sources */,
 				EC329D2F1EC49B07002DCDA1 /* SettingsViewController.swift in Sources */,
 				ECC7C8071EDC5B1E00E85338 /* CancelChallenge.swift in Sources */,
 				EC0D01701EAE7C770095A20D /* IntroductionViewController.swift in Sources */,

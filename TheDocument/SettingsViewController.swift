@@ -10,6 +10,7 @@ import FirebaseStorage
 
 class SettingsViewController: BaseViewController {
     
+    @IBOutlet weak var containerScrollView: UIScrollView!
     @IBOutlet weak var editPhoto: UIImageView!
     @IBOutlet weak var photoImageView: UIImageView!
     @IBOutlet weak var postcodeTextfield: InputField!
@@ -117,6 +118,7 @@ class SettingsViewController: BaseViewController {
     //MARK: Helpers
     
     @objc func hideKeyboard() {
+        containerScrollView.setContentOffset(.zero, animated: true)
         view.endEditing(true)
     }
 }
@@ -154,6 +156,11 @@ extension SettingsViewController: UIImagePickerControllerDelegate, UINavigationC
 
 extension SettingsViewController: UITextFieldDelegate {
     
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        containerScrollView.setContentOffset(CGPoint(x: 0.0, y: 210.0), animated: true)
+        return true
+    }
+
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard textField == phoneTextField else { return true }
         

@@ -53,12 +53,7 @@ class TDUser {
     
     func logout() {
         try? Auth.auth().signOut()
-        
-        // clear Branch instance
         Branch.getInstance().logout()
-        
-        // Pass false to login method to display login screen
-        appDelegate.login(success: false)
     }
     
     func asFriend() -> Friend {

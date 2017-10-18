@@ -50,8 +50,6 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var challengeLocationLabel: UILabel!
     @IBOutlet weak var challengeDateLabel: UILabel!
     
-    @IBOutlet weak var teamAWinnerLabel: UILabel!
-    @IBOutlet weak var teamBWinnerLabel: UILabel!
     @IBOutlet weak var resultStackView: UIStackView!
     @IBOutlet weak var resultViewDivider: UIView!
     @IBOutlet weak var challengeResultLabel: UILabel!
@@ -78,13 +76,8 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
         super.viewDidLoad()
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(hideControls)))
         
-        teamAWinnerLabel.isHidden = true
-        teamBWinnerLabel.isHidden = true
         resultStackView.isHidden = true
         resultViewDivider.isHidden = true
-        
-        teamAWinnerLabel.layer.cornerRadius = 3.0
-        teamBWinnerLabel.layer.cornerRadius = 3.0
         playersContainerView.layer.dropShadow()
         
         // Load Player Information
@@ -122,16 +115,6 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             
         case (2, 1): // Past
             actionButton.setTitle("REQUEST REMATCH", for: .normal)
-            if challenge.wonByMe() {
-                teamAWinnerLabel.backgroundColor = UIColorFromHex(0x2DBE96)
-                teamBWinnerLabel.backgroundColor = .clear
-            } else {
-                teamAWinnerLabel.backgroundColor = .clear
-                teamBWinnerLabel.backgroundColor = UIColorFromHex(0x2DBE96)
-            }
-            
-            teamAWinnerLabel.isHidden = false
-            teamBWinnerLabel.isHidden = false
             resultStackView.isHidden = false
             resultViewDivider.isHidden = false
             
@@ -236,6 +219,7 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
         self.commentFormContainer.isHidden = true
         self.chatterTable.isHidden = true
         self.view.sendSubview(toBack: self.chatterTable)
+        self.hideControls()
     }
     
     @IBAction func chatterTapped(_ sender: Any) {
@@ -399,7 +383,6 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     
     @objc func keyboardWillShow(notification: NSNotification) {
         let keyboardRect = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
-        print("Keyboard will show with height: \(keyboardRect.height)")
         commentFormBottomMargin.constant = keyboardRect.height
         chatterTable.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardRect.height + 10, right: 0)
         self.view.layoutIfNeeded()
@@ -409,7 +392,6 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     @objc func keyboardWillHide(notification: NSNotification) {
         commentFormBottomMargin.constant = 0
         chatterTable.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 10, right: 0)
-        print("Keyboard will hide and set margin to 0")
         self.view.layoutIfNeeded()
         self.scrollToMostRecentComment()
     }

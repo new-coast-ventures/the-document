@@ -14,20 +14,11 @@ enum HomeTabs {
 
 class HomeViewController: UIViewController {
    
-    @IBOutlet var containers: [UIView]!
-    @IBOutlet weak var overviewContainer: UIView!
-    @IBOutlet weak var friendsContainer: UIView!
-    @IBOutlet weak var groupsContainer: UIView!
-    @IBOutlet weak var settingsContainer: UIView!
-   
     @IBOutlet weak var toolbarHeight: NSLayoutConstraint!
     @IBOutlet weak var toolbarGradient: UIImageView!
-
     @IBOutlet weak var toolbarContainer: UIView!
-    @IBOutlet weak var mainContainer: UIStackView!
-    
     @IBOutlet weak var actionButtonImageView: UIImageView!
-    
+
     @IBOutlet var menuButtons: [UIButton]!
     @IBOutlet weak var overviewMenuButton: UIButton!
     @IBOutlet weak var friendsMenuButton: UIButton!
@@ -36,9 +27,12 @@ class HomeViewController: UIViewController {
     
     var firstRun = true
     var openedTab: HomeTabs = .overview
+    var containerViewController: HomeContainerViewController!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        print("HOME DID LOAD")
         
         view.backgroundColor = Constants.Theme.mainColor
         
@@ -115,7 +109,6 @@ class HomeViewController: UIViewController {
             TDNotification.show( wokenMessage , type: .info)
         }
         
-        
         if let wokenMessageType = UserDefaults.standard.value(forKey: "wokenNotificationType") as? String {
             UserDefaults.standard.set(nil, forKey: "wokenNotificationType")
             UserDefaults.standard.synchronize()
@@ -131,40 +124,42 @@ class HomeViewController: UIViewController {
                     break;
             }
         }
-        
-        
     }
     
     deinit { NotificationCenter.default.removeObserver(self)  }
     
     @IBAction func showOverviewTapped(_ sender: Any? = nil) {
         openedTab = .overview
-        containers.forEach{ $0.isHidden = $0 == overviewContainer ? false : true }
-        overviewMenuButton.setImage(UIImage(named:"Menu1"), for: .normal)
-        overviewMenuButton.setImage(UIImage(named:"Menu1Active"), for: .selected)
-        menuButtons.forEach{ $0.isSelected = $0 == overviewMenuButton ? true : false }
+        toggleVisibleTab(btn: overviewMenuButton)
+        containerViewController.loadChildView(identifier: "embed_overview")
     }
     
     @IBAction func showFriendsTapped(_ sender: Any? = nil) {
         openedTab = .friends
-        containers.forEach{ $0.isHidden = $0 == friendsContainer ? false : true }
-        friendsMenuButton.setImage(UIImage(named:"Menu2"), for: .normal)
-        friendsMenuButton.setImage(UIImage(named:"Menu2Active"), for: .selected)
-        menuButtons.forEach{ $0.isSelected = $0 == friendsMenuButton ? true : false }
+        toggleVisibleTab(btn: friendsMenuButton)
+        containerViewController.loadChildView(identifier: "embed_friends")
     }
     
     @IBAction func showGroupsTapped(_ sender: Any? = nil) {
         openedTab = .groups
-        containers.forEach{ $0.isHidden = $0 == groupsContainer ? false : true }
-        groupsMenuButton.setImage(UIImage(named:"Menu3"), for: .normal)
-        groupsMenuButton.setImage(UIImage(named:"Menu3Active"), for: .selected)
-        menuButtons.forEach{ $0.isSelected = $0 == groupsMenuButton ? true : false }
+        toggleVisibleTab(btn: groupsMenuButton)
+        containerViewController.loadChildView(identifier: "embed_groups")
     }
     
     @IBAction func showSettingsTapped(_ sender: Any) {
         openedTab = .settings
-        containers.forEach{ $0.isHidden = $0 == settingsContainer ? false : true }
-        menuButtons.forEach{ $0.isSelected = $0 == settingsMenuButton ? true : false }
+        toggleVisibleTab(btn: settingsMenuButton)
+        containerViewController.loadChildView(identifier: "embed_settings")
+    }
+    
+    func toggleVisibleTab(btn: UIButton) {
+        menuButtons.forEach { $0.isSelected = $0 == btn ? true : false }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "home_embed", let vc = segue.destination as? HomeContainerViewController {
+            containerViewController = vc
+        }
     }
     
     func fadeIn() {
@@ -172,7 +167,6 @@ class HomeViewController: UIViewController {
         DispatchQueue.main.async {
             UIView.animate(withDuration: 0.5,delay: 0 ,options: UIViewAnimationOptions.curveEaseIn,animations: { () -> Void in
                 self.toolbarContainer.alpha = 1
-                self.mainContainer.alpha = 1
                 self.view.backgroundColor = .white
                 self.view.layoutIfNeeded()
             }, completion: nil)
@@ -187,7 +181,6 @@ class HomeViewController: UIViewController {
         
         Messaging.messaging().subscribe(toTopic: "\(FCMPrefix)\(currentUser.uid)")
         
-        mainContainer.alpha = 0
         self.toolbarContainer.alpha = 0
     }
 }

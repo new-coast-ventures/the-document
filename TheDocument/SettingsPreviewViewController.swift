@@ -61,7 +61,14 @@ class SettingsPreviewViewController: BaseTableViewController {
         case (1, _): break
             // do nothing
         case (4, 0):
-            currentUser.logout()
+            let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+            if let viewController = mainStoryboard.instantiateViewController(withIdentifier: "loginViewController") as? LoginViewController {
+                currentUser.logout()
+                UIApplication.shared.keyWindow?.rootViewController = viewController
+                viewController.showLogin()
+            } else {
+                print("Something went wrong!")
+            }
         default:
             performSegue(withIdentifier: "open_webview", sender: nil)
         }
