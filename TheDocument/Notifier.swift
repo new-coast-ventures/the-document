@@ -25,15 +25,12 @@ struct Notifier {
         }
     }
     
-    func challengeFriend(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
-        let competitors = challenge.competitorId().components(separatedBy: ",")
-        competitors.forEach { (uid) in
-            let challengeRequest = ChallengeRequest(toUID: uid, challengeId: challenge.id, challengeName: challenge.challengeName())
-            FCMService().request(request: challengeRequest, success: { (responce) in
-                closure?(true)
-            }) { (error) in
-                closure?(false)
-            }
+    func challengeFriend(challenge: Challenge, uid: String, _ closure : ((Bool) -> Void)? = nil) {
+        let challengeRequest = ChallengeRequest(toUID: uid, challengeId: challenge.id, challengeName: challenge.challengeName())
+        FCMService().request(request: challengeRequest, success: { (responce) in
+            closure?(true)
+        }) { (error) in
+            closure?(false)
         }
     }
     
@@ -63,12 +60,14 @@ struct Notifier {
     
     func sendGroupChatter(group: Group, _ closure : ((Bool) -> Void)? = nil) {
         group.members.forEach { (member) in
-            let uid = member.id
-            let chatterNotification = ChatterNotification(toUID: uid, challengeId: "", challengeName: group.name)
-            FCMService().request(request: chatterNotification, success: { (responce) in
-                closure?(true)
-            }) { (error) in
-                closure?(false)
+            if member.id != currentUser.uid {
+                let uid = member.id
+                let chatterNotification = ChatterNotification(toUID: uid, challengeId: "", challengeName: group.name)
+                FCMService().request(request: chatterNotification, success: { (responce) in
+                    closure?(true)
+                }) { (error) in
+                    closure?(false)
+                }
             }
         }
     }

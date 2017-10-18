@@ -261,7 +261,7 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             cancelChallenge()
             
         case (1, 1) where challenge.declarator.isBlank: // Current
-            displayWinnerSelector()
+            declareWinner()
             
         case (1, 1) where challenge.pendingConfirmation() == false: // Opponent declared
             displayConfirmationAlert()
@@ -274,33 +274,23 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    fileprivate func displayWinnerSelector() {
-        let alertView = customAlert()
-        
-        self.buildDeclareSubview()
-        if self.challenge.winner != "" {
-            if self.challenge.winner.contains(currentUser.uid) {
-                checkPlayer1()
-            } else {
-                checkPlayer2()
-            }
-        }
-        
-        alertView.addButton(Constants.challengeDeclareWinnerAlertTitle, backgroundColor: Constants.Theme.authButtonSelectedBGColor) { self.declareWinner() }
-        alertView.addButton("Cancel",backgroundColor: UIColor.clear, textColor: Constants.Theme.authButtonNormalBorderColor) {}
-        alertView.customSubview = declareSubview
-        alertView.showInfo(Constants.challengeDeclareWinnerAlertTitle, subTitle: "")
-    }
-    
     fileprivate func displayConfirmationAlert() {
         
-        let winnerString = challenge.winner.contains(currentUser.uid) ? challenge.teammateNames() : challenge.competitorNames()
+        var winnerString = "you"
+        if challenge.winner == challenge.competitorId() {
+            winnerString += "r opponent"
+            if challenge.format != "1-on-1" {
+                winnerString += "s"
+            }
+        } else if challenge.format != "1-on-1" {
+            winnerString += "r team"
+        }
         
         let alertView = customAlert()
         alertView.addButton("Yes",backgroundColor: Constants.Theme.authButtonSelectedBGColor) { self.confirmWinner() }
         alertView.addButton("No",backgroundColor: Constants.Theme.deleteButtonBGColor) {  self.denyWinner() }
         alertView.addButton("Cancel",backgroundColor: UIColor.clear, textColor: Constants.Theme.authButtonNormalBorderColor) { self.dismissModal() }
-        alertView.showInfo(Constants.challengeDenyWinnerAlertTitle, subTitle: String(format: Constants.challengeDidWinQuestion, winnerString))
+        alertView.showInfo("Confirm Winner", subTitle: "Did \(winnerString) win the challenge?")
     }
     
     fileprivate func customAlert() -> NCVAlertView {
@@ -470,78 +460,6 @@ extension ChallengeDetailsViewController: UITableViewDelegate, UITableViewDataSo
     }
 }
 
-extension ChallengeDetailsViewController {
-    func buildDeclareSubview() {
-        
-        declareSubview.subviews.forEach{$0.removeFromSuperview()}
-        
-        let firstImageView = CircleImageView(image: playerOneImageView.image)
-        firstImageView.frame = CGRect(x: x,y: spacing,width: 60,height: 60)
-        firstImageView.isUserInteractionEnabled = true
-        firstImageView.contentMode = .scaleAspectFill
-        firstImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(ChallengeDetailsViewController.checkPlayer1)))
-        declareSubview.addSubview(firstImageView)
-        
-        let secondImageView = CircleImageView(image: playerTwoImageview.image)
-        secondImageView.frame = CGRect(x: declareSubview.frame.maxX - x - 60,y: spacing,width: 60,height: 60)
-        secondImageView.isUserInteractionEnabled = true
-        secondImageView.contentMode = .scaleAspectFill
-        secondImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(ChallengeDetailsViewController.checkPlayer2)))
-        declareSubview.addSubview(secondImageView)
-        
-        let firstNameLabel = UILabel(frame: CGRect(x: 0,y: firstImageView.frame.maxY + spacing,width: side/2 ,height: 30))
-        firstNameLabel.text = challenge.teammateNames()
-        firstNameLabel.font = UIFont(name: "OpenSans-Bold", size: 15.0)
-        firstNameLabel.textColor = Constants.Theme.authButtonSelectedBGColor
-        firstNameLabel.adjustsFontSizeToFitWidth = true
-        firstNameLabel.minimumScaleFactor = 0.3
-        firstNameLabel.textAlignment = .center
-        declareSubview.addSubview(firstNameLabel)
-        
-        let secondNameLabel = UILabel(frame: CGRect(x: firstNameLabel.frame.maxX,y: firstNameLabel.frame.minY,width: firstNameLabel.frame.width,height: firstNameLabel.frame.height))
-        secondNameLabel.text = challenge.competitorNames()
-        secondNameLabel.font = firstNameLabel.font
-        secondNameLabel.textColor = firstNameLabel.textColor
-        secondNameLabel.adjustsFontSizeToFitWidth = true
-        secondNameLabel.minimumScaleFactor = 0.3
-        secondNameLabel.textAlignment = .center
-        declareSubview.addSubview(secondNameLabel)
-        
-        let firstCheckImageView = UIImageView(image: UIImage(named: "Uncheck"))
-        firstCheckImageView.center = CGPoint(x: firstNameLabel.center.x, y: firstNameLabel.frame.maxY + spacing * 2)
-        firstCheckImageView.tag = won1_tag
-        firstCheckImageView.isUserInteractionEnabled = true
-        firstCheckImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(ChallengeDetailsViewController.checkPlayer1)))
-        declareSubview.addSubview(firstCheckImageView)
-        
-        let secondCheckImageView = UIImageView(image: UIImage(named: "Uncheck"))
-        secondCheckImageView.center = CGPoint(x: secondNameLabel.center.x, y: firstCheckImageView.center.y)
-        secondCheckImageView.tag = won2_tag
-        secondCheckImageView.isUserInteractionEnabled = true
-        secondCheckImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(ChallengeDetailsViewController.checkPlayer2)))
-        
-        declareSubview.addSubview(secondCheckImageView)
-    }
-    
-    @objc func checkPlayer1() {
-        DispatchQueue.main.async {
-            self.challenge.declarator = currentUser.uid
-            (self.declareSubview.viewWithTag(won1_tag) as? UIImageView)?.image = UIImage(named:"Check")
-            (self.declareSubview.viewWithTag(won2_tag) as? UIImageView)?.image = UIImage(named:"Uncheck")
-            self.challenge.winner = self.challenge.teammateId()
-        }
-    }
-    
-    @objc func checkPlayer2() {
-        DispatchQueue.main.async {
-            self.challenge.declarator = currentUser.uid
-            (self.declareSubview.viewWithTag(won1_tag) as? UIImageView)?.image = UIImage(named:"Uncheck")
-            (self.declareSubview.viewWithTag(won2_tag) as? UIImageView)?.image = UIImage(named:"Check")
-            self.challenge.winner = self.challenge.competitorId()
-        }
-    }
-}
-
 //MARK: API Actions
 extension ChallengeDetailsViewController {
     
@@ -591,13 +509,27 @@ extension ChallengeDetailsViewController {
     }
  
     func declareWinner() {
-        guard self.challenge.winner != "" else {self.showAlert(message: Constants.Errors.winnerNotSelected.rawValue); return}
+        let alertView = customAlert()
+        challenge.declarator = currentUser.uid
         
-        self.challenge.details = (self.declareSubview.viewWithTag(details_tag) as? UITextField)?.text ?? ""
+        alertView.addButton(challenge.teammateNames()) {
+            self.challenge.winner = self.challenge.teammateId()
+            self.declareWinnerAction()
+        }
+        
+        alertView.addButton(challenge.competitorNames()) {
+            self.challenge.winner = self.challenge.competitorId()
+            self.declareWinnerAction()
+        }
+        
+        alertView.addButton("Cancel", backgroundColor: UIColor.clear, textColor: Constants.Theme.authButtonNormalBorderColor) { self.challenge.declarator = "" }
+        
+        alertView.showInfo("End Challenge", subTitle: "Who won the challenge?")
+    }
+    
+    func declareWinnerAction() {
         API().declareWinner(challenge: self.challenge) { success in
             if success {
-                //currentUser.currentChallenges.removeObject(self.challenge)
-                //currentUser.currentChallenges.append(self.challenge)
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
                 self.navigationController?.popViewController(animated: true)
             } else {

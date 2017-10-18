@@ -22,7 +22,7 @@ extension API {
             
             let childUpdates = ["/\(friendId)/\(challenge.id)": newChallenge.simplify(), "/\(currentUser.uid)/\(challenge.id)": newChallenge.simplify()]
             challengeRef.updateChildValues(childUpdates) { (error, ref) in
-                Notifier().challengeFriend(challenge: newChallenge)
+                Notifier().challengeFriend(challenge: newChallenge, uid: friendId)
                 closure()
             }
         }
@@ -36,15 +36,15 @@ extension API {
         let participantIds = competitorIds.union(teammateIds)
         
         participantIds.forEach { friendId in
-            print("Creating challenge for participant %@...", friendId)
-            
             var newChallenge = challenge
             newChallenge.toId = competitorIds.joined(separator: ",")
             newChallenge.fromId = teammateIds.joined(separator: ",")
             
             let childUpdates = ["/\(friendId)/\(challenge.id)": newChallenge.simplify()]
             challengeRef.updateChildValues(childUpdates) { (error, ref) in
-                Notifier().challengeFriend(challenge: newChallenge)
+                if friendId != currentUser.uid {
+                    Notifier().challengeFriend(challenge: newChallenge, uid: friendId)
+                }
                 closure()
             }
         }

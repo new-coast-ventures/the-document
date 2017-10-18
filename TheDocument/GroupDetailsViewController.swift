@@ -171,6 +171,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     @objc func hideControls() {
+        print("Dismiss Keyboard")
         view.endEditing(true)
     }
     
@@ -232,6 +233,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     @IBAction func chatterTabButtonTapped(_ sender:TabButton) {
+        view.isUserInteractionEnabled = true
         view.addGestureRecognizer(dismissKeyboardGesture)
         
         leaderboardTabButton.isChecked = false
@@ -245,6 +247,8 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     }
 
     @IBAction func leaderboardTabButtonTapped(_ sender:TabButton) {
+        view.endEditing(true)
+        view.isUserInteractionEnabled = true
         view.removeGestureRecognizer(dismissKeyboardGesture)
         
         leaderboardTabButton.isChecked = true
@@ -252,19 +256,20 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         chatterMode = false
         
         self.commentFormContainer.isHidden = true
-        leaderboardDatasource = group.members.sorted(by: { $0.wins - $0.loses > $1.wins - $1.loses})
+        leaderboardDatasource = group.members.sortByWilsonRanking()
         tableView.reloadData()
     }
     
     @IBAction func didTapSend(_ sender: UIButton) {
-        commentField.resignFirstResponder()
-        commentField.isEnabled = false
-        sender.isEnabled = false
-        if let commentField = self.commentField {
+        if let commentField = self.commentField, let txt = commentField.text, txt != "" {
+            commentField.resignFirstResponder()
+            commentField.isEnabled = false
+            sender.isEnabled = false
+            
             let comment = [
                 "uid": currentUser.uid,
                 "author": currentUser.name,
-                "text": commentField.text!
+                "text": txt
             ]
             
             self.commentsRef.childByAutoId().setValue(comment, withCompletionBlock: { (error, ref) in

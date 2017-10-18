@@ -80,49 +80,42 @@ class InviteFriendsTableViewController: BaseTableViewController {
     }
     
     @IBAction func inviteFriends(_ sender: Any) {
-        print("Invite Friends!")
-        self.startActivityIndicator()
-        
-        if case let Mode.group( group ) = self.mode {   //Invitation to group
+        if case let Mode.group( group ) = self.mode {
+            // Group Invitation
             API().addFriendsToGroup(friends: friends.filter{ selectedFriendsIds.contains($0.id) }, group: group  ) { success in
-                self.stopActivityIndicator()
                 if success {
                     self.performSegue(withIdentifier: "back_group_details", sender: self)
                 }
             }
-        } else if case let Mode.challenge(challenge) = self.mode {   // Invitation to challenge
+            
+        } else if case let Mode.challenge(challenge) = self.mode {
+            // 1-on-1 Challenge
+            if selectedFriendsIds.count == 0 { self.dismiss(animated: true, completion: nil); return }
             API().challengeFriends(challenge: challenge, friendsIds: selectedFriendsIds ) {
-                self.stopActivityIndicator()
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
                 self.dismiss(animated: true, completion: {
                     NCVAlertView().showSuccess("Challenge Created!", subTitle: "")
                 })
                 return
             }
-        } else if case let Mode.teamChallenge(challenge) = self.mode {   // Invitation to team challenge
+            
+        } else if case let Mode.teamChallenge(challenge) = self.mode {
+            // 2-on-2 Challenge
             if selectedTeammateIds.isEmpty {
-                self.stopActivityIndicator()
-                
                 let currentUserSet = Set([currentUser.uid])
                 selectedTeammateIds = selectedFriendsIds.union(currentUserSet)
                 selectedFriendsIds.removeAll()
                 
-                navigationItem.title = "Select Competitors"
-                
                 let barButton = doneButton
                 barButton?.title = "Done"
                 navigationItem.rightBarButtonItem = barButton
-                
+                navigationItem.title = "Select Competitors"
                 friends = currentUser.friends.filter{ !self.selectedTeammateIds.contains($0.id) }
                 tableView.reloadData()
                 
             } else {
-                selectedCompetitorIds = selectedFriendsIds
-                API().challengeTeams(challenge: challenge,
-                                     teammateIds: selectedTeammateIds,
-                                     competitorIds: selectedCompetitorIds )
-                {
-                    self.stopActivityIndicator()
+                if selectedFriendsIds.count == 0 || selectedTeammateIds.count == 0 { self.dismiss(animated: true, completion: nil); return }
+                API().challengeTeams(challenge: challenge, teammateIds: selectedTeammateIds, competitorIds: selectedFriendsIds ) {
                     NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
                     self.dismiss(animated: true, completion: {
                         NCVAlertView().showSuccess("Challenge Created!", subTitle: "")

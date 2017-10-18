@@ -23,6 +23,8 @@ class SettingsViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.addDoneButtonOnKeyboard()
      
         editPhoto.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(takePhoto)))
         photoImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(takePhoto)))
@@ -193,6 +195,29 @@ extension SettingsViewController: UITextFieldDelegate {
             }
         }
         return result
+    }
+    
+    func addDoneButtonOnKeyboard()
+    {
+        let doneToolbar: UIToolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
+        doneToolbar.barStyle = .default
+        doneToolbar.barTintColor = Constants.Theme.mainColor
+        doneToolbar.tintColor = .white
+        
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(SettingsViewController.hideKeyboard))
+        
+        var items = [UIBarButtonItem]()
+        items.append(flexSpace)
+        items.append(done)
+        
+        doneToolbar.items = items
+        doneToolbar.sizeToFit()
+        
+        self.nameTextField.inputAccessoryView = doneToolbar
+        self.emailTextField.inputAccessoryView = doneToolbar
+        self.phoneTextField.inputAccessoryView = doneToolbar
+        self.postcodeTextfield.inputAccessoryView = doneToolbar
     }
 }
 
