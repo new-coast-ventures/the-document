@@ -23,22 +23,22 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var detailsTabButton: TabButton!
     @IBOutlet weak var chatterTabButton: TabButton!
     
-    var playerOne: Friend!
+    var playerOne: TDUser!
     @IBOutlet weak var playerOneStackView: UIStackView!
     @IBOutlet weak var playerOneImageView: CircleImageView!
     @IBOutlet weak var playerOneLabel: UILabel!
     
-    var playerTwo: Friend!
+    var playerTwo: TDUser!
     @IBOutlet weak var playerTwoStackView: UIStackView!
     @IBOutlet weak var playerTwoImageview: CircleImageView!
     @IBOutlet weak var playerTwoLabel: UILabel!
     
-    var playerThree: Friend?
+    var playerThree: TDUser?
     @IBOutlet weak var playerThreeStackView: UIStackView!
     @IBOutlet weak var playerThreeImageview: CircleImageView!
     @IBOutlet weak var playerThreeLabel: UILabel!
     
-    var playerFour: Friend?
+    var playerFour: TDUser?
     @IBOutlet weak var playerFourStackView: UIStackView!
     @IBOutlet weak var playerFourImageview: CircleImageView!
     @IBOutlet weak var playerFourLabel: UILabel!
@@ -118,7 +118,7 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             resultStackView.isHidden = false
             resultViewDivider.isHidden = false
             
-        default: // User chose winner, Rejected, Win, Other
+        default: // TDUser chose winner, Rejected, Win, Other
             actionButton.isHidden = true
         }
     }
@@ -446,8 +446,8 @@ extension ChallengeDetailsViewController: UITableViewDelegate, UITableViewDataSo
 extension ChallengeDetailsViewController {
     
     func setupTeams() {
-        let teamA: [Friend] = challenge.teamA()
-        let teamB: [Friend] = challenge.teamB()
+        let teamA: [TDUser] = challenge.teamA()
+        let teamB: [TDUser] = challenge.teamB()
         
         playerOne   = teamA[0]
         playerTwo   = teamB[0]
@@ -460,30 +460,30 @@ extension ChallengeDetailsViewController {
         loadPlayerFour(player: playerFour)
     }
     
-    func loadPlayerOne(player: Friend) {
+    func loadPlayerOne(player: TDUser) {
         playerOneLabel.text = player.name
-        setCompetitorPhoto(uid: player.id, imageView: self.playerOneImageView)
+        setCompetitorPhoto(uid: player.uid, imageView: self.playerOneImageView)
     }
     
-    func loadPlayerTwo(player: Friend) {
+    func loadPlayerTwo(player: TDUser) {
         playerTwoLabel.text = player.name
-        setCompetitorPhoto(uid: player.id, imageView: self.playerTwoImageview)
+        setCompetitorPhoto(uid: player.uid, imageView: self.playerTwoImageview)
     }
     
-    func loadPlayerThree(player: Friend?) {
+    func loadPlayerThree(player: TDUser?) {
         if let p = player {
             playerThreeLabel.text = p.name
-            setCompetitorPhoto(uid: p.id, imageView: self.playerThreeImageview)
+            setCompetitorPhoto(uid: p.uid, imageView: self.playerThreeImageview)
             playerThreeStackView.isHidden = false
         } else {
             playerThreeStackView.isHidden = true
         }
     }
     
-    func loadPlayerFour(player: Friend?) {
+    func loadPlayerFour(player: TDUser?) {
         if let p = player {
             playerFourLabel.text = p.name
-            setCompetitorPhoto(uid: p.id, imageView: self.playerFourImageview)
+            setCompetitorPhoto(uid: p.uid, imageView: self.playerFourImageview)
             playerFourStackView.isHidden = false
         } else {
             playerFourStackView.isHidden = true
@@ -531,21 +531,21 @@ extension ChallengeDetailsViewController {
                 guard success else { self.showAlert(message: Constants.Errors.defaultError.rawValue); return }
                 
                 if self.challenge.winner.contains(currentUser.uid) {
-                    currentUser.totalWins += 1
+                    currentUser.record.totalWins += 1
                     let users = self.challenge.competitorId().components(separatedBy: ",")
                     users.forEach { (uid) in
-                        if let frIndex = currentUser.friends.index(where: { $0.id == uid } ) {
-                            currentUser.friends[frIndex].loses += 1
-                            currentUser.friends[frIndex].winsAgainst += 1
+                        if let frIndex = currentUser.friends.index(where: { $0.uid == uid } ) {
+                            currentUser.friends[frIndex].record.totalLosses += 1
+                            currentUser.friends[frIndex].record.winsAgainst += 1
                         }
                     }
                 } else {
-                    currentUser.totalLosses += 1
+                    currentUser.record.totalLosses += 1
                     let users = self.challenge.competitorId().components(separatedBy: ",")
                     users.forEach { (uid) in
-                        if let frIndex = currentUser.friends.index(where: { $0.id == uid } ) {
-                            currentUser.friends[frIndex].wins += 1
-                            currentUser.friends[frIndex].lossesAgainst += 1
+                        if let frIndex = currentUser.friends.index(where: { $0.uid == uid } ) {
+                            currentUser.friends[frIndex].record.totalWins += 1
+                            currentUser.friends[frIndex].record.lossesAgainst += 1
                         }
                     }
                 }

@@ -95,7 +95,7 @@ extension PhotoViewController:UIImagePickerControllerDelegate,UINavigationContro
         }
         
         photoImageView.image = image
-        currentUser.image = image
+        currentUser.avatar = image
         
         /*
         if let newImage = resizeImage(image: image, targetSize: CGSize(width: 200, height: 200) ){

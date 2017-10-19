@@ -27,7 +27,7 @@ class HeadToHeadViewController: BaseViewController {
     
     @IBOutlet weak var startChallengeButton: UIButton!
     
-    var playerTwo: Friend!
+    var playerTwo: TDUser!
     var playerOneWins = 0
     var playerTwoWins = 0
     
@@ -40,7 +40,7 @@ class HeadToHeadViewController: BaseViewController {
         versusInnerContainer.layer.cornerRadius = 35
         versusLabel.layer.cornerRadius = 20
         
-        if let competitorData = UserDefaults.standard.dictionary(forKey: playerTwo.id) as? [String: Int] {
+        if let competitorData = UserDefaults.standard.dictionary(forKey: playerTwo.uid) as? [String: Int] {
             playerOneWins = competitorData["wins"] ?? 0
             playerTwoWins = competitorData["losses"] ?? 0
         }
@@ -65,7 +65,7 @@ class HeadToHeadViewController: BaseViewController {
     }
     
     func setupPlayerOne() {
-        let playerOne = currentUser.asFriend()
+        let playerOne = currentUser
         playerOneNameLabel.text = playerOne.name.firstNameAndLastInitial()
         playerOneNameLabel.textColor = Constants.Theme.mainColor
         playerOneWinsLabel.text = "\(playerOneWins)"
@@ -118,7 +118,7 @@ class HeadToHeadViewController: BaseViewController {
 
     @IBAction func startChallengeButtonPressed(_ sender: Any) {
         if let newChallengeNavVC = self.storyboard?.instantiateViewController(withIdentifier: "NewChallengeNavVC") as? UINavigationController, let newChallengeVC = newChallengeNavVC.viewControllers.first as? NewChallengeViewController {
-            newChallengeVC.toId = playerTwo.id
+            newChallengeVC.toId = playerTwo.uid
             self.present(newChallengeNavVC, animated: true, completion: nil)
         }
     }

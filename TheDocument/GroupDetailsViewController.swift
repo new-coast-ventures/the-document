@@ -9,7 +9,7 @@ import Firebase
 
 class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
 
-    var leaderboardDatasource = [GroupMember]()
+    var leaderboardDatasource = [TDUser]()
     var group = Group.empty()
 
     @IBOutlet weak var tableView: UITableView!
@@ -199,8 +199,8 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
             self.tableView.refreshControl?.endRefreshing()
             self.stopActivityIndicator()
             
-            self.group.members  = members.filter({ $0.state != "invited" })
-            self.group.invitees = members.filter({ $0.state == "invited" })
+            self.group.members  = members
+            //self.group.invitees = members.filter({ $0.state == "invited" })
             self.leaderboardDatasource = self.group.members.sortByWilsonRanking()
             self.tableView.reloadData()
         }
@@ -226,7 +226,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
 
     @IBAction func unwindToGroupDetails(segue: UIStoryboardSegue) {
         if let fromVC = segue.source as? InviteFriendsTableViewController {
-            var groupMembersIds = Set<String>(group.members.map{$0.id})
+            var groupMembersIds = Set<String>(group.members.map{$0.uid})
             fromVC.selectedFriendsIds.forEach{ groupMembersIds.insert($0)  }
             tableView.reloadData()
         }
@@ -354,12 +354,12 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
             if indexPath.section == kSectionLeaderboard && indexPath.row < leaderboardDatasource.count {
                 let member = leaderboardDatasource[indexPath.row]
                 cell.setup(member, cellId: Int(indexPath.row) + 1)
-                setImage(id: member.id, forCell: cell)
+                setImage(id: member.uid, forCell: cell)
                 
             } else if indexPath.section == kSectionInvitees && indexPath.row < self.group.invitees.count {
                 let member = self.group.invitees[indexPath.row]
                 cell.setup(member)
-                setImage(id: member.id, forCell: cell)
+                setImage(id: member.uid, forCell: cell)
             }
             
             return cell
@@ -371,9 +371,9 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         case kSectionComments:
             return false
         case kSectionInvitees:
-            return group.state == .own && group.invitees[indexPath.row].id != currentUser.uid
+            return group.state == .own && group.invitees[indexPath.row].uid != currentUser.uid
         case kSectionLeaderboard:
-            return group.state == .own && group.members[indexPath.row].id != currentUser.uid
+            return group.state == .own && group.members[indexPath.row].uid != currentUser.uid
         default:
             return false
         }
@@ -382,7 +382,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             
-            var member: GroupMember
+            var member: TDUser
             if indexPath.section == kSectionLeaderboard {
                 member = group.members[indexPath.row]
                 group.members.removeObject(member)
@@ -403,21 +403,21 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.section == kSectionLeaderboard && indexPath.row < leaderboardDatasource.count {
-            let friend = leaderboardDatasource[indexPath.row].asFriend()
+            let friend = leaderboardDatasource[indexPath.row]
             self.performSegue(withIdentifier: "show_group_user_profile", sender: friend)
             
         } else if indexPath.section == kSectionInvitees && indexPath.row < group.invitees.count {
-            let friend = group.invitees[indexPath.row].asFriend()
+            let friend = group.invitees[indexPath.row]
             self.performSegue(withIdentifier: "show_group_user_profile", sender: friend)
         }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == Constants.inviteFriendsStoryboardIdentifier, let destinationVC = segue.destination as? InviteFriendsTableViewController {
-            destinationVC.selectedFriendsIds = Set(group.members.map{ $0.id })
+            destinationVC.selectedFriendsIds = Set(group.members.map{ $0.uid })
             destinationVC.mode = .group(group)
             
-        } else if segue.identifier == "show_group_user_profile", let profileVC = segue.destination as? HeadToHeadViewController, let friend = sender as? Friend {
+        } else if segue.identifier == "show_group_user_profile", let profileVC = segue.destination as? HeadToHeadViewController, let friend = sender as? TDUser {
             profileVC.playerTwo = friend
         }
     }

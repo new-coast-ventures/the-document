@@ -123,12 +123,12 @@ extension Challenge {
         return names.joined(separator: ", ")
     }
     
-    func teamA() -> [Friend] {
-        var teammates: [Friend] = []
+    func teamA() -> [TDUser] {
+        var teammates: [TDUser] = []
         let users = teammateId().components(separatedBy: ",")
         users.forEach { (uid) in
             if uid == currentUser.uid {
-                teammates.append(currentUser.asFriend())
+                teammates.append(currentUser)
             } else {
                 teammates.append(currentUser.friends[uid])
             }
@@ -136,12 +136,12 @@ extension Challenge {
         return teammates
     }
     
-    func teamB() -> [Friend] {
-        var challengers: [Friend] = []
+    func teamB() -> [TDUser] {
+        var challengers: [TDUser] = []
         let users = competitorId().components(separatedBy: ",")
         users.forEach { (uid) in
             if uid == currentUser.uid {
-                challengers.append(currentUser.asFriend())
+                challengers.append(currentUser)
             } else {
                 challengers.append(currentUser.friends[uid])
             }

@@ -108,7 +108,7 @@ class ItemTableViewCell: UITableViewCell {
     }
     
     //Friends
-    func setup(_ item:Friend, cellId:Int? = nil, isSuggestion:Bool = false) {
+    func setup(_ item:TDUser, cellId:Int? = nil, isSuggestion:Bool = false) {
         
         self.item = item
         self.isUserInteractionEnabled = true
@@ -119,13 +119,13 @@ class ItemTableViewCell: UITableViewCell {
             self.cellId.isHidden = false
         }
         
-        if item.id == currentUser.uid {
+        if item.uid == currentUser.uid {
             topLabel.text = Constants.youTitle
             isUserInteractionEnabled = false
         }
         
         if isSuggestion {
-            if currentUser.invitedList.contains(item.id) {
+            if currentUser.invites.contains(item) {
                 acceptButton.isHidden = true
                 bottomLabel.text = "Friend request sent!"
                 bottomLabel.isHidden = false
@@ -140,7 +140,8 @@ class ItemTableViewCell: UITableViewCell {
             acceptButton.isHidden = true
             bottomLabel.text = "\(item.score())   \(item.score(overall: false))"
             
-            if item.accepted == false {
+            // FIXME: CONVERT TO PENDING
+            if false {
                 acceptButton.setTitle(Constants.acceptButtonTitle, for: .normal)
                 acceptButton.isHidden = false
             }
@@ -148,30 +149,25 @@ class ItemTableViewCell: UITableViewCell {
     }
     
     //Group member
-    func setup(_ item:GroupMember, cellId:Int? = nil) {
+    func setup(_ item:TDUser, cellId:Int? = nil) {
         
         if let cellId = cellId {
             self.cellId.text = "\(cellId)"
             self.cellId.isHidden = false
         }
         
-        self.isUserInteractionEnabled = item.id != currentUser.uid ? true : false
+        self.isUserInteractionEnabled = item.uid != currentUser.uid ? true : false
         
         self.item = item
         topLabel.text = item.name
         acceptButton.isHidden = true
+        bottomLabel.text = ""
         
-        if item.state == "invited" {
-            bottomLabel.text = "Invite Pending..."
-        } else if item.isFriend {
-            bottomLabel.text = "\(item.score())   \(item.score(overall: false))"
-        } else {
-            bottomLabel.text = ""
-        }
+        // bottomLabel.text = "\(item.score())   \(item.score(overall: false))"
     }
     
     //Invite Friends
-    func setup(_ item:Friend, selected: Bool) {
+    func setup(_ item:TDUser, selected: Bool) {
         self.item = item
         
         topLabel.text = item.name

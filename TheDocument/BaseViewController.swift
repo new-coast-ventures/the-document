@@ -23,11 +23,11 @@ class BaseViewController: UIViewController {
 
 extension UIImageView {
     
-    func loadAvatar(_for friend: Friend, retry: Bool = false) {
+    func loadAvatar(_for friend: TDUser, retry: Bool = false) {
         if let imageData = friend.avatarImageData() {
             setAvatarWithData(imageData)
         } else if retry == false {
-            appDelegate.downloadImageFor(id: friend.id, section: "photos") { success in
+            appDelegate.downloadImageFor(id: friend.uid, section: "photos") { success in
                 guard success else { return }
                 self.loadAvatar(_for: friend, retry: true)
             }

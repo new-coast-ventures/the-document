@@ -141,12 +141,12 @@ extension SettingsViewController: UIImagePickerControllerDelegate, UINavigationC
         if let newImage = resizeImage(image: image, targetSize: CGSize(width: 400, height: 400) ){
             DispatchQueue.main.async {
                 self.photoImageView.image = newImage
-                currentUser.image = newImage
+                currentUser.avatar = newImage
             }
         } else {
             DispatchQueue.main.async {
                 self.photoImageView.image = image
-                currentUser.image = image
+                currentUser.avatar = image
             }
         }
         

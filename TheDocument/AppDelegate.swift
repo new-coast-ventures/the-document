@@ -37,7 +37,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         
         Database.database().isPersistenceEnabled = true
-        Auth.auth().addStateDidChangeListener(){self.authChanged(auth: $0, authUser: $1)}
+        
+        Auth.auth().addStateDidChangeListener() { self.authChanged(auth: $0, authUser: $1) }
         
         if !currentUser.isLogged { try? Auth.auth().signOut() }
         
@@ -68,7 +69,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let branch: Branch = Branch.getInstance()
         branch.initSession(launchOptions: launchOptions, andRegisterDeepLinkHandler: { params, error in
             if error == nil && params?["+clicked_branch_link"] != nil && params?["userId"] != nil {
-                // User opened an invite link; if not yet friends, create the friend request
+                // TDUser opened an invite link; if not yet friends, create the friend request
                 let userId = params?["userId"] as! String
                 let userName = params?["userName"] as? String ?? ""
                 
@@ -96,14 +97,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
     
-    func authChanged(auth:Auth, authUser:User?) -> Void {
+    func authChanged(auth: Auth, authUser: User?) -> Void {
         guard !justLogged else {  return  }
 
         if let authenticatedUser = authUser {
             (self.window?.rootViewController as? LoginViewController)?.hideLogin()
-        
-            Branch.getInstance().setIdentity(authenticatedUser.uid) // Identify user in Branch
-            
+            Branch.getInstance().setIdentity(authenticatedUser.uid)
             currentUser = TDUser(uid: authenticatedUser.uid, email: authenticatedUser.email!)
             currentUser.startup { self.login(success: $0) }
         } else {

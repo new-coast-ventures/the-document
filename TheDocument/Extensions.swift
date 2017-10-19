@@ -241,15 +241,15 @@ extension Array where Element: Equatable {
     }
 }
 
-extension Array where Element == Friend {
+extension Array where Element == TDUser {
     
     mutating func alphaSort() {
-        let friends = self as Array<Friend>
+        let friends = self as Array<TDUser>
         self = friends.sorted { $0.name.lowercased() < $1.name.lowercased() }
     }
     
-    func alphaSorted() -> [Friend] {
-        let friends = self as Array<Friend>
+    func alphaSorted() -> [TDUser] {
+        let friends = self as Array<TDUser>
         return friends.sorted { $0.name.lowercased() < $1.name.lowercased() }
     }
 }

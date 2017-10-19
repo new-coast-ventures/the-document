@@ -18,28 +18,17 @@ extension API {
         })
     }
     
-    func getGroupMembers(group:Group, closure: @escaping ( [GroupMember] )->Void) {
+    func getGroupMembers(group:Group, closure: @escaping ( [TDUser] )->Void) {
         
         Database.database().reference().child("groups/\(group.id)/members/").observeSingleEvent(of: .value, with: { (snapshot) in
             guard let membersData = snapshot.value as? [String:Any] else { closure([]);  return }
             
-            var members = [GroupMember]()
+            var members = [TDUser]()
             var notFriendsIds = [String]()
             
             membersData.forEach{
-                
                 if let memberInfo = $0.value as? [String: String], let name = memberInfo["name"], let state = memberInfo["state"] {
-                    var member = GroupMember(id:$0.key, name: name, state: state)
-                    
-                    if member.isFriend {
-                        let friend = currentUser.friends[member.id]
-                        member.wins = friend.wins
-                        member.loses = friend.loses
-                        member.hWins = friend.lossesAgainst
-                        member.hLoses = friend.winsAgainst
-                    } else {
-                        notFriendsIds.append(member.id)
-                    }
+                    var member = TDUser(uid:$0.key, name: name, email: "") // state: state
                     members.append(member)
                 }
             }
@@ -49,9 +38,9 @@ extension API {
             } else {
                 self.getScoresFor(playersIds: notFriendsIds) { scores in
                     scores.forEach { score in
-                        if let index = members.index(where: {$0.id == score.key}) {
-                            members[index].wins = score.value.0
-                            members[index].loses = score.value.1
+                        if let index = members.index(where: {$0.uid == score.key}) {
+                            members[index].record.totalWins = score.value.0
+                            members[index].record.totalLosses = score.value.1
                         }
                     }
                     
@@ -82,15 +71,15 @@ extension API {
         }
     }
     
-    func addFriendsToGroup(friends: [Friend], group: Group, closure: @escaping ( Bool )->Void) {
+    func addFriendsToGroup(friends: [TDUser], group: Group, closure: @escaping ( Bool )->Void) {
         
         for friend in friends {
-            let childUpdates : [String : Any] = ["/groups/\(group.id)/members/\(friend.id)": ["name": "\(friend.name)", "state": "invited"],
-                                                 "/users/\(friend.id)/groups/\(group.id)":   ["name": "\(group.name)",  "state": "invited"]]
+            let childUpdates : [String : Any] = ["/groups/\(group.id)/members/\(friend.uid)": ["name": "\(friend.name)", "state": "invited"],
+                                                 "/users/\(friend.uid)/groups/\(group.id)":   ["name": "\(group.name)",  "state": "invited"]]
             
             Database.database().reference().updateChildValues(childUpdates) { (error, ref) in
                 if error == nil {
-                    Notifier().groupRequest(to: friend.id, group: group)
+                    Notifier().groupRequest(to: friend.uid, group: group)
                 }
             }
         }
@@ -98,11 +87,11 @@ extension API {
         closure(true)
     }
     
-    func removeMemberFromGroup(member:GroupMember, group: Group, closure: @escaping ( Bool )->Void) {
+    func removeMemberFromGroup(member:TDUser, group: Group, closure: @escaping ( Bool )->Void) {
         guard group.state == .own else {  closure(false); return   }
         
-        Database.database().reference().child("groups/\(group.id)/members/\(member.id)").removeValue()
-        Database.database().reference().child("users/\(member.id)/groups/\(group.id)").removeValue()
+        Database.database().reference().child("groups/\(group.id)/members/\(member.uid)").removeValue()
+        Database.database().reference().child("users/\(member.uid)/groups/\(group.id)").removeValue()
         closure(true)
     }
     
@@ -120,7 +109,7 @@ extension API {
         if group.state == .own {
             getGroupMembers(group: group) { members in
                 members.forEach{ member in
-                    Database.database().reference().child("users/\(member.id)/groups/\(group.id)").removeValue()
+                    Database.database().reference().child("users/\(member.uid)/groups/\(group.id)").removeValue()
                 }
                 Database.database().reference().child("groups/\(group.id)").removeValue()
                 Storage.storage().reference(withPath: "groups/\(group.id)").delete()

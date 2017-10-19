@@ -190,20 +190,20 @@ extension API {
             
             if currentUser.uid == uid {
                 if challenge.wonByMe() {
-                    currentUser.totalWins += 1
-                    childUpdates["users/\(uid)/totalWins"] = currentUser.totalWins
+                    currentUser.record.totalWins += 1
+                    childUpdates["users/\(uid)/totalWins"] = currentUser.record.totalWins
                 } else {
-                    currentUser.totalLosses += 1
-                    childUpdates["users/\(uid)/totalLosses"] = currentUser.totalLosses
+                    currentUser.record.totalLosses += 1
+                    childUpdates["users/\(uid)/totalLosses"] = currentUser.record.totalLosses
                 }
                 
-            } else if let frIndex = currentUser.friends.index(where: { $0.id == uid }) {
+            } else if let frIndex = currentUser.friends.index(where: { $0.uid == uid }) {
                 if challenge.winner.contains(uid) {
-                    currentUser.friends[frIndex].wins += 1
-                    childUpdates["users/\(uid)/totalWins"] = currentUser.friends[frIndex].wins
+                    currentUser.friends[frIndex].record.totalWins += 1
+                    childUpdates["users/\(uid)/totalWins"] = currentUser.friends[frIndex].record.totalWins
                 } else {
-                    currentUser.friends[frIndex].loses += 1
-                    childUpdates["users/\(uid)/totalLosses"] = currentUser.friends[frIndex].loses
+                    currentUser.friends[frIndex].record.totalLosses += 1
+                    childUpdates["users/\(uid)/totalLosses"] = currentUser.friends[frIndex].record.totalLosses
                 }
             }
         }

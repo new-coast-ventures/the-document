@@ -60,8 +60,8 @@ struct Notifier {
     
     func sendGroupChatter(group: Group, _ closure : ((Bool) -> Void)? = nil) {
         group.members.forEach { (member) in
-            if member.id != currentUser.uid {
-                let uid = member.id
+            if member.uid != currentUser.uid {
+                let uid = member.uid
                 let chatterNotification = ChatterNotification(toUID: uid, challengeId: "", challengeName: group.name)
                 FCMService().request(request: chatterNotification, success: { (responce) in
                     closure?(true)

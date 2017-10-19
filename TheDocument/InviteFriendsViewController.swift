@@ -8,8 +8,8 @@ import UIKit
 
 class InviteFriendsTableViewController: BaseTableViewController {
     
-    var friends = [Friend]()
-    fileprivate var filteredFriends = [Friend]()
+    var friends = [TDUser]()
+    fileprivate var filteredFriends = [TDUser]()
     
     enum Mode {
         case group(Group)
@@ -52,7 +52,7 @@ class InviteFriendsTableViewController: BaseTableViewController {
         
         definesPresentationContext = true
         
-        friends = currentUser.friends.filter{ !self.selectedFriendsIds.contains($0.id) }
+        friends = currentUser.friends.filter{ !self.selectedFriendsIds.contains($0.uid) }
         
         searchController.searchBar.barTintColor = Constants.Theme.mainColor
         searchController.searchBar.tintColor = Constants.Theme.mainColor
@@ -82,7 +82,7 @@ class InviteFriendsTableViewController: BaseTableViewController {
     @IBAction func inviteFriends(_ sender: Any) {
         if case let Mode.group( group ) = self.mode {
             // Group Invitation
-            API().addFriendsToGroup(friends: friends.filter{ selectedFriendsIds.contains($0.id) }, group: group  ) { success in
+            API().addFriendsToGroup(friends: friends.filter{ selectedFriendsIds.contains($0.uid) }, group: group  ) { success in
                 if success {
                     self.performSegue(withIdentifier: "back_group_details", sender: self)
                 }
@@ -110,7 +110,7 @@ class InviteFriendsTableViewController: BaseTableViewController {
                 barButton?.title = "Done"
                 navigationItem.rightBarButtonItem = barButton
                 navigationItem.title = "Select Competitors"
-                friends = currentUser.friends.filter{ !self.selectedTeammateIds.contains($0.id) }
+                friends = currentUser.friends.filter{ !self.selectedTeammateIds.contains($0.uid) }
                 tableView.reloadData()
                 
             } else {
@@ -141,14 +141,14 @@ extension InviteFriendsTableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ItemTableViewCell") as! ItemTableViewCell
         let item = searchController.isActive ? filteredFriends[indexPath.row] : friends[indexPath.row]
-        cell.setup(item, selected: selectedFriendsIds.contains( item.id ) )
-        setImage(id: item.id, forCell: cell)
+        cell.setup(item, selected: selectedFriendsIds.contains( item.uid ) )
+        setImage(id: item.uid, forCell: cell)
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let friendId = searchController.isActive ? filteredFriends[indexPath.row].id : friends[indexPath.row].id
+        let friendId = searchController.isActive ? filteredFriends[indexPath.row].uid : friends[indexPath.row].uid
         let selectionCount = selectedTeammateIds.isEmpty ? selectedFriendsIds.count+1 : selectedFriendsIds.count
         
         if selectedFriendsIds.contains(friendId) {

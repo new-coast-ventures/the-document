@@ -12,7 +12,7 @@ class FriendDetailsViewController: UIViewController {
     @IBOutlet weak var actionButton: AcceptButton!
     @IBOutlet weak var cancelButton: UIButton!
    
-    var friend:Friend!
+    var friend:TDUser!
     var declareSubview = UIView(frame: CGRect(x: 0,y: 0,width: side,height: sideH))
     
     override func viewDidLoad() {
@@ -20,19 +20,18 @@ class FriendDetailsViewController: UIViewController {
         
         friendNameLabel.text = friend.name
         friendImageView.contentMode = .scaleAspectFill
-        if let imgData = downloadedImages[friend.id] {
+        if let imgData = downloadedImages[friend.uid] {
             friendImageView.image = UIImage(data: imgData)
         }
         
         cancelButton.isHidden = true
         
-        switch friend.accepted {
+        switch false { //friend.accepted
             case false:
                 actionButton.setTitle("\(Constants.acceptButtonTitle)", for: .normal)
                 cancelButton.setTitle("\(Constants.friendRequestRejectTitle)", for: .normal)
                 cancelButton.isHidden = false
             case true: break;
-
         }
     }
     
@@ -44,7 +43,7 @@ class FriendDetailsViewController: UIViewController {
     
     @IBAction func actionButtonTapped(_ sender: UIButton) {
         
-        switch friend.accepted {
+        switch false { //friend.accepted
             case false:
                 self.startActivityIndicator()
                 API().acceptFriend(friend: friend) { [weak self] success in
@@ -53,9 +52,9 @@ class FriendDetailsViewController: UIViewController {
                     sSelf.stopActivityIndicator()
                     
                     if success {
-                        if let friendIndex = currentUser.friends.index(where: { $0.id == sSelf.friend.id }){
-                            currentUser.friends[friendIndex].accepted = true
-                            currentUser.getScores()
+                        if let friendIndex = currentUser.friends.index(where: { $0.uid == sSelf.friend.uid }){
+                            //currentUser.friends[friendIndex].accepted = true
+                            //currentUser.getScores()
                         } else {
                             currentUser.getFriends()
                         }
@@ -73,7 +72,7 @@ class FriendDetailsViewController: UIViewController {
     }
     
     @IBAction func cancelTapped(_ sender: UIButton) {
-        switch friend.accepted {
+        switch false { //friend.accepted
         case false: break;
         case true: break;
             

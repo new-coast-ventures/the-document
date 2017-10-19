@@ -100,7 +100,7 @@ class SelectBankTableViewController: UITableViewController {
     [
         "bank_code": "kembafcu",
         "bank_name": "Kemba Financial Credit Union",
-        "forgotten_password": "https://online.kemba.org/User/AccessSigninResetPassword/Start",
+        "forgotten_password": "https://online.kemba.org/TDUser/AccessSigninResetPassword/Start",
         "logo": "https://cdn.synapsepay.com/bank_logos/kembafcu.png"
         ],
     [
@@ -172,7 +172,7 @@ class SelectBankTableViewController: UITableViewController {
     [
         "bank_code": "ukfcu",
         "bank_name": "University of Kentucky FCU",
-        "forgotten_password": "https://olb.ukfcu.org/User/AccessSigninResetPassword/Start",
+        "forgotten_password": "https://olb.ukfcu.org/TDUser/AccessSigninResetPassword/Start",
         "logo": "https://cdn.synapsepay.com/bank_logos/ukfcu.jpg"
         ],
     [

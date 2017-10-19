@@ -31,7 +31,7 @@ struct API {
     
     //Edits user's info invoked from Settings Screen
     //TODO: rename from GroupsgetScoresFor
-    func editInfo(newName:String, newPostCode:String, newPhone:String, closure: ((Bool)->Void)? = nil) {
+    func editInfo(newName:String, newPostCode:String?, newPhone:String?, closure: ((Bool)->Void)? = nil) {
         guard !newName.isBlank else { closure?(false); return }
         
         let userInfo = ["email": currentUser.email, "name": newName, "postcode": newPostCode, "phone": newPhone]
@@ -44,9 +44,9 @@ struct API {
             currentUser.postcode = newPostCode
             currentUser.phone = newPhone
             
-            if (currentUser.friends.count > 0) {
+            if currentUser.friends.count > 0 {
                 currentUser.friends.forEach { friend in
-                    Database.database().reference().child("friends/\(friend.id)").queryOrderedByKey().queryEqual(toValue: "\(currentUser.uid)").observeSingleEvent(of: .value, with: {(snapshot) in
+                    Database.database().reference().child("friends/\(friend.uid)").queryOrderedByKey().queryEqual(toValue: "\(currentUser.uid)").observeSingleEvent(of: .value, with: {(snapshot) in
                         if let myself = (snapshot.value as? [String:Any])?["\(currentUser.uid)"] as? [String:Any] {
                             var newMySelf = myself
                             newMySelf["name"] = newName

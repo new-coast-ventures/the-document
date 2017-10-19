@@ -12,15 +12,18 @@ class OverviewTableViewController: BaseTableViewController {
     @IBOutlet weak var leaderBoardTabButton: TabButton!
     
     var leaderboardMode = false
-    var leaderboardDatasource = [Friend]()
+    var leaderboardDatasource = [TDUser]()
     
     var selectedIP:IndexPath? = nil
-    
     var challengesReady: Bool = false
+    
+    var futureChallenges: [Challenge] = [Challenge]()
+    var currentChallenges: [Challenge] = [Challenge]()
+    var pastChallenges: [Challenge] = [Challenge]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         // Tableview setup
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 80
@@ -61,14 +64,14 @@ class OverviewTableViewController: BaseTableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == Constants.challengeDetailsStoryboardIdentifier, let destVC = segue.destination as? ChallengeDetailsViewController {
              let selectedIndexPath = selectedIP ?? IndexPath()
-            destVC.challenge = selectedIndexPath.section  == 0 ? currentUser.futureChallenges[selectedIndexPath.row] : ( selectedIndexPath.section  == 1 ? currentUser.currentChallenges[selectedIndexPath.row] : currentUser.pastChallenges[selectedIndexPath.row] )
+            destVC.challenge = selectedIndexPath.section  == 0 ? futureChallenges[selectedIndexPath.row] : ( selectedIndexPath.section == 1 ? currentChallenges[selectedIndexPath.row] : pastChallenges[selectedIndexPath.row] )
         
-        } else if segue.identifier == "show_user_profile", let profileVC = segue.destination as? HeadToHeadViewController, let friend = sender as? Friend {            
+        } else if segue.identifier == "show_user_profile", let profileVC = segue.destination as? HeadToHeadViewController, let friend = sender as? TDUser {            
             profileVC.playerTwo = friend
         }
     }
     
-    override func rowsCount() -> Int { return !leaderboardMode ? currentUser.futureChallenges.count + currentUser.currentChallenges.count + currentUser.pastChallenges.count : leaderboardDatasource.count }
+    override func rowsCount() -> Int { return !leaderboardMode ? futureChallenges.count + currentChallenges.count + pastChallenges.count : leaderboardDatasource.count }
     
     override func emptyViewAction() { homeVC?.performSegue(withIdentifier: Constants.newChallengeStoryboardSegueIdentifier, sender: self) }
 }
@@ -80,9 +83,6 @@ extension OverviewTableViewController {
         challengesTabButton.isChecked = !leaderBoardTabButton.isChecked
         leaderboardMode = false
         refresh()
-        if !challengesReady {
-            self.startActivityIndicator()
-        }
     }
     @IBAction func leaderBoardTapped(_ sender: TabButton? = nil) {
         challengesTabButton.isChecked = false
@@ -103,11 +103,11 @@ extension OverviewTableViewController {
         
         switch section {
         case 0:
-            return currentUser.futureChallenges.count
+            return futureChallenges.count
         case 1:
-            return currentUser.currentChallenges.count
+            return currentChallenges.count
         case 2:
-            return currentUser.pastChallenges.count
+            return pastChallenges.count
         default: return 0
         }
     }
@@ -118,7 +118,7 @@ extension OverviewTableViewController {
         let section = indexPath.section
         
         if !leaderboardMode {
-            let item = section == 0 ? currentUser.futureChallenges[row] : (section == 1 ? currentUser.currentChallenges[row] : currentUser.pastChallenges[row] )
+            let item = section == 0 ? futureChallenges[row] : (section == 1 ? currentChallenges[row] : pastChallenges[row] )
             cell.setup(item)
             
             if let uid = item.competitorId().components(separatedBy: ",").first {
@@ -128,7 +128,7 @@ extension OverviewTableViewController {
         } else {
             let lbFriend = leaderboardDatasource[indexPath.row]
             cell.setup(lbFriend, cellId: indexPath.row + 1)
-            setImage(id: lbFriend.id, forCell: cell)
+            setImage(id: lbFriend.uid, forCell: cell)
         }
         
         return cell
@@ -137,11 +137,11 @@ extension OverviewTableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         guard !leaderboardMode else { return nil }
         
-        if (section == 0 && currentUser.futureChallenges.count > 0) {
+        if (section == 0 && futureChallenges.count > 0) {
             return Constants.futureChallengesTitle.uppercased()
-        } else if (section == 1 && currentUser.currentChallenges.count > 0) {
+        } else if (section == 1 && currentChallenges.count > 0) {
             return Constants.currentChallengesTitle.uppercased()
-        } else if (section == 2 && currentUser.pastChallenges.count > 0) {
+        } else if (section == 2 && pastChallenges.count > 0) {
             return Constants.pastChallengesTitle.uppercased()
         } else {
             return nil
@@ -166,7 +166,11 @@ extension OverviewTableViewController {
     @objc func refreshChallenges() {
         currentUser.getChallenges() {
             self.challengesReady = true
-            self.stopActivityIndicator()
+            self.futureChallenges = currentUser.challenges.filter { $0.status == 0 }
+            self.currentChallenges = currentUser.challenges.filter { $0.status == 1 }
+            self.pastChallenges = currentUser.challenges.filter { $0.status == 2 }.completionSorted()
+            self.tableView.reloadData()
+            
             currentUser.getFriends() {
                 self.refreshControl?.endRefreshing()
                 self.refresh()
@@ -175,7 +179,7 @@ extension OverviewTableViewController {
     }
     
     func buildLeaderboard() {
-        leaderboardDatasource = (currentUser.friends.filter{$0.accepted} + [currentUser.asFriend()]).sortByWilsonRanking()
+        leaderboardDatasource = (currentUser.friends + [currentUser]).sortByWilsonRanking()
         if leaderboardMode {
             refresh()
         }

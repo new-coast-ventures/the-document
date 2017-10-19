@@ -13,13 +13,13 @@ import Firebase
 
 class DiscoverPeopleTableViewController: BaseTableViewController {
     
-    fileprivate var filteredFriends = [Friend]()
+    fileprivate var filteredFriends = [TDUser]()
     fileprivate var sections = [String]()
     
     var selectedIndexpath   : IndexPath? = nil
     var branchInviteObject  : BranchUniversalObject!
     var phoneContacts       : [CNContact] = []
-    var users               : [Friend] = []
+    var users               : [TDUser] = []
     
     let kSectionSearchResults = 0
     let kSectionSuggestions = 1
@@ -149,18 +149,18 @@ extension DiscoverPeopleTableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ItemTableViewCell") as! ItemTableViewCell
         guard (indexPath.row < users.count) else { return cell }
         
-        var contact: Friend
+        var contact: TDUser
         switch indexPath.section {
         case kSectionSearchResults where searchController.isActive:
             contact = filteredFriends[indexPath.row]
         case kSectionSuggestions where !searchController.isActive:
             contact = users[indexPath.row]
         default:
-            contact = Friend.empty()
+            contact = TDUser.empty()
         }
 
         cell.setup(contact, isSuggestion: true)
-        setImage(id: contact.id, forCell: cell)
+        setImage(id: contact.uid, forCell: cell)
 
 //        let contact  = users[indexPath.row]
 //        cell.topLabel.text = CNContactFormatter.string(from: contact, style: .fullName) ?? ""
@@ -206,21 +206,21 @@ extension DiscoverPeopleTableViewController {
             cell.bottomLabel.isHidden = false
         }
         
-        var contact: Friend
+        var contact: TDUser
         switch indexPath.section {
         case kSectionSearchResults where searchController.isActive:
             contact = filteredFriends[indexPath.row]
         case kSectionSuggestions where !searchController.isActive:
             contact = users[indexPath.row]
         default:
-            contact = Friend.empty()
+            contact = TDUser.empty()
         }
         
         // Make sure the user isn't already invited
-        if !currentUser.invitedList.contains(contact.id) {
-            setAddFriend(uid: contact.id, closure: { (added) in
-                print("Friend requested")
-            })
+        if !currentUser.invites.contains(contact) {
+//            setAddFriend(uid: contact.uid, closure: { (added) in
+//                print("Friend requested")
+//            })
         }
     }
     
@@ -239,18 +239,10 @@ extension DiscoverPeopleTableViewController {
         if let ip = selectedIndexpath {
             let contact = users[ip.row]
             print("Attempting to request friend...")
-            setAddFriend(uid: contact.id, closure: { (added) in
-                print("Friend requested")
-            })
+//            setAddFriend(uid: contact.uid, closure: { (added) in
+//                print("Friend requested")
+//            })
         }
-    }
-    
-    fileprivate func setAddFriend(uid:String, closure:@escaping (Bool)->Void) {
-        API().invite(uid: uid, closure: closure)
-    }
-    
-    fileprivate func setNewInvitation(email:String, closure:@escaping (Bool)->Void) {
-        API().invite(email: email, closure: closure)
     }
     
     fileprivate func primaryPhone(_ contact: CNContact) -> String? {
