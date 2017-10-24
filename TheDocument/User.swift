@@ -90,6 +90,11 @@ extension TDUser {
         API().startup { success in
             guard success else { closure(false); return }
             
+            API().getGroups() { success in
+                print("loaded groups")
+                API().getGroupLeaderboards(groups: self.groups)
+            }
+
             // previously called self.getScores()
             closure(true)
         }

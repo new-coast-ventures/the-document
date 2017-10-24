@@ -20,6 +20,7 @@ class NewChallengeViewController: BaseViewController {
     
     var challenge:Challenge!
     var toId:String? = nil
+    var groupId:String? = nil
     var approvedChallenges: [String] = [String]()
     var challengeFormats: [String] = [String]()
     var dollarLabel: UILabel!
@@ -82,6 +83,7 @@ class NewChallengeViewController: BaseViewController {
         
         challenge = newChallenge
         challenge.fromId = currentUser.uid
+        challenge.group = groupId
         
         if let priceString = challengePrice.text, let price = Int(priceString) {
             challenge.price = price

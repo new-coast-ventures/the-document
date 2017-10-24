@@ -207,9 +207,11 @@ extension API {
             }
             
             if let groupId = challenge.group, var groupLeaderboard = UserDefaults.standard.dictionary(forKey: "leaderboard-\(groupId)") as? [String: [Int]] {
+                
                 if let memberRecord = groupLeaderboard["\(uid)"], memberRecord.count == 2 {
                     var newGroupWins = memberRecord[0]
                     var newGroupLosses = memberRecord[1]
+                    
                     if challenge.winner.contains(uid) {
                         newGroupWins += 1
                     } else {

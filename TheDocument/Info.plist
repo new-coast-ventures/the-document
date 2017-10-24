@@ -25,7 +25,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>fb309471606138601</string>
+				<string>fb183780962171031</string>
 			</array>
 		</dict>
 		<dict>
@@ -38,9 +38,9 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>70</string>
+	<string>71</string>
 	<key>FacebookAppID</key>
-	<string>309471606138601</string>
+	<string>183780962171031</string>
 	<key>FacebookDisplayName</key>
 	<string>The Document</string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
@@ -65,7 +65,7 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We use your microphone to allow you to dictate bug reports</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We will need your profile photo to use it for your app&apos;s profile&apos;</string>
+	<string>We will need your profile photo to use it for your app's profile'</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-SemiboldItalic</string>

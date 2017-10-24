@@ -21,6 +21,18 @@ extension API {
         })
     }
     
+    func getGroupLeaderboards(groups: [Group]) {
+        groups.forEach({ group in
+            print("loading group leaderboard...")
+            Database.database().reference().child("groups/\(group.id)/leaderboard/").observeSingleEvent(of: .value, with: { (snapshot) in
+                guard let recordData = snapshot.value as? [String: [Int]] else { return }
+                print("group leaderboard saved!")
+                UserDefaults.standard.set(recordData, forKey: "leaderboard-\(group.id)")
+            })
+        })
+        UserDefaults.standard.synchronize()
+    }
+    
     func getGroupMembers(group:Group, closure: @escaping ( [TDUser] )->Void) {
         
         Database.database().reference().child("groups/\(group.id)/members/").observeSingleEvent(of: .value, with: { (snapshot) in

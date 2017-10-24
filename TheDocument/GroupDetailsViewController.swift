@@ -17,6 +17,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     @IBOutlet weak var groupNameLabel: UILabel!
     @IBOutlet weak var groupImageView: UIImageView!
     @IBOutlet weak var groupNavigationView: UIView!
+    @IBOutlet weak var startGroupChallengeButton: UIButton!
     
     @IBOutlet weak var tabStackView: UIStackView!
     @IBOutlet weak var chatterTabButton: TabButton!
@@ -167,7 +168,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         chatterMode = false
         leaderboardTabButton.isChecked = true
         chatterTabButton.isChecked = false
-        
+        startGroupChallengeButton.isHidden = false
         commentFormContainer.isHidden = true
         commentFormContainer.addBorder() // default is top, 1px, light gray
         commentsRef = Database.database().reference().child("group-comments").child(group.id)
@@ -243,6 +244,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         chatterTabButton.isChecked = true
         chatterMode = true
         
+        startGroupChallengeButton.isHidden = true
         self.commentFormContainer.isHidden = false
         self.view.bringSubview(toFront: self.commentFormContainer)
         self.tableView.reloadData()
@@ -259,6 +261,8 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         chatterMode = false
         
         self.commentFormContainer.isHidden = true
+        startGroupChallengeButton.isHidden = false
+        
         leaderboardDatasource = group.members.sortByWilsonRanking()
         tableView.reloadData()
     }
@@ -439,6 +443,13 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         } else if indexPath.section == kSectionInvitees && indexPath.row < group.invitees.count {
             let friend = group.invitees[indexPath.row]
             self.performSegue(withIdentifier: "show_group_user_profile", sender: friend)
+        }
+    }
+    
+    @IBAction func startGroupChallenge(_ sender: Any) {
+        if let newChallengeNavVC = self.storyboard?.instantiateViewController(withIdentifier: "NewChallengeNavVC") as? UINavigationController, let newChallengeVC = newChallengeNavVC.viewControllers.first as? NewChallengeViewController {
+            newChallengeVC.groupId = group.id
+            self.present(newChallengeNavVC, animated: true, completion: nil)
         }
     }
     

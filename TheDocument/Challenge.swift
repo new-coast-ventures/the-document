@@ -181,7 +181,9 @@ extension Challenge: Argo.Decodable {
     }
     
     func simplify() -> [String : Any] {
-        return ["id":id, "name":name, "format":format, "location":location, "time":time, "fromId":fromId, "toId":toId, "accepted":accepted, "status":status, "winner":winner, "declarator":declarator, "result":result, "completedAt":completedAt, "price":price, "details":""]
+        return ["id":id, "name":name, "format":format, "location":location, "time":time, "fromId":fromId, "toId":toId,
+                "accepted":accepted, "status":status, "winner":winner, "declarator":declarator, "result":result as Any,
+                "completedAt":completedAt as Any, "price":price, "details":details, "group":group as Any]
     }
 }
 

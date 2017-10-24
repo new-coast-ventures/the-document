@@ -2490,6 +2490,20 @@
                                     <constraint firstItem="jCV-dG-Bwm" firstAttribute="leading" secondItem="MdA-j5-hHS" secondAttribute="leading" constant="10" id="c4e-jR-KNW"/>
                                 </constraints>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SjL-zl-YgY">
+                                <rect key="frame" x="0.0" y="549" width="375" height="54"/>
+                                <color key="backgroundColor" red="0.019607843140000001" green="0.12549019610000001" blue="0.28627450980000002" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="54" id="XqT-7v-MfM"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="OpenSans-Bold" family="Open Sans" pointSize="18"/>
+                                <state key="normal" title="START GROUP CHALLENGE"/>
+                                <connections>
+                                    <action selector="actionButtonTapped:" destination="Hqs-kl-4Q9" eventType="touchUpInside" id="Dir-n2-ITM"/>
+                                    <action selector="startChallengeButtonPressed:" destination="x6s-Sw-nEz" eventType="touchUpInside" id="xt5-cl-tg2"/>
+                                    <action selector="startGroupChallenge:" destination="zjB-cp-COu" eventType="touchUpInside" id="bZ0-Qo-INm"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -2497,12 +2511,15 @@
                             <constraint firstAttribute="trailing" secondItem="ghU-PY-bP9" secondAttribute="trailing" id="2DA-Ur-Gjl"/>
                             <constraint firstItem="pHb-lG-WiZ" firstAttribute="top" secondItem="ghU-PY-bP9" secondAttribute="bottom" id="59h-J5-XpQ"/>
                             <constraint firstItem="ghU-PY-bP9" firstAttribute="top" secondItem="606-ZI-Kqe" secondAttribute="bottom" constant="8" id="LAl-m7-TFN"/>
+                            <constraint firstItem="SjL-zl-YgY" firstAttribute="leading" secondItem="o8Q-QX-6HS" secondAttribute="leading" id="PDn-V5-YGE"/>
                             <constraint firstAttribute="trailing" secondItem="MdA-j5-hHS" secondAttribute="trailing" id="V0j-To-RSm"/>
+                            <constraint firstAttribute="trailing" secondItem="SjL-zl-YgY" secondAttribute="trailing" id="Vmg-uy-yRs"/>
                             <constraint firstItem="MdA-j5-hHS" firstAttribute="leading" secondItem="o8Q-QX-6HS" secondAttribute="leading" id="WkO-pb-p6R"/>
                             <constraint firstAttribute="trailing" secondItem="606-ZI-Kqe" secondAttribute="trailing" id="eLk-1r-rJM"/>
                             <constraint firstItem="606-ZI-Kqe" firstAttribute="leading" secondItem="o8Q-QX-6HS" secondAttribute="leading" id="lf5-0h-A0P"/>
                             <constraint firstItem="606-ZI-Kqe" firstAttribute="top" secondItem="93O-MT-QCX" secondAttribute="bottom" id="rF5-fk-6A0"/>
                             <constraint firstItem="ghU-PY-bP9" firstAttribute="leading" secondItem="o8Q-QX-6HS" secondAttribute="leading" id="uZg-uX-uEc"/>
+                            <constraint firstItem="pHb-lG-WiZ" firstAttribute="top" secondItem="SjL-zl-YgY" secondAttribute="bottom" id="zMg-Dr-NbD"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Group" id="rhP-9H-OaS">
@@ -2526,6 +2543,7 @@
                         <outlet property="groupNameLabel" destination="mxl-h9-AEN" id="vfo-1d-Vx5"/>
                         <outlet property="groupNavigationView" destination="606-ZI-Kqe" id="ElY-K8-MCt"/>
                         <outlet property="leaderboardTabButton" destination="IOM-Y8-Yqd" id="pXU-eE-OYt"/>
+                        <outlet property="startGroupChallengeButton" destination="SjL-zl-YgY" id="5dG-By-G8Z"/>
                         <outlet property="tabStackView" destination="Wah-5y-wlR" id="4nW-an-tJW"/>
                         <outlet property="tableView" destination="ghU-PY-bP9" id="ErS-4H-eUB"/>
                         <segue destination="oPF-As-ZFP" kind="unwind" unwindAction="unwindToGroupDetailsWithSegue:" id="ZO8-rZ-CpQ"/>

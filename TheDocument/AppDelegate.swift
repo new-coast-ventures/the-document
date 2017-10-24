@@ -10,6 +10,7 @@ import Firebase
 import FirebaseAuth
 import Instabug
 import Branch
+import FacebookCore
 
 var appDelegate = UIApplication.shared.delegate as! AppDelegate
 var currentUser = TDUser()

@@ -6,6 +6,7 @@
 
 import UIKit
 import Firebase
+import FacebookShare
 
 let side:CGFloat = 216
 let sideH:CGFloat = 186
@@ -114,10 +115,11 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             actionButton.isEnabled = false
             
         case (2, 1): // Past
-            actionButton.setTitle("REQUEST REMATCH", for: .normal)
+            let buttonText = challenge.wonByMe() ? "SHARE RESULTS" : "REQUEST REMATCH"
+            actionButton.setTitle(buttonText, for: .normal)
             resultStackView.isHidden = false
             resultViewDivider.isHidden = false
-            
+
         default: // TDUser chose winner, Rejected, Win, Other
             actionButton.isHidden = true
         }
@@ -250,12 +252,38 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
         case (1, 1) where challenge.pendingConfirmation() == false: // Opponent declared
             displayConfirmationAlert()
             
-        case (2, 1): // Past
-            requestRematch()
-            
+        case (2, 1):
+            if challenge.wonByMe() {
+                
+                let content = LinkShareContent(url: URL(string: "http://www.refertothedocument.com/")!)
+                let shareDialog = ShareDialog(content: content)
+                shareDialog.mode = .native
+                shareDialog.mode = ShareDialogMode.automatic
+                shareDialog.failsOnInvalidData = false
+                shareDialog.completion = { result in
+                }
+                
+                do {
+                    try shareDialog.show()
+                    
+                } catch {
+                    print("ShareDialog Error")
+                }
+                
+            } else {
+                requestRematch()
+            }
+    
         default:
             self.stopActivityIndicator()
         }
+    }
+    
+    func schemeAvailable(scheme: String) -> Bool {
+        if let url = URL(string: scheme) {
+            return UIApplication.shared.canOpenURL(url)
+        }
+        return false
     }
     
     fileprivate func displayConfirmationAlert() {
