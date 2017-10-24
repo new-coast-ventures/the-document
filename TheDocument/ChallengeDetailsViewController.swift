@@ -531,21 +531,27 @@ extension ChallengeDetailsViewController {
                 guard success else { self.showAlert(message: Constants.Errors.defaultError.rawValue); return }
                 
                 if self.challenge.winner.contains(currentUser.uid) {
-                    currentUser.record.totalWins += 1
+                    let newWinTotal = (currentUser.record.totalWins ?? 0) + 1
+                    currentUser.record.totalWins = newWinTotal
                     let users = self.challenge.competitorId().components(separatedBy: ",")
                     users.forEach { (uid) in
                         if let frIndex = currentUser.friends.index(where: { $0.uid == uid } ) {
-                            currentUser.friends[frIndex].record.totalLosses += 1
-                            currentUser.friends[frIndex].record.winsAgainst += 1
+                            let newLossTotal = (currentUser.friends[frIndex].record.totalLosses ?? 0) + 1
+                            let newWinsAgainst = (currentUser.friends[frIndex].record.winsAgainst ?? 0) + 1
+                            currentUser.friends[frIndex].record.totalLosses = newLossTotal
+                            currentUser.friends[frIndex].record.winsAgainst = newWinsAgainst
                         }
                     }
                 } else {
-                    currentUser.record.totalLosses += 1
+                    let newLossTotal = (currentUser.record.totalLosses ?? 0) + 1
+                    currentUser.record.totalLosses = newLossTotal
                     let users = self.challenge.competitorId().components(separatedBy: ",")
                     users.forEach { (uid) in
                         if let frIndex = currentUser.friends.index(where: { $0.uid == uid } ) {
-                            currentUser.friends[frIndex].record.totalWins += 1
-                            currentUser.friends[frIndex].record.lossesAgainst += 1
+                            let newTotalWins = (currentUser.friends[frIndex].record.totalWins ?? 0) + 1
+                            let newLossesAgainst = (currentUser.friends[frIndex].record.lossesAgainst ?? 0) + 1
+                            currentUser.friends[frIndex].record.totalWins = newTotalWins
+                            currentUser.friends[frIndex].record.lossesAgainst = newLossesAgainst
                         }
                     }
                 }

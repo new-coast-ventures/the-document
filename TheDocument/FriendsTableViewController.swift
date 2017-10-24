@@ -12,13 +12,11 @@ class FriendsTableViewController: BaseTableViewController {
     fileprivate var sections = [String]()
     
     var selectedIndexpath:  IndexPath? = nil
-    //var friends: Array<DataSnapshot> = []
     var friends: Array<TDUser> = []
     var friendsRef: DatabaseReference!
     
     let kSectionSearchResults = 0
-    let kSectionPending = 1
-    let kSectionCurrent = 2
+    let kSectionCurrent = 1
     
     @IBOutlet weak var searchBarContainer: UIView!
     
@@ -78,7 +76,6 @@ class FriendsTableViewController: BaseTableViewController {
                 var friendDataUpdated = friendData
                 friendDataUpdated["uid"] = snapshot.key as AnyObject
                 if let friend: TDUser = API().friendFromJSON(friendDataUpdated) {
-                    print("Adding child \(friend.name)")
                     self.friends.append(friend)
                     self.friends.alphaSort()
                     self.tableView.reloadData()
@@ -145,15 +142,13 @@ extension FriendsTableViewController {
 //MARK: UITableView delegate & datasource
 extension FriendsTableViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return 2
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case kSectionSearchResults where searchController.isActive:
             return filteredFriends.count
-        case kSectionPending where !searchController.isActive:
-            return 0 //friends.count
         case kSectionCurrent where !searchController.isActive:
             return friends.count
         default:
@@ -168,8 +163,6 @@ extension FriendsTableViewController {
         switch indexPath.section {
         case kSectionSearchResults:
             item = filteredFriends[indexPath.row]
-        case kSectionPending:
-            item = friends[indexPath.row]
         case kSectionCurrent:
             item = friends[indexPath.row]
         default:
@@ -191,14 +184,9 @@ extension FriendsTableViewController {
         case kSectionSearchResults:
             let friend = filteredFriends[indexPath.row]
             performSegue(withIdentifier: "show_friend_user_profile", sender: friend)
-            //startChallenge(withFriend: friend)
-        case kSectionPending:
-            selectedIndexpath = indexPath
-            performSegue(withIdentifier: Constants.friendDetailsStoryboardIdentifier, sender: self)
         case kSectionCurrent:
             let friend = friends[indexPath.row]
             performSegue(withIdentifier: "show_friend_user_profile", sender: friend)
-            //startChallenge(withFriend: friend)
         default:
             return
         }
@@ -212,8 +200,6 @@ extension FriendsTableViewController {
         case kSectionSearchResults where searchController.isActive,
              kSectionCurrent where !friends.isEmpty:
             return "FRIENDS"
-        case kSectionPending where !friends.isEmpty:
-            return "PENDING"
         default:
             return nil
         }
@@ -226,8 +212,6 @@ extension FriendsTableViewController {
             switch indexPath.section {
             case kSectionSearchResults:
                 item = filteredFriends[indexPath.row]
-            case kSectionPending:
-                item = friends[indexPath.row]
             case kSectionCurrent:
                 item = friends[indexPath.row]
             default:

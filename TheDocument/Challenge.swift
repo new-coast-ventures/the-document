@@ -30,13 +30,14 @@ struct Challenge {
     var declarator:String = ""
     var completedAt: Double?
     var result: String?
+    var group: String?
 }
 
 extension Challenge {
     
     static func short(name:String?, format:String?, location:String?, time:String?) -> Challenge? {
         guard let chName = name, chName != "", let chFormat = format, chFormat != "", let chLocation = location, let chTime = time else { return nil }
-        return Challenge(id: generateRandomString(12), name: chName, format: chFormat, location: chLocation, time: chTime, fromId: "", toId: "", accepted: 0, status: 0, winner: "", price: 0, details: "", declarator: "", completedAt:0, result:"")
+        return Challenge(id: generateRandomString(12), name: chName, format: chFormat, location: chLocation, time: chTime, fromId: "", toId: "", accepted: 0, status: 0, winner: "", price: 0, details: "", declarator: "", completedAt:0, result:"", group:"")
     }
     
     func teammateId()->String {
@@ -176,6 +177,7 @@ extension Challenge: Argo.Decodable {
             <*> (json <| "declarator") as Decoded<String>
             <*> (json <|? "completedAt") as Decoded<Double?>
             <*> (json <|? "result") as Decoded<String?>
+            <*> (json <|? "group") as Decoded<String?>
     }
     
     func simplify() -> [String : Any] {

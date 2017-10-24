@@ -42,7 +42,7 @@
 	<key>FacebookAppID</key>
 	<string>309471606138601</string>
 	<key>FacebookDisplayName</key>
-	<string>TheDocument</string>
+	<string>The Document</string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -65,7 +65,7 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We use your microphone to allow you to dictate bug reports</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We will need your profile photo to use it for your app's profile'</string>
+	<string>We will need your profile photo to use it for your app&apos;s profile&apos;</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-SemiboldItalic</string>

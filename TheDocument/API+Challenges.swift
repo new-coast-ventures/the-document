@@ -188,22 +188,38 @@ extension API {
         challenge.participantIds().forEach { uid in
             childUpdates["challenges/\(uid)/\(newPastChallenge.id)"] = challengeHash
             
+            var person: TDUser = TDUser()
             if currentUser.uid == uid {
-                if challenge.wonByMe() {
-                    currentUser.record.totalWins += 1
-                    childUpdates["users/\(uid)/totalWins"] = currentUser.record.totalWins
-                } else {
-                    currentUser.record.totalLosses += 1
-                    childUpdates["users/\(uid)/totalLosses"] = currentUser.record.totalLosses
-                }
-                
+                person = currentUser
             } else if let frIndex = currentUser.friends.index(where: { $0.uid == uid }) {
-                if challenge.winner.contains(uid) {
-                    currentUser.friends[frIndex].record.totalWins += 1
-                    childUpdates["users/\(uid)/totalWins"] = currentUser.friends[frIndex].record.totalWins
-                } else {
-                    currentUser.friends[frIndex].record.totalLosses += 1
-                    childUpdates["users/\(uid)/totalLosses"] = currentUser.friends[frIndex].record.totalLosses
+                person = currentUser.friends[frIndex]
+            }
+            
+            if challenge.winner.contains(uid) {
+                let newWinTotal = (person.record.totalWins ?? 0) + 1
+                person.record.totalWins = newWinTotal
+                childUpdates["users/\(uid)/totalWins"] = newWinTotal
+                
+            } else {
+                let newLossTotal = (person.record.totalLosses ?? 0) + 1
+                person.record.totalLosses = newLossTotal
+                childUpdates["users/\(uid)/totalLosses"] = newLossTotal
+            }
+            
+            if let groupId = challenge.group, var groupLeaderboard = UserDefaults.standard.dictionary(forKey: "leaderboard-\(groupId)") as? [String: [Int]] {
+                if let memberRecord = groupLeaderboard["\(uid)"], memberRecord.count == 2 {
+                    var newGroupWins = memberRecord[0]
+                    var newGroupLosses = memberRecord[1]
+                    if challenge.winner.contains(uid) {
+                        newGroupWins += 1
+                    } else {
+                        newGroupLosses += 1
+                    }
+                    childUpdates["groups/\(groupId)/leaderboard/\(uid)"] = [newGroupWins, newGroupLosses]
+                    
+                    groupLeaderboard["\(uid)"] = [newGroupWins, newGroupLosses]
+                    UserDefaults.standard.set(groupLeaderboard, forKey: "leaderboard-\(groupId)")
+                    UserDefaults.standard.synchronize()
                 }
             }
         }

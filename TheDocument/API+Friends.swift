@@ -24,18 +24,36 @@ extension API {
             var friendsArray = [TDUser]()
             
             if let friendsList = snapshot.value as? [String : [String:Any]]  {
-                for key in friendsList.keys {
-                    guard let friend = friendsList[key] else { break }
-                    var friendWithAdditionalInfo = friend
-                    friendWithAdditionalInfo["uid"] = key
-                    
-                    if let fr:TDUser = self.friendFromJSON(friendWithAdditionalInfo) {
-                        friendsArray.append( fr )
-                    }
+                let userLookupGroup = DispatchGroup()
+                let uids = friendsList.keys + [currentUser.uid]
+                for uid in uids {
+                    userLookupGroup.enter()
+                    Database.database().reference().child("users/\(uid)").observeSingleEvent(of: .value, with: { (userSnap) in
+                        guard let userData = userSnap.value as? [String: Any] else { return }
+                        
+                        if let friend = friendsList[uid] {
+                            var friendWithAdditionalInfo = friend
+                            friendWithAdditionalInfo["uid"] = uid
+                            friendWithAdditionalInfo["name"] = userData["name"]
+                            if let fr:TDUser = self.friendFromJSON(friendWithAdditionalInfo) {
+                                fr.record.totalWins = userData["totalWins"] as? Int ?? 0
+                                fr.record.totalLosses = userData["totalLosses"] as? Int ?? 0
+                                friendsArray.append( fr )
+                            }
+                        } else {
+                            currentUser.record.totalWins = userData["totalWins"] as? Int ?? 0
+                            currentUser.record.totalLosses = userData["totalLosses"] as? Int ?? 0
+                        }
+                        
+                        userLookupGroup.leave()
+                    })
+                }
+                
+                userLookupGroup.notify(queue: .main) {
+                    print("Finished retrieving all friends")
+                    closure(friendsArray)
                 }
             }
-            
-            closure(friendsArray)
         })
     }
     
@@ -96,6 +114,33 @@ extension API {
     func endFriendship(with friendId:String, closure: @escaping ()->Void) {
         Database.database().reference(withPath: "friends/\(currentUser.uid)/\(friendId)").removeValue() {_,_ in
             closure()
+        }
+    }
+    
+    func invite(uid: String? = nil, closure: @escaping (Bool)->Void) {
+        
+//        guard let userID = uid, currentUser.friends.index(where: { $0.uid == uid}) == nil else { closure(false); return }
+//
+//        let newFriendData = ["accepted":0, "name":currentUser.name] as [String : Any]
+//        Database.database().reference(withPath: "friends/\(userID)/\(currentUser.uid)").setValue(newFriendData) { error, ref in
+//            let success = error == nil
+//            if success {
+//                Notifier().friendRequest(to: userID)
+//                Database.database().reference(withPath: "users/\(currentUser.uid)/invitations").childByAutoId().setValue(userID)
+//            }
+//            closure(success)
+//        }
+        
+        guard let friendId = uid else { closure(false); return }
+        Database.database().reference(withPath: "friends/\(currentUser.uid)/\(friendId)/accepted").setValue(1) { error, ref in
+            guard error == nil else { print("Error accepting friend: \(error?.localizedDescription ?? "")" ); closure(false); return }
+
+            let newFriendData = ["accepted":1,"name":currentUser.name] as [String : Any]
+            Database.database().reference(withPath: "friends/\(friendId)/\(currentUser.uid)").setValue(newFriendData) { error, ref in
+                guard error == nil else { print("Error accepting friend: \(error?.localizedDescription ?? "")" ); closure(false); return}
+                Notifier().friendRequest(to: friendId) //Notifier().acceptFriend(to: friend.uid)
+                closure(true)
+            }
         }
     }
     

@@ -138,7 +138,6 @@ class ItemTableViewCell: UITableViewCell {
         } else {
             
             acceptButton.isHidden = true
-            bottomLabel.text = "\(item.score())   \(item.score(overall: false))"
             
             // FIXME: CONVERT TO PENDING
             if false {
@@ -162,8 +161,6 @@ class ItemTableViewCell: UITableViewCell {
         topLabel.text = item.name
         acceptButton.isHidden = true
         bottomLabel.text = ""
-        
-        // bottomLabel.text = "\(item.score())   \(item.score(overall: false))"
     }
     
     //Invite Friends

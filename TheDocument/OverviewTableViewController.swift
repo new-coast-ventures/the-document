@@ -129,6 +129,13 @@ extension OverviewTableViewController {
             let lbFriend = leaderboardDatasource[indexPath.row]
             cell.setup(lbFriend, cellId: indexPath.row + 1)
             setImage(id: lbFriend.uid, forCell: cell)
+            
+            if let wins = lbFriend.record.totalWins, let losses = lbFriend.record.totalLosses {
+                cell.bottomLabel.text = "\(wins)-\(losses)"
+            } else {
+                cell.bottomLabel.text = "0-0"
+                //setUserRecord(user: lbFriend, cell: cell)
+            }
         }
         
         return cell

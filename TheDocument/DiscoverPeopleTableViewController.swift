@@ -218,9 +218,9 @@ extension DiscoverPeopleTableViewController {
         
         // Make sure the user isn't already invited
         if !currentUser.invites.contains(contact) {
-//            setAddFriend(uid: contact.uid, closure: { (added) in
-//                print("Friend requested")
-//            })
+            setAddFriend(uid: contact.uid, closure: { (added) in
+                currentUser.invites.append(contact)
+            })
         }
     }
     
@@ -238,11 +238,14 @@ extension DiscoverPeopleTableViewController {
     func inviteOrAddFriend() {
         if let ip = selectedIndexpath {
             let contact = users[ip.row]
-            print("Attempting to request friend...")
-//            setAddFriend(uid: contact.uid, closure: { (added) in
-//                print("Friend requested")
-//            })
+            setAddFriend(uid: contact.uid, closure: { (added) in
+                currentUser.invites.append(contact)
+            })
         }
+    }
+    
+    fileprivate func setAddFriend(uid:String, closure:@escaping (Bool)->Void) {
+        API().invite(uid: uid, closure: closure)
     }
     
     fileprivate func primaryPhone(_ contact: CNContact) -> String? {

@@ -12,8 +12,8 @@ import Curry
 import Runes
 
 struct Record {
-    var totalWins: Int = 0
-    var totalLosses: Int = 0
+    var totalWins: Int?
+    var totalLosses: Int?
     var winsAgainst: Int = 0
     var lossesAgainst: Int = 0
 }
@@ -25,6 +25,7 @@ class TDUser {
     var avatar: UIImage?
     var postcode: String?
     var phone: String?
+    var accepted: Int?
     
     // Record Data
     var record = Record()
@@ -48,13 +49,13 @@ class TDUser {
         self.email = email
     }
     
-    init(uid: String, name: String, winsAgainst: Int?, lossesAgainst: Int?) {
+    init(uid: String, name: String, accepted: Int?, winsAgainst: Int?, lossesAgainst: Int?) {
         self.uid = uid
         self.name = name
         self.email = ""
+        self.accepted = accepted ?? 0
         self.record.winsAgainst = winsAgainst ?? 0
         self.record.lossesAgainst = lossesAgainst ?? 0
-        
     }
     
     init() {
@@ -161,6 +162,7 @@ extension TDUser: Argo.Decodable, FirebaseEncodable {
         return curry(TDUser.init)
             <^> (json <| "uid") as Decoded<String>
             <*> (json <| "name") as Decoded<String>
+            <*> (json <|? "accepted") as Decoded<Int?>
             <*> (json <|? "winsAgainst") as Decoded<Int?>
             <*> (json <|? "lossesAgainst") as Decoded<Int?>
     }
@@ -177,20 +179,6 @@ extension TDUser {
     
     var isEmpty:Bool {
         return uid=="" && name==""
-    }
-    
-    func score(overall:Bool = true) -> String {
-        let index:String
-        let scores:String
-        if overall {
-            index = "W"
-            scores = "\(self.record.totalWins.toScore())"
-        } else {
-            index = "L"
-            scores = "\(self.record.totalLosses.toScore())"
-        }
-        
-        return (scores != "-") ? "\(index): \(scores)"  : ""
     }
     
     func avatarImageData() -> Data? {
@@ -228,8 +216,8 @@ extension Array where Element == TDUser {
     
     func sortByWilsonRanking() -> [TDUser] {
         return self.sorted {
-            return wilsonConfidenceScore(wins: $0.record.totalWins, losses: $0.record.totalLosses) >
-                wilsonConfidenceScore(wins: $1.record.totalWins, losses: $1.record.totalLosses)
+            return wilsonConfidenceScore(wins: $0.record.totalWins ?? 0, losses: $0.record.totalLosses ?? 0) >
+                wilsonConfidenceScore(wins: $1.record.totalWins ?? 0, losses: $1.record.totalLosses ?? 0)
         }
     }
 }

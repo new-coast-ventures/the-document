@@ -12,7 +12,10 @@ extension API {
     //Get the groups list of current user
     func getGroups(closure: @escaping ( Bool )->Void) {
         Database.database().reference().child("users/\(currentUser.uid)/groups/").observeSingleEvent(of: .value, with: { snapshot in
-            guard let userGroupInfo = snapshot.value as? [String : Any] else { closure(false); return }
+            guard let userGroupInfo = snapshot.value as? [String : Any] else {
+                currentUser.groups.removeAll()
+                closure(false); return
+            }
             currentUser.checkForGroups(userGroupInfo)
             closure(true)
         })
@@ -55,6 +58,7 @@ extension API {
         let key = Database.database().reference().child("groups").childByAutoId().key
         
         let group : [String : Any] = ["uid": currentUser.uid, "name": name, "description": desc,
+                                      "leaderboard": ["\(currentUser.uid)": [0,0]],
                                       "members": ["\(currentUser.uid)": ["name": "\(currentUser.name)", "state": "own"]]]
         
         let childUpdates : [String : Any] = ["/groups/\(key)": group,
@@ -75,7 +79,7 @@ extension API {
         
         for friend in friends {
             let childUpdates : [String : Any] = ["/groups/\(group.id)/members/\(friend.uid)": ["name": "\(friend.name)", "state": "invited"],
-                                                 "/users/\(friend.uid)/groups/\(group.id)":   ["name": "\(group.name)",  "state": "invited"]]
+                                                 "/users/\(friend.uid)/groups/\(group.id)": ["name": "\(group.name)",  "state": "invited"]]
             
             Database.database().reference().updateChildValues(childUpdates) { (error, ref) in
                 if error == nil {
@@ -91,14 +95,16 @@ extension API {
         guard group.state == .own else {  closure(false); return   }
         
         Database.database().reference().child("groups/\(group.id)/members/\(member.uid)").removeValue()
+        Database.database().reference().child("groups/\(group.id)/leaderboard/\(member.uid)").removeValue()
         Database.database().reference().child("users/\(member.uid)/groups/\(group.id)").removeValue()
         closure(true)
     }
     
     func acceptGroupInvitation(group: Group, closure: @escaping ( Bool )->Void) {
         
-        let childUpdates : [String : Any] = ["/groups/\(group.id)/members/\(currentUser.uid)":  ["name": "\(currentUser.name)", "state": "member"],
-                                             "/users/\(currentUser.uid)/groups/\(group.id)":    ["name": "\(group.name)", "state": "member"]]
+        let childUpdates : [String : Any] = ["/groups/\(group.id)/members/\(currentUser.uid)":      ["name": "\(currentUser.name)", "state": "member"],
+                                             "/groups/\(group.id)/leaderboard/\(currentUser.uid)":  [0,0],
+                                             "/users/\(currentUser.uid)/groups/\(group.id)":        ["name": "\(group.name)", "state": "member"]]
         
         Database.database().reference().updateChildValues(childUpdates) { (error, ref) in
             closure(true)
@@ -118,6 +124,7 @@ extension API {
         } else {
             
             Database.database().reference().child("users/\(currentUser.uid)/groups/\(group.id)").removeValue()
+            Database.database().reference().child("groups/\(group.id)/leaderboard/\(currentUser.uid)").removeValue()
             Database.database().reference().child("groups/\(group.id)/members/\(currentUser.uid)").removeValue()
             closure(true)
         }

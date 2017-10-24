@@ -74,6 +74,9 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        // Load leaderboard data
+        self.loadLeaderboardData()
+        
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.hideToolbar)"), object: nil)
         // Add keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: .UIKeyboardWillShow, object: nil)
@@ -354,8 +357,10 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
             if indexPath.section == kSectionLeaderboard && indexPath.row < leaderboardDatasource.count {
                 let member = leaderboardDatasource[indexPath.row]
                 cell.setup(member, cellId: Int(indexPath.row) + 1)
+                cell.bottomLabel.text = "0-0"
+                setRecordData(uid: member.uid, cell: cell)
                 setImage(id: member.uid, forCell: cell)
-                
+
             } else if indexPath.section == kSectionInvitees && indexPath.row < self.group.invitees.count {
                 let member = self.group.invitees[indexPath.row]
                 cell.setup(member)
@@ -363,6 +368,31 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
             }
             
             return cell
+        }
+    }
+    
+    func loadLeaderboardData() {
+        Database.database().reference().child("groups/\(group.id)/leaderboard/").observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let recordData = snapshot.value as? [String: [Int]] else { return }
+            UserDefaults.standard.set(recordData, forKey: "leaderboard-\(self.group.id)")
+            UserDefaults.standard.synchronize()
+        })
+    }
+    
+    func setRecordData(uid: String, cell: ItemTableViewCell) {
+        if let groupLeaderboard = UserDefaults.standard.dictionary(forKey: "leaderboard-\(self.group.id)") as? [String: [Int]] {
+            guard let memberRecord = groupLeaderboard["\(uid)"], memberRecord.count == 2 else { return }
+            cell.bottomLabel.text = "\(memberRecord[0])-\(memberRecord[1])"
+        } else {
+            Database.database().reference().child("groups/\(group.id)/leaderboard/\(uid)").observeSingleEvent(of: .value, with: { (snapshot) in
+                guard let recordData = snapshot.value as? [Int], recordData.count == 2 else { return }
+                DispatchQueue.main.async {
+                    guard let ip = self.tableView.indexPath(for: cell) else { return }
+                    if self.tableView.indexPathsForVisibleRows?.contains(ip) == true {
+                        cell.bottomLabel.text = "\(recordData[0])-\(recordData[1])"
+                    }
+                }
+            })
         }
     }
     
