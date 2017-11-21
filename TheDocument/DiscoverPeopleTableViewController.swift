@@ -85,10 +85,6 @@ class DiscoverPeopleTableViewController: BaseTableViewController {
         
         branchInviteObject.getShortUrl(with: linkProperties) { (url, error) in
             if error == nil {
-                print("got my Branch link to share: %@", url!)
-                
-            } else {
-                print(String(format: "Branch error : %@", error! as CVarArg))
             }
         }
     }
@@ -119,7 +115,6 @@ class DiscoverPeopleTableViewController: BaseTableViewController {
     @IBAction func shareInvite(_ sender: Any) {
         branchInviteObject.showShareSheet(withShareText: "Join me on The Document", completion: { (activityType, completed) in
             if (completed) {
-                print("Completed sharing to \(activityType!)")
             }
         })
     }

@@ -11,6 +11,8 @@ import Firebase
 
 class HeadToHeadViewController: BaseViewController {
 
+    @IBOutlet weak var h2hContainerView: UIView!
+    
     @IBOutlet weak var playerOneImageView: UIImageView!
     @IBOutlet weak var playerOneNameLabel: UILabel!
     @IBOutlet weak var playerOneWinsLabel: UILabel!
@@ -27,7 +29,10 @@ class HeadToHeadViewController: BaseViewController {
     
     @IBOutlet weak var startChallengeButton: UIButton!
     
+    @IBOutlet weak var resultsTableView: UITableView!
+    
     var playerTwo: TDUser!
+    var pastChallenges: [Challenge] = [Challenge]()
     var playerOneWins = 0
     var playerTwoWins = 0
     
@@ -36,14 +41,31 @@ class HeadToHeadViewController: BaseViewController {
         
         title = "Head-to-Head"
         
+        // Set up results table
+        resultsTableView.rowHeight = UITableViewAutomaticDimension
+        resultsTableView.estimatedRowHeight = 80
+        resultsTableView.contentInset    = UIEdgeInsets(top: 0, left: 0, bottom: 70.0, right: 0)
+        resultsTableView.tableFooterView = UIView()
+        
+        let nib = UINib(nibName: "ItemCell", bundle: nil)
+        resultsTableView.register(nib, forCellReuseIdentifier: "ItemTableViewCell")
+        
+        // Add the H2H infographic to the header of the tableView
+        
         versusOuterContainer.layer.cornerRadius = 50
         versusInnerContainer.layer.cornerRadius = 35
         versusLabel.layer.cornerRadius = 20
         
-        if let competitorData = UserDefaults.standard.dictionary(forKey: playerTwo.uid) as? [String: Int] {
-            playerOneWins = competitorData["wins"] ?? 0
-            playerTwoWins = competitorData["losses"] ?? 0
-        }
+        // Grab head to head challenges
+        pastChallenges = currentUser.challenges.filter { $0.status == 2 && $0.participantIds().contains(playerTwo.uid) }.completionSorted()
+        
+        playerOneWins = pastChallenges.filter { $0.loserId().contains(playerTwo.uid) }.count
+        playerTwoWins = pastChallenges.count - playerOneWins
+        
+//        if let competitorData = UserDefaults.standard.dictionary(forKey: playerTwo.uid) as? [String: Int] {
+//            playerOneWins = competitorData["wins"] ?? 0
+//            playerTwoWins = competitorData["losses"] ?? 0
+//        }
         
         setupPlayerOne()
         setupPlayerTwo()
@@ -133,6 +155,64 @@ class HeadToHeadViewController: BaseViewController {
     }
     */
 
+}
+
+extension HeadToHeadViewController: UITableViewDelegate, UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return pastChallenges.count
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        let header = view as! UITableViewHeaderFooterView
+        header.textLabel?.font = UIFont(name: "OpenSans", size: 11)
+        header.textLabel?.textColor = UIColor.lightGray
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return "Completed Challenges"
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ItemTableViewCell") as! ItemTableViewCell
+        let challenge = pastChallenges[indexPath.row]
+        cell.setup(challenge)
+        
+        if let uid = challenge.competitorId().components(separatedBy: ",").first {
+            setImage(id: uid, forCell: cell)
+        }
+        
+        return cell
+    }
+    
+    func setImage(id: String, forCell cell: ItemTableViewCell, type: String = "photos") {
+        guard let challengerId = id.components(separatedBy: ",").first else { return }
+        
+        if let imageData = downloadedImages[challengerId] {
+            cell.setImage(imgData: imageData)
+        } else {
+            cell.setImageLoading()
+            appDelegate.downloadImageFor(id: id, section: type) { success in
+                DispatchQueue.main.sync {
+                    guard success, let ip = self.resultsTableView.indexPath(for: cell) else {
+                        cell.setGenericImage()
+                        return
+                    }
+                    self.reloadRow(at: ip)
+                }
+            }
+        }
+    }
+    
+    func reloadRow(at indexPath: IndexPath) {
+        if resultsTableView.indexPathsForVisibleRows?.contains(indexPath) == true {
+            resultsTableView.reloadRows(at: [indexPath], with: .none)
+        }
+    }
 }
 
 extension String {

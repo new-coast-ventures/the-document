@@ -206,28 +206,25 @@ extension API {
                 childUpdates["users/\(uid)/totalLosses"] = newLossTotal
             }
             
-            if let groupId = challenge.group, var groupLeaderboard = UserDefaults.standard.dictionary(forKey: "leaderboard-\(groupId)") as? [String: [Int]] {
+            if let groupId = challenge.group {
+                var w = challenge.winner.contains(uid) ? 1 : 0
+                var l = challenge.winner.contains(uid) ? 0 : 1
                 
-                if let memberRecord = groupLeaderboard["\(uid)"], memberRecord.count == 2 {
-                    var newGroupWins = memberRecord[0]
-                    var newGroupLosses = memberRecord[1]
-                    
-                    if challenge.winner.contains(uid) {
-                        newGroupWins += 1
-                    } else {
-                        newGroupLosses += 1
-                    }
-                    childUpdates["groups/\(groupId)/leaderboard/\(uid)"] = [newGroupWins, newGroupLosses]
-                    
-                    groupLeaderboard["\(uid)"] = [newGroupWins, newGroupLosses]
+                if var groupLeaderboard = UserDefaults.standard.dictionary(forKey: "leaderboard-\(groupId)") as? [String: [Int]],
+                    let memberRecord = groupLeaderboard["\(uid)"], memberRecord.count == 2 {
+                    w += memberRecord[0]
+                    l += memberRecord[1]
+                    groupLeaderboard["\(uid)"] = [w, l]
                     UserDefaults.standard.set(groupLeaderboard, forKey: "leaderboard-\(groupId)")
                     UserDefaults.standard.synchronize()
                 }
+                
+                childUpdates["groups/\(groupId)/leaderboard/\(uid)"] = [w, l]
             }
         }
         
         Database.database().reference().updateChildValues(childUpdates) { (error, ref) in
-            guard error == nil else { closure(false);return }
+            guard error == nil else { closure(false); return }
             Notifier().confirmWinner(challenge: newPastChallenge)
             closure(true)
         }

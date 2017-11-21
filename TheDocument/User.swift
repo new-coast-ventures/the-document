@@ -86,17 +86,8 @@ extension TDUser {
     }
     
     func startup(closure: @escaping (Bool)->Void) {
-        
         API().startup { success in
-            guard success else { closure(false); return }
-            
-            API().getGroups() { success in
-                print("loaded groups")
-                API().getGroupLeaderboards(groups: self.groups)
-            }
-
-            // previously called self.getScores()
-            closure(true)
+            closure(success)
         }
     }
     
@@ -152,7 +143,7 @@ extension TDUser {
                         state = GroupState.invited
                     }
                     
-                    let group = Group(id: $0.key, name: groupData["name"] ?? "Old Group", uid: groupData["uid"] ?? currentUser.uid, state: state, members: [currentUser], invitees: [])
+                    let group = Group(id: $0.key, name: groupData["name"] ?? "Group", uid: groupData["uid"] ?? currentUser.uid, state: state, members: [currentUser], invitees: [])
                     if !self.groups.contains(group) {
                         self.groups.append(group)
                     }

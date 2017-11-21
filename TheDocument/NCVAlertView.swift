@@ -552,8 +552,6 @@ open class NCVAlertView: UIViewController {
         } else if btn.actionType == NCVActionType.selector {
             let ctrl = UIControl()
             ctrl.sendAction(btn.selector, to:btn.target, for:nil)
-        } else {
-            print("Unknow action type for button")
         }
         
         if(self.view.alpha != 0.0 && appearance.shouldAutoDismiss){ hideView() }

@@ -265,11 +265,9 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
                 
                 do {
                     try shareDialog.show()
-                    
                 } catch {
-                    print("ShareDialog Error")
+                    self.stopActivityIndicator()
                 }
-                
             } else {
                 requestRematch()
             }
@@ -321,7 +319,6 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             }
         }
         alertView.addButton("No") {
-            print("No tapped")
         }
         alertView.showNotice("Accept Challenge?", subTitle: "Do you want to accept this challenge?")
     }
@@ -334,7 +331,6 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             }
         }
         alertView.addButton("No") {
-            print("No tapped")
         }
         alertView.showNotice("Reject Challenge?", subTitle: "Are you sure you want to reject this challenge?")
     }
@@ -347,7 +343,6 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             }
         }
         alertView.addButton("No") {
-            print("No tapped")
         }
         alertView.showNotice("Cancel Challenge?", subTitle: "Are you sure you want to cancel this challenge?")
     }
@@ -360,7 +355,6 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             }
         }
         alertView.addButton("No") {
-            print("No tapped")
         }
         alertView.showNotice("Request Rematch?", subTitle: "Are you sure you want a rematch?")
     }

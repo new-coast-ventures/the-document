@@ -34,8 +34,6 @@ class LoginViewController: UIViewController {
         }
     }
     
-    //MARK: Lifecycle
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -56,8 +54,6 @@ class LoginViewController: UIViewController {
         view.gestureRecognizers?.removeAll()
     }
     
-    //MARK: IBAction
-    
     @IBAction func loginTapped(_ sender: UIButton? = nil) {
         view.endEditing(true)
         guard case .login = state else {
@@ -66,16 +62,15 @@ class LoginViewController: UIViewController {
         }
         
         guard let email = emailTextField.text, let password = passwordTextField.text, !email.isEmpty, !password.isEmpty else {
-           showAlert(message: Constants.Errors.inputDataLogin.rawValue)
+            showAlert(message: Constants.Errors.inputDataLogin.rawValue)
             return
         }
         
         self.startActivityIndicator()
         
-        Auth.auth().signIn(withEmail: email,password: password) { (user,error) in
-            
+        Auth.auth().signIn(withEmail: email,password: password) { (user, error) in
+            self.stopActivityIndicator()
             if error != nil {
-                self.stopActivityIndicator()
                 self.showAlert(message: error?.localizedDescription ?? Constants.Errors.defaultError.rawValue)
             }
         }
@@ -139,23 +134,21 @@ class LoginViewController: UIViewController {
         
         self.present(alert, animated: true, completion: nil)
     }
-    //MARK: Helpers 
     
     @objc func hideKeyboard() {
         view.endEditing(true)
     }
     
-    //MARK : Removes the blinking effect when login in progress
     func hideLogin() {
         self.startActivityIndicator()
     }
+    
     func showLogin() {
         DispatchQueue.main.async {
             UIView.animate(withDuration: 0.5,delay: 0 ,options: UIViewAnimationOptions.curveEaseIn,animations: { () -> Void in
                 self.overlayView.alpha = 0
             }, completion: nil)
         }
-       
     }
 }
 
@@ -196,7 +189,6 @@ extension LoginViewController {
                     Database.database().reference(withPath: "emails/\(createdUser.uid)").setValue(createdUser.email)
                 }
             }
-            
         }
     }
 }
@@ -221,10 +213,7 @@ extension LoginViewController: UITextFieldDelegate {
                 }
             default: break
         }
-        
-        
-        
-        
+
         return true
     }
 }

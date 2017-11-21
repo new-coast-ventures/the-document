@@ -50,7 +50,6 @@ extension API {
                 }
                 
                 userLookupGroup.notify(queue: .main) {
-                    print("Finished retrieving all friends")
                     closure(friendsArray)
                 }
             }
@@ -98,12 +97,11 @@ extension API {
         Database.database().reference(withPath: "friends/\(currentUser.uid)/\(friend.uid)/accepted").setValue(1) { error, ref in
             guard error == nil else { print("Error accepting friend: \(error?.localizedDescription ?? "")" ); closure(false); return }
             
-            print("Accepted friend; creating reverse relationship...")
             let newFriendData = ["accepted":1,"name":currentUser.name] as [String : Any]
+            
             Database.database().reference(withPath: "friends/\(friend.uid)/\(currentUser.uid)").setValue(newFriendData) { error, ref in
                 guard error == nil else { print("Error accepting friend: \(error?.localizedDescription ?? "")" ); closure(false); return}
                 
-                print("Created reverse relationship! Notifying user")
                 Notifier().acceptFriend(to: friend.uid)
                 closure(true)
             }
@@ -137,7 +135,7 @@ extension API {
 
             let newFriendData = ["accepted":1,"name":currentUser.name] as [String : Any]
             Database.database().reference(withPath: "friends/\(friendId)/\(currentUser.uid)").setValue(newFriendData) { error, ref in
-                guard error == nil else { print("Error accepting friend: \(error?.localizedDescription ?? "")" ); closure(false); return}
+                guard error == nil else { closure(false); return}
                 Notifier().friendRequest(to: friendId) //Notifier().acceptFriend(to: friend.uid)
                 closure(true)
             }

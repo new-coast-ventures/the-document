@@ -103,7 +103,8 @@ class NewChallengeViewController: BaseViewController {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == Constants.inviteFriendsNewChallengeStoryboardIdentifier, let destVC = segue.destination as? InviteFriendsTableViewController {
+        if segue.identifier == Constants.inviteFriendsNewChallengeStoryboardIdentifier,
+            let destVC = segue.destination as? InviteFriendsTableViewController {
             
             if challenge.format == "1-on-1" {
                 destVC.mode = .challenge(challenge)

@@ -32,11 +32,7 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print("HOME DID LOAD")
-        
         view.backgroundColor = Constants.Theme.mainColor
-        
-        // Add a subtle shadow to the action button
         actionButtonImageView.layer.dropShadow()
         
         Timer.scheduledTimer(withTimeInterval: 10, repeats: true, block: { _ in UserDefaults.standard.setValue("\(Date().timeIntervalSince1970)", forKey: "lastOnline")  })
@@ -174,13 +170,8 @@ class HomeViewController: UIViewController {
     }
     
     func fadeOut() {
-        
         let token = Messaging.messaging().fcmToken
-        print("FCM token: \(token ?? "")")
-        print("Subscribing to topic \(FCMPrefix)\(currentUser.uid)...")
-        
         Messaging.messaging().subscribe(toTopic: "\(FCMPrefix)\(currentUser.uid)")
-        
         self.toolbarContainer.alpha = 0
     }
 }

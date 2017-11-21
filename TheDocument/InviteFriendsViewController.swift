@@ -49,27 +49,44 @@ class InviteFriendsTableViewController: BaseTableViewController {
         searchBar.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         searchBarContainer.addSubview(searchBar)
         searchBar.sizeToFit()
+        setSearchBarFont()
         
         definesPresentationContext = true
-        
-        friends = currentUser.friends.filter{ !self.selectedFriendsIds.contains($0.uid) }
         
         searchController.searchBar.barTintColor = Constants.Theme.mainColor
         searchController.searchBar.tintColor = Constants.Theme.mainColor
         
-        if case Mode.group( _ ) = self.mode {
+        if case let Mode.group(group) = self.mode {
+            friends = getFriends(obj: group)
             navigationItem.title = "Invite"
             
-        } else if case Mode.challenge( _ ) = self.mode {
+        } else if case let Mode.challenge(challenge) = self.mode {
+            friends = getFriends(obj: challenge)
             navigationItem.title = "Select Competitors"
             
-        } else {
-            let barButton = doneButton
-            barButton?.title = "Next"
-            navigationItem.rightBarButtonItem = barButton
+        } else if case let Mode.teamChallenge(challenge) = self.mode {
+            friends = getFriends(obj: challenge)
             navigationItem.title = "Select Teammate"
+            setBarButtonNext()
+        }
+    }
+    
+    func getFriends(obj: Any) -> [TDUser] {
+        var users: [TDUser] = currentUser.friends
+        if let c = obj as? Challenge, let i = c.group, let group = currentUser.groups.first(where: { $0.id == i }) {
+            users = group.members + group.invitees
         }
         
+        return users.filter{ !self.selectedFriendsIds.contains($0.uid) && currentUser.uid != $0.uid }
+    }
+    
+    func setBarButtonNext() {
+        let barButton = doneButton
+        barButton?.title = "Next"
+        navigationItem.rightBarButtonItem = barButton
+    }
+    
+    func setSearchBarFont() {
         for subView in searchController.searchBar.subviews {
             for searchBarSubView in subView.subviews {
                 if let textField = searchBarSubView as? UITextField {
@@ -110,7 +127,8 @@ class InviteFriendsTableViewController: BaseTableViewController {
                 barButton?.title = "Done"
                 navigationItem.rightBarButtonItem = barButton
                 navigationItem.title = "Select Competitors"
-                friends = currentUser.friends.filter{ !self.selectedTeammateIds.contains($0.uid) }
+                
+                friends = getFriends(obj: challenge).filter{ !self.selectedTeammateIds.contains($0.uid) }
                 tableView.reloadData()
                 
             } else {

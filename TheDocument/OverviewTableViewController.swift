@@ -35,9 +35,10 @@ class OverviewTableViewController: BaseTableViewController {
         
         refreshControl = UIRefreshControl()
         refreshControl?.addTarget(self, action: #selector(OverviewTableViewController.refreshChallenges), for: .valueChanged)
-        challengesTabButton.isChecked = false
-        leaderBoardTabButton.isChecked = !challengesTabButton.isChecked
-        leaderboardMode = true
+        
+        challengesTabButton.isChecked = true
+        leaderBoardTabButton.isChecked = false
+        leaderboardMode = false
     }
     
     override func viewDidAppear(_ animated: Bool) {

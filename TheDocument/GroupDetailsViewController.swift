@@ -112,8 +112,6 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         // Listen for new comments in the Firebase database
         commentsRef.observe(.childAdded, with: { (snapshot) -> Void in
             self.comments.append(snapshot)
-            let indexPath = IndexPath(row: self.comments.count-1, section: self.kSectionComments)
-            //self.tableView.insertRows(at: [indexPath], with: UITableViewRowAnimation.automatic)
             self.tableView.reloadData()
         })
         // Listen for deleted comments in the Firebase database
@@ -121,7 +119,6 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
             let index = self.indexOfMessage(snapshot)
             self.comments.remove(at: index)
             self.tableView.reloadData()
-            //self.tableView.deleteRows(at: [IndexPath(row: index, section: self.kSectionComments)], with: UITableViewRowAnimation.automatic)
         })
         // [END child_event_listener]
     }
@@ -175,7 +172,6 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     @objc func hideControls() {
-        print("Dismiss Keyboard")
         view.endEditing(true)
     }
     
@@ -203,8 +199,11 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
             self.tableView.refreshControl?.endRefreshing()
             self.stopActivityIndicator()
             
-            self.group.members  = members
-            //self.group.invitees = members.filter({ $0.state == "invited" })
+            if let groupIndex = currentUser.groups.index(where: { $0.id == self.group.id }) {
+                currentUser.groups[groupIndex].members = members
+            }
+            
+            self.group.members = members
             self.leaderboardDatasource = self.group.members.sortByWilsonRanking()
             self.tableView.reloadData()
         }
@@ -378,6 +377,7 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     func loadLeaderboardData() {
         Database.database().reference().child("groups/\(group.id)/leaderboard/").observeSingleEvent(of: .value, with: { (snapshot) in
             guard let recordData = snapshot.value as? [String: [Int]] else { return }
+            print("Loaded leaderboard data...", recordData)
             UserDefaults.standard.set(recordData, forKey: "leaderboard-\(self.group.id)")
             UserDefaults.standard.synchronize()
         })
