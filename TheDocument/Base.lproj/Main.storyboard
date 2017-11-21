@@ -614,7 +614,7 @@
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <stackView opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" distribution="fillEqually" alignment="top" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="bYJ-C1-RVn">
-                                            <rect key="frame" x="-4" y="3" width="383" height="174.5"/>
+                                            <rect key="frame" x="0.0" y="3" width="383" height="174.5"/>
                                             <subviews>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="scott" translatesAutoresizingMaskIntoConstraints="NO" id="k8c-6q-J0t">
                                                     <rect key="frame" x="0.0" y="0.0" width="190" height="170"/>
@@ -624,7 +624,7 @@
                                                     </constraints>
                                                 </imageView>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="rafa" translatesAutoresizingMaskIntoConstraints="NO" id="2wV-wf-vwT">
-                                                    <rect key="frame" x="193" y="0.0" width="190" height="170"/>
+                                                    <rect key="frame" x="189" y="0.0" width="190" height="170"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="170" id="Utz-D7-ogS"/>
                                                         <constraint firstAttribute="height" constant="170" id="wfy-GA-vsE"/>
@@ -1379,15 +1379,19 @@
                         <outlet property="locationStackView" destination="c0H-aN-rTY" id="1aA-fj-Qks"/>
                         <outlet property="playerFourImageview" destination="TfX-DN-mM0" id="v8E-ot-n6l"/>
                         <outlet property="playerFourLabel" destination="PH4-zg-E2N" id="vYI-yx-ta2"/>
+                        <outlet property="playerFourRecord" destination="458-dL-alh" id="JWz-Tc-RdF"/>
                         <outlet property="playerFourStackView" destination="wWa-Ym-z5A" id="lnk-4v-Idh"/>
                         <outlet property="playerOneImageView" destination="RRX-vv-GIt" id="pgx-Jl-Pre"/>
                         <outlet property="playerOneLabel" destination="Cov-Mg-7ry" id="Zq5-ad-2eP"/>
+                        <outlet property="playerOneRecord" destination="UEu-Yc-Tr1" id="UaB-Gf-vWc"/>
                         <outlet property="playerOneStackView" destination="FqS-o5-qdP" id="R1c-13-Cvr"/>
                         <outlet property="playerThreeImageview" destination="Mis-SA-Edo" id="hI4-uI-yXm"/>
                         <outlet property="playerThreeLabel" destination="ZhL-3V-kGM" id="WCK-8D-210"/>
+                        <outlet property="playerThreeRecord" destination="DGR-Fd-2qk" id="9Mk-Mk-dR1"/>
                         <outlet property="playerThreeStackView" destination="Gw1-z4-B2h" id="CGa-kT-ylI"/>
                         <outlet property="playerTwoImageview" destination="n1N-Sx-yyJ" id="d6I-uv-XQ2"/>
                         <outlet property="playerTwoLabel" destination="bUr-qL-S3Q" id="iWw-An-fHa"/>
+                        <outlet property="playerTwoRecord" destination="C6s-2v-IvJ" id="xqe-KK-t47"/>
                         <outlet property="playerTwoStackView" destination="76y-kD-439" id="gfr-St-FAV"/>
                         <outlet property="playersContainerView" destination="0Ig-33-ka5" id="f3L-Hb-sTF"/>
                         <outlet property="resultStackView" destination="8bt-g3-94f" id="OGz-H6-Vi9"/>
@@ -2449,11 +2453,13 @@
                                                         </connections>
                                                     </button>
                                                 </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="64" id="G5T-m2-q5n"/>
                                                 </constraints>
                                             </stackView>
                                         </subviews>
+                                        <color key="backgroundColor" red="0.98039215690000003" green="0.98039215690000003" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstItem="Wah-5y-wlR" firstAttribute="leading" secondItem="lwp-Ca-j4q" secondAttribute="leading" id="MIm-ez-1RX"/>
                                             <constraint firstAttribute="trailing" secondItem="Wah-5y-wlR" secondAttribute="trailing" id="zSs-Bg-wkc"/>

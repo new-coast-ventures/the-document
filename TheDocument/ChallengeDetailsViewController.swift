@@ -28,21 +28,25 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var playerOneStackView: UIStackView!
     @IBOutlet weak var playerOneImageView: CircleImageView!
     @IBOutlet weak var playerOneLabel: UILabel!
+    @IBOutlet weak var playerOneRecord: UILabel!
     
     var playerTwo: TDUser!
     @IBOutlet weak var playerTwoStackView: UIStackView!
     @IBOutlet weak var playerTwoImageview: CircleImageView!
     @IBOutlet weak var playerTwoLabel: UILabel!
+    @IBOutlet weak var playerTwoRecord: UILabel!
     
     var playerThree: TDUser?
     @IBOutlet weak var playerThreeStackView: UIStackView!
     @IBOutlet weak var playerThreeImageview: CircleImageView!
     @IBOutlet weak var playerThreeLabel: UILabel!
+    @IBOutlet weak var playerThreeRecord: UILabel!
     
     var playerFour: TDUser?
     @IBOutlet weak var playerFourStackView: UIStackView!
     @IBOutlet weak var playerFourImageview: CircleImageView!
     @IBOutlet weak var playerFourLabel: UILabel!
+    @IBOutlet weak var playerFourRecord: UILabel!
     
     @IBOutlet weak var playersContainerView: UIView!
 
@@ -484,17 +488,20 @@ extension ChallengeDetailsViewController {
     
     func loadPlayerOne(player: TDUser) {
         playerOneLabel.text = player.name
+        playerOneRecord.text = competitorRecord(player: player)
         setCompetitorPhoto(uid: player.uid, imageView: self.playerOneImageView)
     }
     
     func loadPlayerTwo(player: TDUser) {
         playerTwoLabel.text = player.name
+        playerTwoRecord.text = competitorRecord(player: player)
         setCompetitorPhoto(uid: player.uid, imageView: self.playerTwoImageview)
     }
     
     func loadPlayerThree(player: TDUser?) {
         if let p = player {
             playerThreeLabel.text = p.name
+            playerThreeRecord.text = competitorRecord(player: p)
             setCompetitorPhoto(uid: p.uid, imageView: self.playerThreeImageview)
             playerThreeStackView.isHidden = false
         } else {
@@ -505,10 +512,19 @@ extension ChallengeDetailsViewController {
     func loadPlayerFour(player: TDUser?) {
         if let p = player {
             playerFourLabel.text = p.name
+            playerFourRecord.text = competitorRecord(player: p)
             setCompetitorPhoto(uid: p.uid, imageView: self.playerFourImageview)
             playerFourStackView.isHidden = false
         } else {
             playerFourStackView.isHidden = true
+        }
+    }
+    
+    func competitorRecord(player: TDUser?) -> String {
+        if let player = player, let wins = player.record.totalWins, let losses = player.record.totalLosses {
+            return "\(wins)-\(losses)"
+        } else {
+            return "0-0"
         }
     }
  
