@@ -66,8 +66,8 @@ class LoginViewController: UIViewController {
             return
         }
         
+        print("Signing in user with email \(email) and password \(password)")
         self.startActivityIndicator()
-        
         Auth.auth().signIn(withEmail: email,password: password) { (user, error) in
             self.stopActivityIndicator()
             if error != nil {
