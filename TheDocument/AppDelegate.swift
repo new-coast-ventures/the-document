@@ -85,7 +85,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
         // pass the url to the handle deep link call
         Branch.getInstance().handleDeepLink(url);
-        
         // do other deep link routing for the Facebook SDK, Pinterest SDK, etc
         return true
     }
@@ -94,12 +93,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([Any]?) -> Void) -> Bool {
         // pass the url to the handle deep link call
         Branch.getInstance().continue(userActivity)
-        
         return true
     }
     
     func authChanged(auth: Auth, authUser: User?) -> Void {
-        guard !justLogged else {  return  }
+        guard !justLogged else { return }
 
         if let authenticatedUser = authUser {
             (self.window?.rootViewController as? LoginViewController)?.hideLogin()
@@ -268,14 +266,7 @@ extension AppDelegate {
                     return
                 }
             }
-            
-            if (id == "-Kw7Hx5KE6SoFZFGsSWJ") {
-                print("Setting image data")
-                print("Data: ", data.debugDescription)
-                print("Response: ", response.debugDescription)
-                print("Error: ", error.debugDescription)
-            }
-            
+
             downloadedImages["\(id)"] = imgData
             closure?(true)
         }).resume()

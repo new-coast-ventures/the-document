@@ -87,7 +87,7 @@ extension TDUser {
     
     func startup(closure: @escaping (Bool)->Void) {
         API().startup { success in
-            closure(success)
+            closure(true)
         }
     }
     
@@ -113,21 +113,8 @@ extension TDUser {
     
     func getFriends(closure:(()->Void)? = nil) {
         API().getFriends() { friendsList in
-            
-            let newHash = "f-\(String(friendsList.map{$0.uid.characters.first!}))"
-            if let oldCandidatesHash = TDCache("friendCandidates").string , oldCandidatesHash != newHash{
-                if homeVC != nil {
-                    homeVC?.somethingNewOn(.friends)
-                } else {
-                    UserDefaults.standard.set("\(UserEvents.showFriendsTab)", forKey: "wokenNotificationType")
-                    UserDefaults.standard.synchronize()
-                }
-            }
-            TDCache("friendCandidates").setValue(newHash)
-            
             currentUser.friends = friendsList
             closure?()
-            //self.getScores { closure?() }
         }
     }
     

@@ -67,8 +67,8 @@ class FriendsTableViewController: BaseTableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.showToolbar)"), object: nil)
         
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.showToolbar)"), object: nil)
         friends.removeAll()
 
         friendsRef.observe(.childAdded, with: { (snapshot) -> Void in
@@ -78,7 +78,7 @@ class FriendsTableViewController: BaseTableViewController {
                 if let friend: TDUser = API().friendFromJSON(friendDataUpdated) {
                     self.friends.append(friend)
                     self.friends.alphaSort()
-                    self.tableView.reloadData()
+                    self.refresh()
                 }
             }
         })
@@ -86,7 +86,7 @@ class FriendsTableViewController: BaseTableViewController {
         friendsRef.observe(.childRemoved, with: { (snapshot) -> Void in
             if let index = self.indexOfMessage(snapshot) {
                 self.friends.remove(at: index)
-                self.tableView.reloadData()
+                self.refresh()
             }
         })
         
@@ -96,10 +96,12 @@ class FriendsTableViewController: BaseTableViewController {
                 friendDataUpdated["uid"] = snapshot.key as AnyObject
                 if let friend: TDUser = API().friendFromJSON(friendDataUpdated) {
                     self.friends[index] = friend
-                    self.tableView.reloadData()
+                    self.refresh()
                 }
             }
         })
+        
+        self.refresh()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -115,9 +117,6 @@ class FriendsTableViewController: BaseTableViewController {
             index += 1
         }
         return nil
-    }
-    
-    func refreshDatasource(){
     }
     
     //MARK: BaseTableVC
@@ -238,8 +237,9 @@ extension FriendsTableViewController {
 extension FriendsTableViewController {
     @objc func refreshFriends() {
         self.refreshControl?.endRefreshing()
-        //self.startActivityIndicator(style: .gray, location: CGPoint(x: UIScreen.main.bounds.width / 2 , y:  UIScreen.main.bounds.height / 2 ))
-        currentUser.getFriends()
+        currentUser.getFriends() {
+            self.refresh()
+        }
     }
 }
 
@@ -249,16 +249,15 @@ extension FriendsTableViewController: UISearchResultsUpdating, UISearchControlle
         guard let searchTerm = searchController.searchBar.text else { return }
         self.filterData(searchTerm)
     }
+    
     func filterData( _ searchTerm: String) -> Void {
-        
-        guard searchTerm.characters.count > 1 else {  return }
+        guard searchTerm.count > 1 else {  return }
         
         filteredFriends = friends.filter { friend -> Bool in
             return friend.name.lowercased().contains(searchTerm.lowercased())
         }
         
         refresh()
-        
     }
     
     func didDismissSearchController (_ searchController: UISearchController) {

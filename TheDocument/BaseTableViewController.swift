@@ -65,13 +65,15 @@ class BaseTableViewController: UITableViewController {
             } else {
                 self.tableView.reloadData()
             }
+            
+            print("There are \(self.rowsCount()) rows to display")
+            
             if self.rowsCount() > 0 {
                 self.tableView.tableFooterView?.isHidden = false
                 self.view.viewWithTag(self.emptyViewTag)?.removeFromSuperview()
+                
             } else {
                 self.tableView.tableFooterView?.isHidden = true
-                
-                // Only recreate the empty view if it's not currently visible
                 if let emptyView = self.view.viewWithTag(self.emptyViewTag) {
                     self.view.addSubview(emptyView)
                     self.view.bringSubview(toFront: emptyView)

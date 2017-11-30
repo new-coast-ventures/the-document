@@ -116,7 +116,7 @@ enum Constants {
         case invalidEmail = "Invalid email format"
         case imageSelect = "Please take a photo or choose one from your library"
         case groupCreate = "Please fill out all the fields and set a photo!"
-        case passwordRequirements = "• Password must be a minimum of 8 characters"
+        case passwordRequirements = "Your password must be at least 6 characters and may only contain letters and numbers"
         case winnerNotSelected = "Please select a winner!"
         case groupDoesNotExist = "This group does not exist"
         case inputGroupName = "• Enter group's name"

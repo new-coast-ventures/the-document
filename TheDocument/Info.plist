@@ -58,14 +58,12 @@
 	<string>We will need to capture your photo for your profile</string>
 	<key>NSContactsUsageDescription</key>
 	<string>We use your contacts to help you find people to challenge</string>
-	<key>NSLocationUsageDescription</key>
-	<string>Location needed in order to set post code</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>$(PRODUCT_NAME) location use</string>
+	<string>$(PRODUCT_NAME) uses your location to verify you live in an area that allows prizes</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We use your microphone to allow you to dictate bug reports</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We will need your profile photo to use it for your app's profile'</string>
+	<string>We will need your profile photo to use it for your app&apos;s profile&apos;</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-SemiboldItalic</string>

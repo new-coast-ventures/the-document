@@ -56,17 +56,15 @@ class LoginViewController: UIViewController {
     
     @IBAction func loginTapped(_ sender: UIButton? = nil) {
         view.endEditing(true)
-        guard case .login = state else {
-            state = .login
-            return
-        }
+        guard case .login = state else { state = .login; return }
         
-        guard let email = emailTextField.text, let password = passwordTextField.text, !email.isEmpty, !password.isEmpty else {
-            showAlert(message: Constants.Errors.inputDataLogin.rawValue)
-            return
-        }
+        guard
+            let email = emailTextField.text,
+            let password = passwordTextField.text,
+            !email.isEmpty,
+            !password.isEmpty
+            else { showAlert(message: Constants.Errors.inputDataLogin.rawValue); return }
         
-        print("Signing in user with email \(email) and password \(password)")
         self.startActivityIndicator()
         Auth.auth().signIn(withEmail: email,password: password) { (user, error) in
             self.stopActivityIndicator()
@@ -78,12 +76,13 @@ class LoginViewController: UIViewController {
     
     @IBAction func signupTapped(_ sender: UIButton? = nil) {
         view.endEditing(true)
-        guard case .signup = state else {
-            state = .signup
-            return
-        }
+        guard case .signup = state else { state = .signup; return }
 
-        guard let email = emailTextField.text, let password = passwordTextField.text, let name = nameTextField.text, let phone = phoneTextField.text
+        guard
+            let email = emailTextField.text,
+            let password = passwordTextField.text,
+            let name = nameTextField.text,
+            let phone = phoneTextField.text
             else { return }
         
         var errorMessage = ""
@@ -97,7 +96,6 @@ class LoginViewController: UIViewController {
         }
         
         self.startActivityIndicator()
-        
         return createUser(email: email, password: password, name: name, phone: phone)
     }
 
@@ -166,6 +164,7 @@ extension LoginViewController {
     }
     
     fileprivate func createUser(email: String, password: String, name: String, phone: String) {
+        
         Auth.auth().createUser(withEmail: email, password: password) { user, error in
             
             guard error == nil else {
@@ -175,12 +174,12 @@ extension LoginViewController {
                 return
             }
             
-            if let createdUser = user, error == nil {
-                var user = [String:String]()
-                user["name"] = name
-                user["phone"] = phone
-                user["email"] = email
-                Database.database().reference(withPath: "users/\(createdUser.uid)").setValue(user) { error, ref in
+            if let createdUser = user {
+                var userDict = [String:String]()
+                userDict["name"] = name
+                userDict["phone"] = phone
+                userDict["email"] = email
+                Database.database().reference(withPath: "users/\(createdUser.uid)").setValue(userDict) { error, ref in
                     guard error == nil else {
                         self.showAlert(message: Constants.Errors.defaultError.rawValue)
                         print("Adding additional info for the user failed with: \(error?.localizedDescription ?? "")" )

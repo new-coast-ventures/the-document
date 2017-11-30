@@ -6,6 +6,7 @@
 import UIKit
 import Firebase
 import SearchTextField
+import CoreLocation
 
 class NewChallengeViewController: BaseViewController {
 
@@ -17,6 +18,8 @@ class NewChallengeViewController: BaseViewController {
     @IBOutlet weak var formatPicker:            UIPickerView!
     @IBOutlet weak var timePicker:              UIDatePicker!
     @IBOutlet weak var createChallengeButton:   UIButton!
+    
+    let locationManager = CLLocationManager()
     
     var challenge:Challenge!
     var toId:String? = nil
@@ -162,6 +165,31 @@ class NewChallengeViewController: BaseViewController {
     
     @objc func toggleDollarLabel(sender: UITextField) {
         sender.leftViewMode = sender.text == "" ? .never : .always
+    }
+}
+
+// Location Management
+extension NewChallengeViewController: CLLocationManagerDelegate {
+    
+    func enableBasicLocationServices() {
+        locationManager.delegate = self
+        
+        switch CLLocationManager.authorizationStatus() {
+        case .notDetermined:
+            // Request when-in-use authorization initially
+            locationManager.requestWhenInUseAuthorization()
+            break
+            
+        case .restricted, .denied:
+            // Disable location features
+            disableMyLocationBasedFeatures()
+            break
+            
+        case .authorizedWhenInUse, .authorizedAlways:
+            // Enable location features
+            enableMyWhenInUseFeatures()
+            break
+        }
     }
 }
 

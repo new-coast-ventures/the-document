@@ -19,8 +19,10 @@ extension API {
     
     //Gets current user's friends
     func getFriends(uid: String? = nil, closure: @escaping ( [TDUser] )->Void) {
+        
         let userId = uid ?? currentUser.uid
         Database.database().reference().child("friends").child(userId).observeSingleEvent(of: .value, with: {(snapshot) in
+            
             var friendsArray = [TDUser]()
             
             if let friendsList = snapshot.value as? [String : [String:Any]]  {
@@ -29,7 +31,9 @@ extension API {
                 for uid in uids {
                     userLookupGroup.enter()
                     Database.database().reference().child("users/\(uid)").observeSingleEvent(of: .value, with: { (userSnap) in
-                        guard let userData = userSnap.value as? [String: Any] else { return }
+                        guard let userData = userSnap.value as? [String: Any] else {
+                            userLookupGroup.leave(); return
+                        }
                         
                         if let friend = friendsList[uid] {
                             var friendWithAdditionalInfo = friend
@@ -52,6 +56,9 @@ extension API {
                 userLookupGroup.notify(queue: .main) {
                     closure(friendsArray)
                 }
+            }
+            else { // Friends List was unable to load; return empty friendsArray
+                closure(friendsArray)
             }
         })
     }

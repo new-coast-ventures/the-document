@@ -8,15 +8,15 @@ import Foundation
 import Firebase
 import Argo
 
-
-
 struct API {
     
     //After login and before home screen operations
     func startup(closure: @escaping (Bool)->Void) {
+        print("API => STARTUP")
         Database.database().reference(withPath: "users/\(currentUser.uid)").observeSingleEvent(of: .value, with: { (snapshot) in
             guard  let userInfo = snapshot.value as? [String : Any] else { closure(false); return }
             
+            print("Got userInfo: \(userInfo)")
             currentUser.name = userInfo["name"] as? String ?? "Player"
             currentUser.postcode = userInfo["postcode"] as? String ?? ""
             currentUser.phone = userInfo["phone"] as? String ?? ""
@@ -37,7 +37,6 @@ struct API {
         let userInfo = ["email": currentUser.email, "name": newName, "postcode": newPostCode, "phone": newPhone]
         
         Database.database().reference(withPath: "users/\(currentUser.uid)").setValue(userInfo) { error , ref in
-            
             guard error == nil else { closure?(false);return }
             
             currentUser.name = newName

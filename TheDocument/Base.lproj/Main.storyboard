@@ -723,7 +723,7 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0% WINS" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5uO-lM-ebo">
-                                                            <rect key="frame" x="305.5" y="106" width="61.5" height="16.5"/>
+                                                            <rect key="frame" x="0.0" y="106" width="0.0" height="16.5"/>
                                                             <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="14"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
@@ -1522,16 +1522,16 @@
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="rCJ-FN-CyD">
-                                <rect key="frame" x="26" y="269" width="323" height="176"/>
+                                <rect key="frame" x="26" y="269" width="323" height="181"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Friend Name" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="gDb-xh-wKJ">
-                                        <rect key="frame" x="0.0" y="0.0" width="323" height="28"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="323" height="33"/>
                                         <fontDescription key="fontDescription" name="OpenSans-Bold" family="Open Sans" pointSize="24"/>
                                         <color key="textColor" red="0.019607843140000001" green="0.12549019610000001" blue="0.28627450980000002" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IZH-2s-IIj" customClass="AcceptButton" customModule="TheDocument" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="48" width="323" height="54"/>
+                                        <rect key="frame" x="0.0" y="53" width="323" height="54"/>
                                         <color key="backgroundColor" red="0.019607843140000001" green="0.12549019610000001" blue="0.28627450980000002" alpha="1" colorSpace="calibratedRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="54" id="F15-OA-OiX"/>
@@ -1543,7 +1543,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Qa-eR-5TN">
-                                        <rect key="frame" x="0.0" y="122" width="323" height="54"/>
+                                        <rect key="frame" x="0.0" y="127" width="323" height="54"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="54" id="6Ie-7U-rkF"/>
                                         </constraints>
@@ -1610,7 +1610,7 @@
         <!--Groups-->
         <scene sceneID="htr-Q0-tnK">
             <objects>
-                <tableViewController id="IOp-AS-OZ1" customClass="GroupsTableViewController" customModule="TheDocument" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Groups" id="IOp-AS-OZ1" customClass="GroupsTableViewController" customModule="TheDocument" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="80" sectionHeaderHeight="28" sectionFooterHeight="28" id="Fqh-No-wUR">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1715,16 +1715,16 @@
                                                             </constraints>
                                                         </imageView>
                                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalCentering" alignment="top" spacing="-3" translatesAutoresizingMaskIntoConstraints="NO" id="a47-b4-fsT">
-                                                            <rect key="frame" x="44" y="8" width="175.5" height="27.5"/>
+                                                            <rect key="frame" x="44" y="5.5" width="175" height="33"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Dirk Roberts Nowitzski" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LMK-gO-nyC">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="143" height="16.5"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="147.5" height="19.5"/>
                                                                     <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="14"/>
                                                                     <nil key="textColor"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap to edit profile" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NH2-kM-vfz">
-                                                                    <rect key="frame" x="0.0" y="13.5" width="93" height="14"/>
+                                                                    <rect key="frame" x="0.0" y="16.5" width="98.5" height="16.5"/>
                                                                     <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="12"/>
                                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                                                     <nil key="highlightedColor"/>
@@ -1732,7 +1732,7 @@
                                                             </subviews>
                                                         </stackView>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$0.00" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ing-oK-RDr">
-                                                            <rect key="frame" x="229.5" y="13.5" width="35.5" height="16.5"/>
+                                                            <rect key="frame" x="229" y="12" width="36" height="19.5"/>
                                                             <fontDescription key="fontDescription" name="OpenSans-Semibold" family="Open Sans" pointSize="14"/>
                                                             <color key="textColor" red="0.0" green="0.50196081400000003" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                                             <nil key="highlightedColor"/>
@@ -3788,6 +3788,6 @@ Cg
         <segue reference="Pc1-el-CpR"/>
         <segue reference="twg-td-vSe"/>
         <segue reference="u0V-Y7-9od"/>
-        <segue reference="w6g-H0-zcE"/>
+        <segue reference="IUH-uB-kja"/>
     </inferredMetricsTieBreakers>
 </document>
