@@ -182,12 +182,12 @@ extension NewChallengeViewController: CLLocationManagerDelegate {
             
         case .restricted, .denied:
             // Disable location features
-            disableMyLocationBasedFeatures()
+            //disableMyLocationBasedFeatures()
             break
             
         case .authorizedWhenInUse, .authorizedAlways:
             // Enable location features
-            enableMyWhenInUseFeatures()
+            //enableMyWhenInUseFeatures()
             break
         }
     }

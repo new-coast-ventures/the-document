@@ -11,6 +11,7 @@
 		6F18039D1F1ECAFE0002902C /* CommentTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F18039B1F1ECAFE0002902C /* CommentTableViewCell.swift */; };
 		6F18039E1F1ECAFE0002902C /* CommentTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6F18039C1F1ECAFE0002902C /* CommentTableViewCell.xib */; };
 		6F1803A01F1FD16F0002902C /* DiscoverPeopleTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F18039F1F1FD16F0002902C /* DiscoverPeopleTableViewController.swift */; };
+		6F1C5AE41FD1D2890071A838 /* API+Synapse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1C5AE31FD1D2890071A838 /* API+Synapse.swift */; };
 		6F25C82D1F098C3100E345C5 /* SelectBankTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F25C82C1F098C3100E345C5 /* SelectBankTableViewController.swift */; };
 		6F25C82F1F098C5300E345C5 /* BankLoginTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F25C82E1F098C5300E345C5 /* BankLoginTableViewController.swift */; };
 		6F25C8311F098C5C00E345C5 /* BankMFATableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F25C8301F098C5C00E345C5 /* BankMFATableViewController.swift */; };
@@ -20,6 +21,7 @@
 		6F8EEE471F7312110011A178 /* TDWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8EEE461F7312110011A178 /* TDWebViewController.swift */; };
 		6F9365F61F97E875005683A4 /* HomeContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9365F51F97E875005683A4 /* HomeContainerViewController.swift */; };
 		6F9365F81F98110E005683A4 /* EmptySegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9365F71F98110E005683A4 /* EmptySegue.swift */; };
+		6FB4C32D1FD3825D00CAD556 /* Synapse-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6FB4C32C1FD3825D00CAD556 /* Synapse-Info.plist */; };
 		6FC9E83D1F0709FE00380D12 /* CreateAccountTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC9E83C1F0709FE00380D12 /* CreateAccountTableViewController.swift */; };
 		6FC9E83F1F070CAF00380D12 /* SSNTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC9E83E1F070CAF00380D12 /* SSNTableViewController.swift */; };
 		6FC9E8411F070CD300380D12 /* AddIDViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC9E8401F070CD300380D12 /* AddIDViewController.swift */; };
@@ -114,6 +116,7 @@
 		6F18039B1F1ECAFE0002902C /* CommentTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentTableViewCell.swift; sourceTree = "<group>"; };
 		6F18039C1F1ECAFE0002902C /* CommentTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CommentTableViewCell.xib; sourceTree = "<group>"; };
 		6F18039F1F1FD16F0002902C /* DiscoverPeopleTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiscoverPeopleTableViewController.swift; sourceTree = "<group>"; };
+		6F1C5AE31FD1D2890071A838 /* API+Synapse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "API+Synapse.swift"; sourceTree = "<group>"; };
 		6F25C82C1F098C3100E345C5 /* SelectBankTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectBankTableViewController.swift; sourceTree = "<group>"; };
 		6F25C82E1F098C5300E345C5 /* BankLoginTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BankLoginTableViewController.swift; sourceTree = "<group>"; };
 		6F25C8301F098C5C00E345C5 /* BankMFATableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BankMFATableViewController.swift; sourceTree = "<group>"; };
@@ -125,6 +128,7 @@
 		6F8EEE461F7312110011A178 /* TDWebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TDWebViewController.swift; sourceTree = "<group>"; };
 		6F9365F51F97E875005683A4 /* HomeContainerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeContainerViewController.swift; sourceTree = "<group>"; };
 		6F9365F71F98110E005683A4 /* EmptySegue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptySegue.swift; sourceTree = "<group>"; };
+		6FB4C32C1FD3825D00CAD556 /* Synapse-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Synapse-Info.plist"; sourceTree = "<group>"; };
 		6FC9E83C1F0709FE00380D12 /* CreateAccountTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateAccountTableViewController.swift; sourceTree = "<group>"; };
 		6FC9E83E1F070CAF00380D12 /* SSNTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSNTableViewController.swift; sourceTree = "<group>"; };
 		6FC9E8401F070CD300380D12 /* AddIDViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddIDViewController.swift; sourceTree = "<group>"; };
@@ -373,6 +377,7 @@
 				EC2EE6B61EE7D6CB004AC6C5 /* API+Friends.swift */,
 				EC2EE6B81EE7D735004AC6C5 /* API+Challenges.swift */,
 				EC2EE6BA1EE7D793004AC6C5 /* API+Groups.swift */,
+				6F1C5AE31FD1D2890071A838 /* API+Synapse.swift */,
 			);
 			name = IO;
 			sourceTree = "<group>";
@@ -553,6 +558,7 @@
 				EC445E101EB0B0EB00C843F0 /* Resources */,
 				EC329D2D1EC49AD6002DCDA1 /* Settings */,
 				ECE9E9911E9E1ACE00A87221 /* TheDocument.entitlements */,
+				6FB4C32C1FD3825D00CAD556 /* Synapse-Info.plist */,
 			);
 			path = TheDocument;
 			sourceTree = "<group>";
@@ -681,6 +687,7 @@
 				6F18039E1F1ECAFE0002902C /* CommentTableViewCell.xib in Resources */,
 				ECE9E9831E9E187500A87221 /* Main.storyboard in Resources */,
 				EC445E241EB0B11100C843F0 /* OpenSans-SemiboldItalic.ttf in Resources */,
+				6FB4C32D1FD3825D00CAD556 /* Synapse-Info.plist in Resources */,
 				EC445E201EB0B11100C843F0 /* OpenSans-Light.ttf in Resources */,
 				EC445E221EB0B11100C843F0 /* OpenSans-Regular.ttf in Resources */,
 				EC445E1E1EB0B11100C843F0 /* OpenSans-ExtraBoldItalic.ttf in Resources */,
@@ -799,6 +806,7 @@
 				EC6B457D1ED58E7400B2E277 /* DenyWinner.swift in Sources */,
 				EC6B457F1ED5971D00B2E277 /* Toast.swift in Sources */,
 				EC6B45811ED5975000B2E277 /* TDNotification.swift in Sources */,
+				6F1C5AE41FD1D2890071A838 /* API+Synapse.swift in Sources */,
 				EC3BCFF11EC038180001D3D1 /* CircleImageView.swift in Sources */,
 				6F8E79D31F10065C00FDA983 /* Empty.swift in Sources */,
 				EC40BD221EB9F13C00BB8899 /* BaseTableViewController.swift in Sources */,
