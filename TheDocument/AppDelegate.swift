@@ -38,6 +38,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         
         Database.database().isPersistenceEnabled = true
+//        
+//        let apiService = SynapseAPIService()
+//        print(apiService.fingerprint())
         
         Auth.auth().addStateDidChangeListener() { self.authChanged(auth: $0, authUser: $1) }
         

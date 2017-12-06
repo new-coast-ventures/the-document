@@ -55,7 +55,7 @@ extension API {
         Database.database().reference().child("challenges/\(friendId)").observe(.value, with: {(snapshot) in
             var challenges = [Challenge]()
             let response = snapshot.value as? [String:[String:Any]] ?? [String:[String:Any]]()
-            
+        
             response.forEach { challengeData in
                 let j: Any = challengeData.value
                 if let challenge: Challenge = decode(j) {
