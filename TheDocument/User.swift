@@ -30,6 +30,9 @@ class TDUser {
     // Record Data
     var record = Record()
     
+    // SynapseFi Data
+    var synapseData: [String: Any]?
+    
     // Associations
     var groups: [Group] = [Group]()
     var friends: [TDUser] = [TDUser]()
