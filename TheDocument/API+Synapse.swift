@@ -80,7 +80,7 @@ class SynapseAPIService {
         if let uuid = UIDevice.current.identifierForVendor?.uuidString {
             return "\(uuid)-AAPL"
         } else {
-            return "-AAPL"
+            return "0-AAPL"
         }
     }
     
@@ -92,22 +92,36 @@ class SynapseAPIService {
         return loadFromConfig(key: "CLIENT_SECRET")
     }
     
-    func oid() -> String {
-        return "" // "5a21aa91c256c30035896e66" // TEMP - currentUser.oid
+    func setUserId(id: Any?) {
+        if let id = id as? String {
+            currentUser.synapseUID = id
+        }
+    }
+    
+    func userId() -> String {
+        return currentUser.synapseUID ?? ""
+    }
+    
+    func setOauthKey(key: Any?) {
+        if let key = key as? String {
+            UserDefaults.standard.set(key, forKey: "oauth_key")
+            UserDefaults.standard.synchronize()
+        }
     }
     
     func oauthKey() -> String {
-        return "" // oauth_Z7m0z1jwFhbW38ysTGLiaHIAotCkRJcNq2d4Kxf0: TEMP
+        return UserDefaults.standard.string(forKey: "oauth_key") ?? ""
     }
     
-    func setRefreshToken(token: String) {
-        //try Locksmith.saveData(["refresh_token": token], forUserAccount: oid())
+    func setRefreshToken(token: Any?) {
+        if let token = token as? String {
+            UserDefaults.standard.set(token, forKey: "refresh_token")
+            UserDefaults.standard.synchronize()
+        }
     }
     
     func refreshToken() -> String {
-        //let dictionary = Locksmith.loadDataForUserAccount(oid())
-        //let token = dictionary["refresh_token"] as? String ?? ""
-        return "refresh_Ml8kGRpP9wzqceDOKJ7FS4NLi1g06vmrfVWYtZdh" // refresh_0u59TjtP2yWrIRYgLxBSZpDzanCEcFGkOldU7veo"
+        return UserDefaults.standard.string(forKey: "refresh_token") ?? ""
     }
 }
 
@@ -129,9 +143,12 @@ extension API {
         request.parameters = payload
         
         service.request(request: request, success: { (response) in
-            if let userRef = response as? [String: Any], let _id = userRef["_id"] as? String, let refresh_token = userRef["refresh_token"] as? String {
-                service.setRefreshToken(token: refresh_token)
-                print("Responded with id: \(_id), refresh token: \(service.refreshToken())")
+            if let userRef = response as? [String: Any] {
+                print("Created user: \(userRef)")
+                
+                currentUser.synapseData = userRef
+                service.setUserId(id: userRef["_id"])
+                service.setRefreshToken(token: userRef["refresh_token"])
             }
             closure?(true)
         }) { (error) in
@@ -156,16 +173,16 @@ extension API {
                 "address_subdivision": "IL", //currentUser.address.state
                 "address_postal_code": currentUser.postcode!, //currentUser.address.postcode
                 "address_country_code": "US", // only allow US members for now
-                "social_docs": [
+                "social_docs": [[
                     "document_value": "https://www.facebook.com/valid", // currentUser.fbAccessToken,
                     "document_type": "FACEBOOK"
-                ]
+                ]]
             ]
         ]
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        request.endpoint = "/users/\(service.oid())"
+        request.endpoint = "/users/\(service.userId())"
         request.method = .PUT
         request.parameters = payload
         
@@ -181,7 +198,7 @@ extension API {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        request.endpoint = "/oauth/\(service.oid())"
+        request.endpoint = "/oauth/\(service.userId())"
         request.parameters = [ "refresh_token": service.refreshToken() ]
         
         SynapseAPIService().request(request: request, success: { (response) in
@@ -205,7 +222,7 @@ extension API {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        request.endpoint = "/users/\(service.oid())/nodes"
+        request.endpoint = "/users/\(service.userId())/nodes"
         request.parameters = payload
         
         SynapseAPIService().request(request: request, success: { (response) in
@@ -225,7 +242,7 @@ extension API {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        request.endpoint = "/users/\(service.oid())/nodes"
+        request.endpoint = "/users/\(service.userId())/nodes"
         request.parameters = payload
         
         SynapseAPIService().request(request: request, success: { (response) in
@@ -243,7 +260,7 @@ extension API {
     func answerMFA(access_token: String, answer: String, _ closure : ((Bool) -> Void)? = nil) {
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        request.endpoint = "/users/\(service.oid())/nodes"
+        request.endpoint = "/users/\(service.userId())/nodes"
         request.parameters = [ "access_token": access_token, "mfa_answer": answer ]
         
         SynapseAPIService().request(request: request, success: { (response) in
@@ -258,7 +275,7 @@ extension API {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        request.endpoint = "/users/\(service.oid())/nodes/\(from)"
+        request.endpoint = "/users/\(service.userId())/nodes/\(from)"
         
         let payload: [String: Any] = [
             "to": [

@@ -72,7 +72,7 @@ class OverviewTableViewController: BaseTableViewController {
         }
     }
     
-    override func rowsCount() -> Int { print("override rowsCount"); return !leaderboardMode ? futureChallenges.count + currentChallenges.count + pastChallenges.count : leaderboardDatasource.count }
+    override func rowsCount() -> Int { return !leaderboardMode ? futureChallenges.count + currentChallenges.count + pastChallenges.count : leaderboardDatasource.count }
     
     override func emptyViewAction() { homeVC?.performSegue(withIdentifier: Constants.newChallengeStoryboardSegueIdentifier, sender: self) }
 }

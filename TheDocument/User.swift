@@ -32,6 +32,10 @@ class TDUser {
     
     // SynapseFi Data
     var synapseData: [String: Any]?
+    var synapseUID: String?
+    var nodes: [[String: Any]]?
+    var transactions: [[String: Any]]?
+    var wallet: [String: Any]?
     
     // Associations
     var groups: [Group] = [Group]()

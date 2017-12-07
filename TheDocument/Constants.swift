@@ -99,6 +99,12 @@ enum Constants {
             "title" : "Invite Your Friends" ,
             "subtitle" : "It's not fun challenging yourself. Invite your friends to join in on the action.",
             "buttonTitle" : "ADD FRIENDS"
+        ] ,
+        "WalletTableViewController" : [
+            "offset": CGFloat(60.0),
+            "title" : "No Wallet" ,
+            "subtitle" : "You haven't linked a bank, yet. Setup your wallet to enable paid challenges.",
+            "buttonTitle" : "SETUP WALLET"
         ]
     ]
     

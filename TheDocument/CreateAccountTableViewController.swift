@@ -45,15 +45,11 @@ class CreateAccountTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if ((indexPath.section, indexPath.row) == (3, 0)) {
-            print("Create Synapse User")
             API().createSynapseUser(email: emailTextField.text!, phone: mobileTextField.text!, name: displayNameTextField.text!, { success in
                 if (success) {
-                    print("Created synapse user")
                     DispatchQueue.main.async {
                         self.performSegue(withIdentifier: "add_kyc", sender: self)
                     }
-                } else {
-                    print("Something fucked up")
                 }
             })
         }
