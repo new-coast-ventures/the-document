@@ -88,11 +88,9 @@ class WalletTableViewController: BaseTableViewController {
     }
     
     func setupNodeCell(cell: ItemTableViewCell, indexPath: IndexPath) ->ItemTableViewCell {
-        if let indexPath.row < nodes.count {
+        if indexPath.row < nodes.count {
             let node = nodes[indexPath.row]
-            let name = node.key
-            
-            if let info = nodeJson["info"] as? [String: Any] {
+            if let info = node["info"] as? [String: Any] {
                 let nodeName = info["bank_name"] as? String ?? "Example Checking Account"
                 let lastFour = info["account_num"] as? String ?? "0000"
                 cell.topLabel.text = "\(nodeName)"

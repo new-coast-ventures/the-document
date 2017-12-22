@@ -59,7 +59,7 @@ class HeadToHeadViewController: BaseViewController {
         // Grab head to head challenges
         pastChallenges = currentUser.challenges.filter { $0.status == 2 && $0.participantIds().contains(playerTwo.uid) }.completionSorted()
         
-        playerOneWins = pastChallenges.filter { $0.loserId().contains(playerTwo.uid) }.count
+        playerOneWins = pastChallenges.filter { $0.loserId().contains(playerTwo.uid) && $0.winner.contains(currentUser.uid) }.count
         playerTwoWins = pastChallenges.count - playerOneWins
         
 //        if let competitorData = UserDefaults.standard.dictionary(forKey: playerTwo.uid) as? [String: Int] {
@@ -217,10 +217,11 @@ extension HeadToHeadViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension String {
     func firstNameAndLastInitial() -> String {
-        if let range = self.rangeOfCharacter(from: .whitespaces), !range.isEmpty {
-            return String(self.prefix(through: range.upperBound))
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let range = self.rangeOfCharacter(from: .whitespaces), range.upperBound < trimmed.endIndex {
+            return String(trimmed.prefix(through: range.upperBound))
         } else {
-            return self
+            return trimmed
         }
     }
 }

@@ -459,7 +459,9 @@ extension ChallengeDetailsViewController: UITableViewDelegate, UITableViewDataSo
             } else {
                 appDelegate.downloadImageFor(id: imageId, section: "photos") { [weak self] success in
                     guard success, let sSelf = self else { return }
-                    sSelf.chatterTable.reloadRows(at: [indexPath], with: .automatic)
+                    DispatchQueue.main.async {
+                        sSelf.chatterTable.reloadRows(at: [indexPath], with: .automatic)
+                    }
                 }
             }
         }

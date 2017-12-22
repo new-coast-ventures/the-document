@@ -48,7 +48,7 @@ class SynapseAPIService {
             var json: Any? = nil
             if let data = data {
                 json = try? JSONSerialization.jsonObject(with: data, options: [])
-                print("JSON \(json)")
+                print("JSON \(json ?? "")")
             }
 
             if let fcmError = error  {

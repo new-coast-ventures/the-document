@@ -138,30 +138,7 @@ extension ReusableView where Self: UIView {
     }
 }
 
-"info.bank_name" => ["info", "bank_name"]
-
 extension UITableViewCell: ReusableView {}
-
-extension Dictionary where Key == String, Value == Any {
-    
-    func valueForKeyPath(path: String) -> Any? {
-        let paths = path.components(separatedBy: ".")
-        var value = nil
-        
-        while paths.count > 0 {
-            if let val = self[paths.first!]
-        }
-        
-        
-        for path in paths {
-            if let path_is_dict = self[path] as? [String: Any] {
-                return path_is_dict[path]
-            } else {
-                return self
-            }
-        }
-    }
-}
 
 extension String {
     
