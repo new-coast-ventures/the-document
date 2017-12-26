@@ -189,7 +189,7 @@ extension Array where Element == TDUser {
     }
     
     func wilsonConfidenceScore(wins: Int, losses: Int, confidence: Double = 0.95) -> Double {
-        guard case let n = Double(wins + losses), n != 0 else { return 0.0 }
+        guard case let n = Double(wins + losses), n != 0 else { return -1.0 }
         
         let z  = 1.96
         let z² = (z * z)

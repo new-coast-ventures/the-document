@@ -259,7 +259,7 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
         case (2, 1):
             if challenge.wonByMe() {
                 
-                let content = LinkShareContent(url: URL(string: "http://www.refertothedocument.com/")!)
+                let content = LinkShareContent(url: URL(string: "https://www.refertothedocument.com/")!)
                 let shareDialog = ShareDialog(content: content)
                 shareDialog.mode = .native
                 shareDialog.mode = ShareDialogMode.automatic
