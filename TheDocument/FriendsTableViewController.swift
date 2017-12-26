@@ -120,7 +120,7 @@ class FriendsTableViewController: BaseTableViewController {
     }
     
     //MARK: BaseTableVC
-    override func rowsCount() -> Int { return friends.count }
+    override func rowsCount() -> Int { return currentUser.friends.count }
     override func emptyViewAction() { performSegue(withIdentifier: "discover_friends", sender: self) }
 }
 
@@ -169,8 +169,8 @@ extension FriendsTableViewController {
         }
         
         var friend = item
-        if let friendIndex = currentUser.friends.index(where: { $0.uid == item.uid }) {
-            friend = currentUser.friends[friendIndex]
+        if let friendIndex = friends.index(where: { $0.uid == item.uid }) {
+            friend = friends[friendIndex]
         }
         
         cell.setup(friend)

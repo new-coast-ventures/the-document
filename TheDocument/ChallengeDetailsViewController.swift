@@ -577,7 +577,7 @@ extension ChallengeDetailsViewController {
                     users.forEach { (uid) in
                         if let frIndex = currentUser.friends.index(where: { $0.uid == uid } ) {
                             let newLossTotal = (currentUser.friends[frIndex].record.totalLosses ?? 0) + 1
-                            let newWinsAgainst = (currentUser.friends[frIndex].record.winsAgainst ?? 0) + 1
+                            let newWinsAgainst = currentUser.friends[frIndex].record.winsAgainst + 1
                             currentUser.friends[frIndex].record.totalLosses = newLossTotal
                             currentUser.friends[frIndex].record.winsAgainst = newWinsAgainst
                         }
@@ -589,7 +589,7 @@ extension ChallengeDetailsViewController {
                     users.forEach { (uid) in
                         if let frIndex = currentUser.friends.index(where: { $0.uid == uid } ) {
                             let newTotalWins = (currentUser.friends[frIndex].record.totalWins ?? 0) + 1
-                            let newLossesAgainst = (currentUser.friends[frIndex].record.lossesAgainst ?? 0) + 1
+                            let newLossesAgainst = currentUser.friends[frIndex].record.lossesAgainst + 1
                             currentUser.friends[frIndex].record.totalWins = newTotalWins
                             currentUser.friends[frIndex].record.lossesAgainst = newLossesAgainst
                         }

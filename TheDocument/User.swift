@@ -158,7 +158,7 @@ extension TDUser: Argo.Decodable, FirebaseEncodable {
     }
 
     func simplify() -> [String : Any] {
-        return ["uid":uid, "email": email, "name": self.name, "postcode": self.postcode, "phone": self.phone]
+        return ["uid":uid, "email": email, "name": self.name, "postcode": self.postcode as Any, "phone": self.phone as Any]
     }
 }
 
