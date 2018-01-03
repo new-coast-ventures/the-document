@@ -36,10 +36,15 @@ class SettingsPreviewViewController: BaseTableViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        self.navigationItem.title = "Settings"
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.showToolbar)"), object: nil)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        // Remove "Settings" from back button
+        self.navigationItem.title = ""
+        
         if segue.identifier == "edit_settings" {
             NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.hideToolbar)"), object: nil)
         

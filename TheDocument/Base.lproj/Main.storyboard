@@ -1831,9 +1831,6 @@
                                                 <constraint firstAttribute="trailing" secondItem="iTp-VX-dTo" secondAttribute="trailing" id="Kiy-Z9-RDT"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <connections>
-                                            <segue destination="vl5-pC-rWZ" kind="show" id="j6m-gs-aLC"/>
-                                        </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" accessoryType="disclosureIndicator" indentationWidth="10" id="khJ-nW-H0L">
                                         <rect key="frame" x="0.0" y="223" width="375" height="44"/>
@@ -1845,7 +1842,7 @@
                                                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4wx-Bw-Yod">
                                                     <rect key="frame" x="15" y="0.0" width="326" height="43.5"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transaction History" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wEd-rY-wUZ">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Linked Accounts" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wEd-rY-wUZ">
                                                             <rect key="frame" x="0.0" y="0.0" width="326" height="43.5"/>
                                                             <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="14"/>
                                                             <nil key="textColor"/>
@@ -1862,7 +1859,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="Wfq-oD-Zc0" kind="show" id="fZt-hl-EQ5"/>
+                                            <segue destination="vl5-pC-rWZ" kind="show" identifier="showAccounts" id="hif-dX-yoN"/>
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" accessoryType="disclosureIndicator" indentationWidth="10" id="iVQ-8t-kUN">
@@ -1875,7 +1872,7 @@
                                                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="z1r-lF-jwP">
                                                     <rect key="frame" x="15" y="0.0" width="326" height="43.5"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transfer to Bank" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nyg-aK-N5H">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Withdraw Funds" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nyg-aK-N5H">
                                                             <rect key="frame" x="0.0" y="0.0" width="326" height="43.5"/>
                                                             <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="14"/>
                                                             <nil key="textColor"/>
@@ -2559,7 +2556,7 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Group" id="rhP-9H-OaS">
-                        <barButtonItem key="rightBarButtonItem" title="Item" image="AddUser" id="1aJ-C0-CGu">
+                        <barButtonItem key="rightBarButtonItem" image="AddUser" id="1aJ-C0-CGu">
                             <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
                                 <segue destination="uKz-Wy-9qG" kind="show" identifier="invite_friends" id="twg-td-vSe"/>
@@ -3259,34 +3256,15 @@
             </objects>
             <point key="canvasLocation" x="6431" y="2162"/>
         </scene>
-        <!--My Wallet-->
+        <!--Linked Accounts-->
         <scene sceneID="qK7-RA-3bQ">
             <objects>
-                <tableViewController title="My Wallet" id="vl5-pC-rWZ" customClass="WalletTableViewController" customModule="TheDocument" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Linked Accounts" id="vl5-pC-rWZ" customClass="AccountsTableViewController" customModule="TheDocument" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Vj4-ff-ayp">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <color key="sectionIndexBackgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                        <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ItemTableViewCell" textLabel="3vy-xj-rBu" rowHeight="54" style="IBUITableViewCellStyleDefault" id="VVL-cG-uWd">
-                                <rect key="frame" x="0.0" y="55.5" width="375" height="54"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="VVL-cG-uWd" id="6rK-w9-P2c">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="53.5"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="$0.00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="3vy-xj-rBu">
-                                            <rect key="frame" x="16" y="0.0" width="343" height="53.5"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <fontDescription key="fontDescription" name="OpenSans" family="Open Sans" pointSize="15"/>
-                                            <nil key="textColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                    </subviews>
-                                </tableViewCellContentView>
-                            </tableViewCell>
-                        </prototypes>
                         <sections/>
                         <connections>
                             <outlet property="dataSource" destination="vl5-pC-rWZ" id="Swq-tN-PRZ"/>
@@ -3306,7 +3284,7 @@
             <objects>
                 <tableViewController storyboardIdentifier="SelectBankTVC" title="Select Bank" id="Wfq-oD-Zc0" customClass="SelectBankTableViewController" customModule="TheDocument" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="60" sectionHeaderHeight="22" sectionFooterHeight="70" id="uA2-GP-bcp">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <prototypes>
@@ -3362,7 +3340,7 @@
             <objects>
                 <tableViewController id="Nvo-jS-R4U" customClass="BankLoginTableViewController" customModule="TheDocument" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="1fS-PE-soR">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <sections>
@@ -3490,7 +3468,7 @@
             <objects>
                 <tableViewController id="YMc-kW-M3T" customClass="BankMFATableViewController" customModule="TheDocument" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="q1z-j9-pnN">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <sections>
@@ -3731,6 +3709,6 @@
         <segue reference="Pc1-el-CpR"/>
         <segue reference="k81-sj-ubC"/>
         <segue reference="u0V-Y7-9od"/>
-        <segue reference="IUH-uB-kja"/>
+        <segue reference="zTw-dP-MwL"/>
     </inferredMetricsTieBreakers>
 </document>

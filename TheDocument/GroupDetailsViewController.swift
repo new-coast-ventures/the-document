@@ -204,7 +204,11 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
             }
             
             self.group.members = members
-            self.leaderboardDatasource = self.group.members.sortByWilsonRanking()
+            self.leaderboardDatasource = self.group.members.sorted {
+                let recordA = self.getMemberRecord(uid: $0.uid)
+                let recordB = self.getMemberRecord(uid: $1.uid)
+                return (recordA[0] - recordA[1]) > (recordB[0] - recordB[1])
+            }
             self.tableView.reloadData()
         }
     }
@@ -262,7 +266,12 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         self.commentFormContainer.isHidden = true
         startGroupChallengeButton.isHidden = false
         
-        leaderboardDatasource = group.members.sortByWilsonRanking()
+        leaderboardDatasource = group.members.sorted {
+            let recordA = getMemberRecord(uid: $0.uid)
+            let recordB = getMemberRecord(uid: $1.uid)
+            return (recordA[0] - recordA[1]) > (recordB[0] - recordB[1])
+        }
+        
         tableView.reloadData()
     }
     
@@ -377,10 +386,16 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     func loadLeaderboardData() {
         Database.database().reference().child("groups/\(group.id)/leaderboard/").observeSingleEvent(of: .value, with: { (snapshot) in
             guard let recordData = snapshot.value as? [String: [Int]] else { return }
-            print("Loaded leaderboard data...", recordData)
             UserDefaults.standard.set(recordData, forKey: "leaderboard-\(self.group.id)")
             UserDefaults.standard.synchronize()
         })
+    }
+    
+    func getMemberRecord(uid: String) -> [Int] {
+        guard let groupLeaderboard = UserDefaults.standard.dictionary(forKey: "leaderboard-\(self.group.id)") as? [String: [Int]],
+              let memberRecord = groupLeaderboard["\(uid)"], memberRecord.count == 2 else { return [0, 0] }
+        
+        return memberRecord
     }
     
     func setRecordData(uid: String, cell: ItemTableViewCell) {

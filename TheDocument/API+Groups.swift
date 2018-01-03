@@ -37,11 +37,11 @@ extension API {
             guard let membersData = snapshot.value as? [String:Any] else { closure([]);  return }
             
             var members = [TDUser]()
-            var notFriendsIds = [String]()
+            let notFriendsIds = [String]()
             
             membersData.forEach{
-                if let memberInfo = $0.value as? [String: String], let name = memberInfo["name"], let state = memberInfo["state"] {
-                    var member = TDUser(uid:$0.key, name: name, email: "") // state: state
+                if let memberInfo = $0.value as? [String: String], let name = memberInfo["name"], let _ = memberInfo["state"] {
+                    let member = TDUser(uid:$0.key, name: name, email: "") // state: state
                     members.append(member)
                 }
             }
@@ -56,7 +56,6 @@ extension API {
                             members[index].record.totalLosses = score.value.1
                         }
                     }
-                    
                     closure(members)
                 }
             }

@@ -57,7 +57,7 @@ class HeadToHeadViewController: BaseViewController {
         versusLabel.layer.cornerRadius = 20
         
         // Grab head to head challenges
-        pastChallenges = currentUser.challenges.filter { $0.status == 2 && $0.participantIds().contains(playerTwo.uid) }.completionSorted()
+        pastChallenges = currentUser.challenges.filter { $0.status == 2 && $0.competitorId().contains(playerTwo.uid) }.completionSorted()
         
         playerOneWins = pastChallenges.filter { $0.loserId().contains(playerTwo.uid) && $0.winner.contains(currentUser.uid) }.count
         playerTwoWins = pastChallenges.count - playerOneWins
