@@ -50,7 +50,7 @@ class HomeViewController: UIViewController {
                DispatchQueue.main.async {
                 self.toolbarGradient.isHidden = false
                 self.toolbarContainer.isHidden = false
-                self.toolbarHeight.constant = 56
+                self.toolbarHeight.constant = 49
                 self.view.setNeedsLayout()
             }
         }
