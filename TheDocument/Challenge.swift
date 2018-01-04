@@ -31,13 +31,30 @@ struct Challenge {
     var completedAt: Double?
     var result: String?
     var group: String?
+    
+    struct Participant: Argo.Decodable {
+        let uid: String
+        let accepted: Int
+        
+        static func decode(_ json: JSON) -> Decoded<Participant> {
+            return curry(Participant.init)
+                <^> (json <| "uid") as Decoded<String>
+                <*> (json <| "accepted") as Decoded<Int>
+        }
+        
+        func simplify() -> [String : Any] {
+            return ["uid":uid, "accepted":accepted]
+        }
+    }
+    
+    var participants: [[Participant]]
 }
 
 extension Challenge {
     
     static func short(name:String?, format:String?, location:String?, time:String?) -> Challenge? {
         guard let chName = name, chName != "", let chFormat = format, chFormat != "", let chLocation = location, let chTime = time else { return nil }
-        return Challenge(id: generateRandomString(12), name: chName, format: chFormat, location: chLocation, time: chTime, fromId: "", toId: "", accepted: 0, status: 0, winner: "", price: 0, details: "", declarator: "", completedAt:0, result:"", group:"")
+        return Challenge(id: generateRandomString(12), name: chName, format: chFormat, location: chLocation, time: chTime, fromId: "", toId: "", accepted: 0, status: 0, winner: "", price: 0, details: "", declarator: "", completedAt:0, result:"", group:"", participants:[[]])
     }
     
     func teammateId()->String {
@@ -54,6 +71,42 @@ extension Challenge {
         } else {
             return fromId
         }
+    }
+    
+    func simplifiedParticipants() -> [[[String: Any]]] {
+        return participants.map({ (team) in
+            team.map({ (participant) in
+                participant.simplify()
+            })
+        })
+    }
+    
+    func accept() -> Challenge {
+        var updatedChallenge = self
+        var updatedParticipants = participants.map({ (team) in
+            team.map({ (p) in
+                return Participant(uid: p.uid, accepted: (p.uid == currentUser.uid ? 1 : p.accepted))
+            })
+        })
+        updatedChallenge.status = 1
+        updatedChallenge.accepted = 1
+        updatedChallenge.participants = updatedParticipants
+        return updatedChallenge
+    }
+    
+    func reject() -> Challenge {
+        var updatedChallenge = self
+        var updatedParticipants = participants.map({ (team) in
+            team.map({ (p) in
+                return Participant(uid: p.uid, accepted: (p.uid == currentUser.uid ? 0 : p.accepted))
+            })
+        })
+        updatedChallenge.status = 2
+        updatedChallenge.accepted = 0
+        updatedChallenge.winner = ""
+        updatedChallenge.declarator = ""
+        updatedChallenge.participants = updatedParticipants
+        return updatedChallenge
     }
     
     func participantIds()->[String] {
@@ -178,12 +231,14 @@ extension Challenge: Argo.Decodable {
             <*> (json <|? "completedAt") as Decoded<Double?>
             <*> (json <|? "result") as Decoded<String?>
             <*> (json <|? "group") as Decoded<String?>
+            <*> (json <|| "participants" >>- { sequence(decodeArray <^> $0) }) as Decoded<[[Participant]]>
     }
     
     func simplify() -> [String : Any] {
         return ["id":id, "name":name, "format":format, "location":location, "time":time, "fromId":fromId, "toId":toId,
                 "accepted":accepted, "status":status, "winner":winner, "declarator":declarator, "result":result as Any,
-                "completedAt":completedAt as Any, "price":price, "details":details, "group":group as Any]
+                "completedAt":completedAt as Any, "price":price, "details":details,
+                "group":group as Any, "participants":simplifiedParticipants()]
     }
 }
 

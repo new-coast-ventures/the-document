@@ -96,6 +96,20 @@ class InviteFriendsTableViewController: BaseTableViewController {
         }
     }
     
+    func loadChallengeDetailsView(challenge: Challenge) {
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
+        self.dismiss(animated: false) {
+            guard let challengeDetailsViewController = self.storyboard?.instantiateViewController(withIdentifier: "challengeDetailsViewController") as? ChallengeDetailsViewController, let homeViewController = homeVC, homeViewController.containerViewController.childViewControllers.count > 0 else { return }
+        
+            homeViewController.showOverviewTapped()
+            challengeDetailsViewController.challenge = challenge
+            if let navController = homeViewController.containerViewController.childViewControllers[0] as? UINavigationController {
+                navController.pushViewController(challengeDetailsViewController, animated: false)
+                NCVAlertView().showSuccess("Challenge Created!", subTitle: "")
+            }
+        }
+    }
+    
     @IBAction func inviteFriends(_ sender: Any) {
         if case let Mode.group( group ) = self.mode {
             // Group Invitation
@@ -105,40 +119,47 @@ class InviteFriendsTableViewController: BaseTableViewController {
                 }
             }
             
-        } else if case let Mode.challenge(challenge) = self.mode {
-            // 1-on-1 Challenge
-            if selectedFriendsIds.count == 0 { self.dismiss(animated: true, completion: nil); return }
-            API().challengeFriends(challenge: challenge, friendsIds: selectedFriendsIds ) {
-                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                self.dismiss(animated: true, completion: {
-                    NCVAlertView().showSuccess("Challenge Created!", subTitle: "")
-                })
-                return
-            }
-            
-        } else if case let Mode.teamChallenge(challenge) = self.mode {
-            // 2-on-2 Challenge
-            if selectedTeammateIds.isEmpty {
-                let currentUserSet = Set([currentUser.uid])
-                selectedTeammateIds = selectedFriendsIds.union(currentUserSet)
-                selectedFriendsIds.removeAll()
-                
-                let barButton = doneButton
-                barButton?.title = "Done"
-                navigationItem.rightBarButtonItem = barButton
-                navigationItem.title = "Select Competitors"
-                
-                friends = getFriends(obj: challenge).filter{ !self.selectedTeammateIds.contains($0.uid) }
-                tableView.reloadData()
-                
-            } else {
-                if selectedFriendsIds.count == 0 || selectedTeammateIds.count == 0 { self.dismiss(animated: true, completion: nil); return }
-                API().challengeTeams(challenge: challenge, teammateIds: selectedTeammateIds, competitorIds: selectedFriendsIds ) {
-                    NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
-                    self.dismiss(animated: true, completion: {
-                        NCVAlertView().showSuccess("Challenge Created!", subTitle: "")
-                    })
+        } else {
+            // Challenge Invitation
+            if case let Mode.challenge(challenge) = self.mode {
+                // 1-on-1 Challenge
+                if selectedFriendsIds.count == 0 { self.dismiss(animated: true, completion: nil); return }
+                API().challengeFriends(challenge: challenge, friendsIds: selectedFriendsIds ) {
+                    
+                    if let friendId = self.selectedFriendsIds.first {
+                        var newChallenge = challenge
+                        newChallenge.toId = friendId
+                        newChallenge.fromId = currentUser.uid
+                        self.loadChallengeDetailsView(challenge: newChallenge)
+                    }
+                    
                     return
+                }
+            } else if case let Mode.teamChallenge(challenge) = self.mode {
+                // 2-on-2 Challenge
+                if selectedTeammateIds.isEmpty {
+                    let currentUserSet = Set([currentUser.uid])
+                    selectedTeammateIds = selectedFriendsIds.union(currentUserSet)
+                    selectedFriendsIds.removeAll()
+                    
+                    let barButton = doneButton
+                    barButton?.title = "Done"
+                    navigationItem.rightBarButtonItem = barButton
+                    navigationItem.title = "Select Competitors"
+                    
+                    friends = getFriends(obj: challenge).filter{ !self.selectedTeammateIds.contains($0.uid) }
+                    tableView.reloadData()
+                    
+                } else {
+                    if selectedFriendsIds.count == 0 || selectedTeammateIds.count == 0 { self.dismiss(animated: true, completion: nil); return }
+                    API().challengeTeams(challenge: challenge, teammateIds: selectedTeammateIds, competitorIds: selectedFriendsIds ) {
+                        
+                        var newChallenge = challenge
+                        newChallenge.toId = self.selectedFriendsIds.joined(separator: ",")
+                        newChallenge.fromId = self.selectedTeammateIds.joined(separator: ",")
+                        self.loadChallengeDetailsView(challenge: newChallenge)
+                        return
+                    }
                 }
             }
         }

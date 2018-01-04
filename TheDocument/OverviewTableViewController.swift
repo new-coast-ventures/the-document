@@ -64,8 +64,9 @@ class OverviewTableViewController: BaseTableViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == Constants.challengeDetailsStoryboardIdentifier, let destVC = segue.destination as? ChallengeDetailsViewController {
-             let selectedIndexPath = selectedIP ?? IndexPath()
-            destVC.challenge = selectedIndexPath.section  == 0 ? futureChallenges[selectedIndexPath.row] : ( selectedIndexPath.section == 1 ? currentChallenges[selectedIndexPath.row] : pastChallenges[selectedIndexPath.row] )
+            
+            let selectedIndexPath = selectedIP ?? IndexPath()
+            destVC.challenge = selectedIndexPath.section == 0 ? futureChallenges[selectedIndexPath.row] : ( selectedIndexPath.section == 1 ? currentChallenges[selectedIndexPath.row] : pastChallenges[selectedIndexPath.row] )
         
         } else if segue.identifier == "show_user_profile", let profileVC = segue.destination as? HeadToHeadViewController, let friend = sender as? TDUser {            
             profileVC.playerTwo = friend

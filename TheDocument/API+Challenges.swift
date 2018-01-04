@@ -19,8 +19,16 @@ extension API {
             var newChallenge = challenge
             newChallenge.toId = friendId
             newChallenge.fromId = currentUser.uid
+            newChallenge.participants = [
+                [Challenge.Participant(uid: friendId, accepted: -1)],
+                [Challenge.Participant(uid: currentUser.uid, accepted: 1)]
+            ]
             
-            let childUpdates = ["/\(friendId)/\(challenge.id)": newChallenge.simplify(), "/\(currentUser.uid)/\(challenge.id)": newChallenge.simplify()]
+            let childUpdates = [
+                "/\(friendId)/\(challenge.id)": newChallenge.simplify(),
+                "/\(currentUser.uid)/\(challenge.id)": newChallenge.simplify()
+            ]
+            
             challengeRef.updateChildValues(childUpdates) { (error, ref) in
                 Notifier().challengeFriend(challenge: newChallenge, uid: friendId)
                 closure()
@@ -32,13 +40,16 @@ extension API {
         guard teammateIds.count > 0 && competitorIds.count > 0 else { closure(); return }
         
         let challengeRef = Database.database().reference().child("challenges")
-        
         let participantIds = competitorIds.union(teammateIds)
         
         participantIds.forEach { friendId in
             var newChallenge = challenge
             newChallenge.toId = competitorIds.joined(separator: ",")
             newChallenge.fromId = teammateIds.joined(separator: ",")
+            newChallenge.participants = [
+                competitorIds.map { Challenge.Participant(uid: $0, accepted: -1) },
+                teammateIds.map { Challenge.Participant(uid: $0, accepted: 1) }
+            ]
             
             let childUpdates = ["/\(friendId)/\(challenge.id)": newChallenge.simplify()]
             challengeRef.updateChildValues(childUpdates) { (error, ref) in
@@ -51,7 +62,6 @@ extension API {
     }
     
     func getChallenges(friendId: String = currentUser.uid, closure: @escaping ( [Challenge] )->Void) {
-        
         Database.database().reference().child("challenges/\(friendId)").observe(.value, with: {(snapshot) in
             var challenges = [Challenge]()
             let response = snapshot.value as? [String:[String:Any]] ?? [String:[String:Any]]()
@@ -62,7 +72,7 @@ extension API {
                     challenges.append(challenge)
                 }
             }
-            
+ 
             closure(challenges)
         })
     }
@@ -92,26 +102,7 @@ extension API {
             })
         }
     }
-    
-    func rejectChallenge(challenge: Challenge, closure: @escaping ( Bool )->Void) {
-        var newPastChallenge = challenge
-        newPastChallenge.accepted = 0
-        newPastChallenge.status = 2
-        newPastChallenge.declarator = ""
-        newPastChallenge.winner = ""
-        
-        var childUpdates: [String: Any] = [String: Any]()
-        challenge.participantIds().forEach { uid in
-            childUpdates["/\(uid)/\(challenge.id)"] = newPastChallenge.simplify()
-        }
 
-        Database.database().reference().child("challenges").updateChildValues(childUpdates) { (error, ref) in
-            guard error == nil else { closure(false);return }
-            Notifier().rejectChallenge(challenge: newPastChallenge)
-            closure(true)
-        }
-    }
-    
     func cancelChallenge(challenge: Challenge, closure: @escaping ( Bool )->Void) {
         let challengeRef = Database.database().reference().child("challenges")
         
@@ -124,24 +115,6 @@ extension API {
             closure(error == nil)
         }
     }
- 
-    func acceptChallenge(challenge: Challenge, closure: @escaping ( Bool )->Void) {
-        
-        var newChallenge = challenge
-        newChallenge.status = 1
-        newChallenge.accepted = 1
-        
-        var childUpdates: [String: Any] = [String: Any]()
-        challenge.participantIds().forEach { uid in
-            childUpdates["/\(uid)/\(newChallenge.id)"] = newChallenge.simplify()
-        }
-        
-        Database.database().reference().child("challenges").updateChildValues(childUpdates) { (error, ref) in
-            guard error == nil else { closure(false);return }
-            Notifier().acceptChallenge(challenge: newChallenge)
-            closure(true)
-        }
-    }
     
     func declareWinner(challenge: Challenge, closure:@escaping (Bool)->Void) {
         var childUpdates: [String: Any] = [String: Any]()
@@ -152,6 +125,36 @@ extension API {
         Database.database().reference().child("challenges").updateChildValues(childUpdates) { (error, ref) in
             guard error == nil else { closure(false);return }
             Notifier().declareWinner(challenge: challenge)
+            closure(true)
+        }
+    }
+    
+    // Accept Challenge
+    func acceptChallenge(challenge: Challenge, closure: @escaping ( Bool )->Void) {
+        var updatedChallenge = challenge.accept()
+        var childUpdates: [String: Any] = [String: Any]()
+        challenge.participantIds().forEach { uid in
+            childUpdates["/\(uid)/\(updatedChallenge.id)"] = updatedChallenge.simplify()
+        }
+        
+        Database.database().reference().child("challenges").updateChildValues(childUpdates) { (error, ref) in
+            guard error == nil else { closure(false);return }
+            Notifier().acceptChallenge(challenge: updatedChallenge)
+            closure(true)
+        }
+    }
+    
+    // Reject Challenge
+    func rejectChallenge(challenge: Challenge, closure: @escaping ( Bool )->Void) {
+        var rejectedChallenge = challenge.reject()
+        var childUpdates: [String: Any] = [String: Any]()
+        challenge.participantIds().forEach { uid in
+            childUpdates["/\(uid)/\(challenge.id)"] = rejectedChallenge.simplify()
+        }
+        
+        Database.database().reference().child("challenges").updateChildValues(childUpdates) { (error, ref) in
+            guard error == nil else { closure(false);return }
+            Notifier().rejectChallenge(challenge: rejectedChallenge)
             closure(true)
         }
     }

@@ -259,7 +259,7 @@ extension DiscoverPeopleTableViewController: UISearchResultsUpdating, UISearchCo
     }
     
     func filterData( _ searchTerm: String) -> Void {
-        guard searchTerm.characters.count > 1 else {  return }
+        guard searchTerm.count > 1 else {  return }
         
         filteredFriends = users.filter { friend -> Bool in
             return friend.name.lowercased().contains(searchTerm.lowercased())

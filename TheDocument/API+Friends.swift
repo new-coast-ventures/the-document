@@ -10,11 +10,8 @@ import Argo
 extension API {
     
     func friendFromJSON(_ json: [String: Any]) -> TDUser? {
-        if let j: Any = json {
-            let friend: TDUser? = decode(j)
-            return friend
-        }
-        return nil
+        let friend: TDUser? = decode(json as Any)
+        return friend
     }
     
     //Gets current user's friends

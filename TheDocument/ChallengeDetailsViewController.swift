@@ -523,10 +523,15 @@ extension ChallengeDetailsViewController {
     }
     
     func competitorRecord(player: TDUser?) -> String {
-        if let player = player, let wins = player.record.totalWins, let losses = player.record.totalLosses {
-            return "\(wins)-\(losses)"
-        } else {
-            return "0-0"
+        guard let participant = challenge.participants.flatMap({ $0 }).filter({ $0.uid == player?.uid }).first else { return "" }
+
+        switch participant.accepted {
+        case 0:
+            return "Declined"
+        case 1:
+            return "Accepted"
+        default:
+            return "Pending"
         }
     }
  
