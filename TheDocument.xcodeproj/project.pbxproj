@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6F091BF01FD9C6FC00EDC951 /* AccountsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F091BEF1FD9C6FC00EDC951 /* AccountsTableViewController.swift */; };
+		6F1409841FFECE5E007E0B95 /* ChangePasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1409831FFECE5E007E0B95 /* ChangePasswordViewController.swift */; };
 		6F18039A1F1E571A0002902C /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1803991F1E571A0002902C /* Comment.swift */; };
 		6F18039D1F1ECAFE0002902C /* CommentTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F18039B1F1ECAFE0002902C /* CommentTableViewCell.swift */; };
 		6F18039E1F1ECAFE0002902C /* CommentTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6F18039C1F1ECAFE0002902C /* CommentTableViewCell.xib */; };
@@ -114,6 +115,7 @@
 
 /* Begin PBXFileReference section */
 		6F091BEF1FD9C6FC00EDC951 /* AccountsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsTableViewController.swift; sourceTree = "<group>"; };
+		6F1409831FFECE5E007E0B95 /* ChangePasswordViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordViewController.swift; sourceTree = "<group>"; };
 		6F1803991F1E571A0002902C /* Comment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 		6F18039B1F1ECAFE0002902C /* CommentTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentTableViewCell.swift; sourceTree = "<group>"; };
 		6F18039C1F1ECAFE0002902C /* CommentTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CommentTableViewCell.xib; sourceTree = "<group>"; };
@@ -308,6 +310,7 @@
 			children = (
 				EC329D2E1EC49B07002DCDA1 /* SettingsViewController.swift */,
 				EC329D301EC4B5B9002DCDA1 /* SettingsPreviewViewController.swift */,
+				6F1409831FFECE5E007E0B95 /* ChangePasswordViewController.swift */,
 			);
 			name = Settings;
 			sourceTree = "<group>";
@@ -854,6 +857,7 @@
 				EC01D4561EAF69DB00EDD39B /* IntroPageViewController.swift in Sources */,
 				6FD769661F8D5F4100086904 /* NCVAlertView.swift in Sources */,
 				EC3BCFEF1EC02FF90001D3D1 /* AcceptButton.swift in Sources */,
+				6F1409841FFECE5E007E0B95 /* ChangePasswordViewController.swift in Sources */,
 				6F8EEE471F7312110011A178 /* TDWebViewController.swift in Sources */,
 				EC2F6AA31EC1C09000DB11F0 /* GroupPhotoViewController.swift in Sources */,
 				EC2EE6B71EE7D6CB004AC6C5 /* API+Friends.swift in Sources */,

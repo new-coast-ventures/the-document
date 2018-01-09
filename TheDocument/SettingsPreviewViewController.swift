@@ -61,8 +61,6 @@ class SettingsPreviewViewController: BaseTableViewController {
         switch (indexPath.section, indexPath.row) {
         case (0, _): break
             // do nothing
-        case (1, 0):
-            resetPasswordAction()
         case (1, _): break
             // do nothing
         case (4, 0):
