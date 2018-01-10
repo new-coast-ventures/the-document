@@ -30,6 +30,8 @@
 		6FD769661F8D5F4100086904 /* NCVAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD769651F8D5F4100086904 /* NCVAlertView.swift */; };
 		6FDC31EF1F27E01900B253C5 /* ChatterNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FDC31EE1F27E01900B253C5 /* ChatterNotification.swift */; };
 		6FED1C8C20059D0100C56463 /* MyWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FED1C8B20059D0100C56463 /* MyWalletViewController.swift */; };
+		6FED1C8E2005B2E500C56463 /* DepositFundsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FED1C8D2005B2E500C56463 /* DepositFundsTableViewController.swift */; };
+		6FED1C902005B2FC00C56463 /* WithdrawFundsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FED1C8F2005B2FC00C56463 /* WithdrawFundsTableViewController.swift */; };
 		6FF329811F85950B0095AEBC /* HeadToHeadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FF329801F85950B0095AEBC /* HeadToHeadViewController.swift */; };
 		B9DAAD804F565194214CF210 /* Pods_TheDocument.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A35A8DFDDAE4DDA875EB060B /* Pods_TheDocument.framework */; };
 		EC01D4541EAF4F0100EDD39B /* InputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC01D4531EAF4F0100EDD39B /* InputField.swift */; };
@@ -140,6 +142,8 @@
 		6FD769651F8D5F4100086904 /* NCVAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NCVAlertView.swift; sourceTree = "<group>"; };
 		6FDC31EE1F27E01900B253C5 /* ChatterNotification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatterNotification.swift; sourceTree = "<group>"; };
 		6FED1C8B20059D0100C56463 /* MyWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyWalletViewController.swift; sourceTree = "<group>"; };
+		6FED1C8D2005B2E500C56463 /* DepositFundsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositFundsTableViewController.swift; sourceTree = "<group>"; };
+		6FED1C8F2005B2FC00C56463 /* WithdrawFundsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawFundsTableViewController.swift; sourceTree = "<group>"; };
 		6FF329801F85950B0095AEBC /* HeadToHeadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadToHeadViewController.swift; sourceTree = "<group>"; };
 		827F8242B157E26D4C889E73 /* Pods-TheDocument.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TheDocument.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TheDocument/Pods-TheDocument.debug.xcconfig"; sourceTree = "<group>"; };
 		A35A8DFDDAE4DDA875EB060B /* Pods_TheDocument.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TheDocument.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -284,6 +288,8 @@
 				6FC9E8421F070D1B00380D12 /* Bank */,
 				6FC9E83B1F07097E00380D12 /* Onboarding */,
 				6FED1C8B20059D0100C56463 /* MyWalletViewController.swift */,
+				6FED1C8D2005B2E500C56463 /* DepositFundsTableViewController.swift */,
+				6FED1C8F2005B2FC00C56463 /* WithdrawFundsTableViewController.swift */,
 			);
 			name = Payments;
 			sourceTree = "<group>";
@@ -826,6 +832,7 @@
 				EC73495A1EC9DA790058CF0D /* Challenge.swift in Sources */,
 				EC44FDEA1EC0A05800E516CC /* GroupDetailsViewController.swift in Sources */,
 				ECC7C8051EDC59B900E85338 /* RejectChallenge.swift in Sources */,
+				6FED1C902005B2FC00C56463 /* WithdrawFundsTableViewController.swift in Sources */,
 				EC6B456F1ED56F1B00B2E277 /* FriendRequestRequest.swift in Sources */,
 				EC2EE6BB1EE7D793004AC6C5 /* API+Groups.swift in Sources */,
 				EC329D311EC4B5B9002DCDA1 /* SettingsPreviewViewController.swift in Sources */,
@@ -858,6 +865,7 @@
 				6FED1C8C20059D0100C56463 /* MyWalletViewController.swift in Sources */,
 				6F25C82D1F098C3100E345C5 /* SelectBankTableViewController.swift in Sources */,
 				EC6B45711ED5702100B2E277 /* Notifier.swift in Sources */,
+				6FED1C8E2005B2E500C56463 /* DepositFundsTableViewController.swift in Sources */,
 				EC01D4561EAF69DB00EDD39B /* IntroPageViewController.swift in Sources */,
 				6FD769661F8D5F4100086904 /* NCVAlertView.swift in Sources */,
 				EC3BCFEF1EC02FF90001D3D1 /* AcceptButton.swift in Sources */,

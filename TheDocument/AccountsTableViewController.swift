@@ -51,7 +51,7 @@ class AccountsTableViewController: BaseTableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         let nodeCount = nodes?.count ?? 0
         if (section == 0 && nodeCount > 0) {
-            return "Bank Account"
+            return "Bank Accounts"
         }
         return nil
     }
