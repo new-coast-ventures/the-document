@@ -29,6 +29,7 @@
 		6FC9E8411F070CD300380D12 /* AddIDViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC9E8401F070CD300380D12 /* AddIDViewController.swift */; };
 		6FD769661F8D5F4100086904 /* NCVAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD769651F8D5F4100086904 /* NCVAlertView.swift */; };
 		6FDC31EF1F27E01900B253C5 /* ChatterNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FDC31EE1F27E01900B253C5 /* ChatterNotification.swift */; };
+		6FED1C8C20059D0100C56463 /* MyWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FED1C8B20059D0100C56463 /* MyWalletViewController.swift */; };
 		6FF329811F85950B0095AEBC /* HeadToHeadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FF329801F85950B0095AEBC /* HeadToHeadViewController.swift */; };
 		B9DAAD804F565194214CF210 /* Pods_TheDocument.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A35A8DFDDAE4DDA875EB060B /* Pods_TheDocument.framework */; };
 		EC01D4541EAF4F0100EDD39B /* InputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC01D4531EAF4F0100EDD39B /* InputField.swift */; };
@@ -138,6 +139,7 @@
 		6FC9E8401F070CD300380D12 /* AddIDViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddIDViewController.swift; sourceTree = "<group>"; };
 		6FD769651F8D5F4100086904 /* NCVAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NCVAlertView.swift; sourceTree = "<group>"; };
 		6FDC31EE1F27E01900B253C5 /* ChatterNotification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatterNotification.swift; sourceTree = "<group>"; };
+		6FED1C8B20059D0100C56463 /* MyWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyWalletViewController.swift; sourceTree = "<group>"; };
 		6FF329801F85950B0095AEBC /* HeadToHeadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadToHeadViewController.swift; sourceTree = "<group>"; };
 		827F8242B157E26D4C889E73 /* Pods-TheDocument.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TheDocument.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TheDocument/Pods-TheDocument.debug.xcconfig"; sourceTree = "<group>"; };
 		A35A8DFDDAE4DDA875EB060B /* Pods_TheDocument.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TheDocument.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -281,6 +283,7 @@
 				6F091BEF1FD9C6FC00EDC951 /* AccountsTableViewController.swift */,
 				6FC9E8421F070D1B00380D12 /* Bank */,
 				6FC9E83B1F07097E00380D12 /* Onboarding */,
+				6FED1C8B20059D0100C56463 /* MyWalletViewController.swift */,
 			);
 			name = Payments;
 			sourceTree = "<group>";
@@ -852,6 +855,7 @@
 				EC988D1D1EBC97FD00D6878B /* User.swift in Sources */,
 				EC6713471EB60F7000048551 /* OverviewTableViewController.swift in Sources */,
 				6F1803A01F1FD16F0002902C /* DiscoverPeopleTableViewController.swift in Sources */,
+				6FED1C8C20059D0100C56463 /* MyWalletViewController.swift in Sources */,
 				6F25C82D1F098C3100E345C5 /* SelectBankTableViewController.swift in Sources */,
 				EC6B45711ED5702100B2E277 /* Notifier.swift in Sources */,
 				EC01D4561EAF69DB00EDD39B /* IntroPageViewController.swift in Sources */,

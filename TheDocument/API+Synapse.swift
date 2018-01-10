@@ -35,8 +35,11 @@ class SynapseAPIService {
         headers!["X-SP-GATEWAY"] = "\(clientId())|\(clientSecret())"
         headers!["X-SP-USER"] = "\(oauthKey())|\(fingerprint())"
         headers!["X-SP-USER-IP"] = "\(userIpAddress())"
+        
+        print("\nSynapseAPIService request: \(url)")
+        print("Parameters: \(String(describing: request.parameters))\n")
 
-        service.request(url: url, method: request.method, params: request.parameters, headers: headers, success: { data in
+        service.request(url: url, method: request.method, params: request.parameters, headers: headers!, success: { data in
             var json: Any? = nil
             if let data = data {
                 json = try? JSONSerialization.jsonObject(with: data, options: [])
@@ -95,11 +98,14 @@ class SynapseAPIService {
     func setUserId(id: Any?) {
         if let id = id as? String {
             currentUser.synapseUID = id
+            UserDefaults.standard.set(id, forKey: "synapse_uid")
+            UserDefaults.standard.synchronize()
         }
     }
     
     func userId() -> String {
-        return currentUser.synapseUID ?? ""
+        //return currentUser.synapseUID
+        return UserDefaults.standard.string(forKey: "synapse_uid") ?? ""
     }
     
     func setOauthKey(key: Any?) {
@@ -136,19 +142,38 @@ extension API {
             "logins": [[ "email": email ]],
             "phone_numbers": [ phone ],
             "legal_names": [ name ],
-            "extra": [ "cip_tag": 1, "is_business": false ]
+            "extra": [ "cip_tag": 1, "is_business": false ],
+            "documents": [[
+                "email": email,
+                "phone_number": phone,
+                "name": name,
+                "entity_type": "unknown",
+                "entity_scope": "unknown",
+                "day": "1", //currentUser.birthDay,
+                "month": "9", //currentUser.birthMonth,
+                "year": "1987", //currentUser.birthYear,
+                "address_street": "123 Main Street", //currentUser.address.street
+                "address_city": "Chicago", //currentUser.address.city
+                "address_subdivision": "IL", //currentUser.address.state
+                "address_postal_code": currentUser.postcode!, //currentUser.address.postcode
+                "address_country_code": "US", // only allow US members for now
+                "social_docs": [[
+                    "document_value": "https://www.facebook.com/valid", // currentUser.fbAccessToken,
+                    "document_type": "FACEBOOK"
+                    ]]
+                ]]
         ]
         
         request.endpoint = "/users"
         request.parameters = payload
         
         service.request(request: request, success: { (response) in
-            if let userRef = response as? [String: Any] {
+            if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
                 print("Created user: \(userRef)")
-                
                 currentUser.synapseData = userRef
-                service.setUserId(id: userRef["_id"])
-                service.setRefreshToken(token: userRef["refresh_token"])
+                currentUser.synapseUID = uid
+                service.setUserId(id: uid)
+                service.setRefreshToken(token: refreshToken)
             }
             closure?(true)
         }) { (error) in
@@ -159,7 +184,7 @@ extension API {
     
     func addKYCInfo(_ closure : ((Bool) -> Void)? = nil) {
         let payload = [
-            "documents": [
+            "documents": [[
                 "email": currentUser.email,
                 "phone_number": currentUser.phone!,
                 "name": currentUser.name,
@@ -177,7 +202,7 @@ extension API {
                     "document_value": "https://www.facebook.com/valid", // currentUser.fbAccessToken,
                     "document_type": "FACEBOOK"
                 ]]
-            ]
+            ]]
         ]
         
         let service = SynapseAPIService()
@@ -202,6 +227,10 @@ extension API {
         request.parameters = [ "refresh_token": service.refreshToken() ]
         
         SynapseAPIService().request(request: request, success: { (response) in
+            if let authRef = response as? [String: Any], let oauthKey = authRef["oauth_key"] as? String, let refreshToken = authRef["refresh_token"] as? String {
+                service.setOauthKey(key: oauthKey)
+                service.setRefreshToken(token: refreshToken)
+            }
             closure?(true)
         }) { (error) in
             print(error.localizedDescription)
@@ -209,7 +238,47 @@ extension API {
         }
     }
     
-    func linkBankAccount(bank_id: String, bank_password: String, bank_name: String, _ closure : ((Bool) -> Void)? = nil) {
+    func getLinkedAccounts(_ closure : ((Bool) -> Void)? = nil) {
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        request.endpoint = "/users/\(service.userId())/nodes"
+        request.parameters = [ "type": "ACH-US" ]
+        request.method = .GET
+
+        SynapseAPIService().request(request: request, success: { (response) in
+            if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
+                currentUser.nodes = nodes
+                closure?(true)
+            } else {
+                closure?(false)
+            }
+        }) { (error) in
+            print("Get Linked Accounts Error: \(error.localizedDescription)")
+            closure?(false)
+        }
+    }
+    
+    func getWallet(_ closure : ((Bool) -> Void)? = nil) {
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        request.endpoint = "/users/\(service.userId())/nodes"
+        request.parameters = [ "type": "SYNAPSE-US" ]
+        request.method = .GET
+        
+        SynapseAPIService().request(request: request, success: { (response) in
+            if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]], let wallet = nodes.first as? [String: Any] {
+                currentUser.wallet = wallet
+                closure?(true)
+            } else {
+                closure?(false)
+            }
+        }) { (error) in
+            print("Get Wallet Error: \(error.localizedDescription)")
+            closure?(false)
+        }
+    }
+    
+    func linkBankAccount(bank_id: String, bank_password: String, bank_name: String, _ closure : ((Any) -> Void)? = nil) {
         
         let payload: [String: Any] = [
             "type": "ACH-US",
@@ -226,7 +295,7 @@ extension API {
         request.parameters = payload
         
         SynapseAPIService().request(request: request, success: { (response) in
-            closure?(true)
+            closure?(response)
         }) { (error) in
             print(error.localizedDescription)
             closure?(false)
@@ -246,11 +315,13 @@ extension API {
         request.parameters = payload
         
         SynapseAPIService().request(request: request, success: { (response) in
-//            if let http_code = response["http_code"] as? String, http_code == "202", let mfa_dict = response["mfa"] as? [String: Any]  {
-//                self.mfaVC = mfaViewController(mfa: mfa_dict)
-//                self.present(self.mfaVC, animated: true, completion: nil)
-//            }
-            closure?(true)
+            print("CREATE WALLET... \(String(describing: response))")
+            if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
+                currentUser.nodes = nodes
+                closure?(true)
+            } else {
+                closure?(false)
+            }
         }) { (error) in
             print(error.localizedDescription)
             closure?(false)
@@ -264,7 +335,12 @@ extension API {
         request.parameters = [ "access_token": access_token, "mfa_answer": answer ]
         
         SynapseAPIService().request(request: request, success: { (response) in
-            closure?(true)
+            if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
+                currentUser.nodes = nodes
+                closure?(true)
+            } else {
+                closure?(false)
+            }
         }) { (error) in
             print(error.localizedDescription)
             closure?(false)

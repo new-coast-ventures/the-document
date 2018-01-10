@@ -17,6 +17,14 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        oldPasswordTextField.layer.dropShadow()
+        newPasswordTextField.layer.dropShadow()
+        saveButton.layer.cornerRadius = 3.0
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.hideToolbar)"), object: nil)
     }
 
     override func didReceiveMemoryWarning() {
@@ -31,14 +39,29 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
 
         updatePassword(newPassword)
     }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if (textField == oldPasswordTextField) {
+            newPasswordTextField.becomeFirstResponder()
+        } else {
+            textField.resignFirstResponder()
+        }
+    }
 }
 
 extension ChangePasswordViewController {
     func updatePassword(_ newPassword: String, _ reauthenticate: Bool = true) {
         Auth.auth().currentUser?.updatePassword(to: newPassword) { (error) in
             if error != nil && reauthenticate == true {
+                print("Update password error: \(error!.localizedDescription)")
                 self.reauthenticateUser(newPassword)
             } else if error != nil {
+                print("Update password 2nd try error: \(error!.localizedDescription)")
                 self.showAlert(message: "Something went wrong. Please try again later.")
             } else {
                 self.showAlert(title: "Success!", message: "Your password has been successfully updated", closure: { action in
@@ -54,9 +77,11 @@ extension ChangePasswordViewController {
             return
         }
         
+        print("Reauthenticating \(currentUser.email) using password \(oldPassword)")
         let credential = EmailAuthProvider.credential(withEmail: currentUser.email, password: oldPassword)
         Auth.auth().currentUser?.reauthenticate(with: credential) { error in
             if error != nil {
+                print("Reauth error: \(error!.localizedDescription)")
                 self.showAlert(message: "We're having trouble connecting. Please try again later.")
             } else {
                 self.updatePassword(newPassword, false)

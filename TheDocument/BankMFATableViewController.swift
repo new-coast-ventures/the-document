@@ -11,6 +11,7 @@ import UIKit
 class BankMFATableViewController: UITableViewController {
     
     var selectedBank = [String: String]()
+    var mfaInfo = [String: String]()
 
     @IBOutlet weak var bankLogo: UIImageView!
     @IBOutlet weak var mfaTextField: UITextField!
@@ -60,8 +61,20 @@ class BankMFATableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.section == 2 && indexPath.row == 0 {
-            self.navigationController?.popToRootViewController(animated: true)
+            guard let token = mfaInfo["access_token"], let answer = mfaTextField.text else { return }
+            API().answerMFA(access_token: token, answer: answer, { (bool) in
+                DispatchQueue.main.async {
+                    self.navigationController?.popToRootViewController(animated: true)
+                }
+            })
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if section == 1 {
+            return mfaInfo["message"]
+        }
+        return nil
     }
 
     /*

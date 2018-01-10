@@ -122,6 +122,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private func showHome() {
         currentUser.isLogged = true
+        
+        let suid = SynapseAPIService().userId()
+        if !suid.isBlank {
+            // Reauthenticate User
+            print("Authorizing Synapse User")
+            API().authorizeSynapseUser()
+        } else {
+            // Create Synapse Account
+            print("Creating Synapse Account")
+            
+            var phone = currentUser.phone ?? "test@synapsepay.com"
+            if phone.isBlank || phone.isEmpty {
+                phone = "test@synapsepay.com"
+            }
+            
+            API().createSynapseUser(email: currentUser.email, phone: phone, name: currentUser.name, { success in
+                if success {
+                    print("Authorizing Synapse User")
+                    API().authorizeSynapseUser()
+                } else {
+                    print("Unable to create Synapse user")
+                }
+            })
+        }
+        
         DispatchQueue.main.async {
             self.window?.rootViewController = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: Constants.homeVCStoryboardIdentifier)
         }

@@ -12,11 +12,9 @@ struct API {
     
     //After login and before home screen operations
     func startup(closure: @escaping (Bool)->Void) {
-        print("API => STARTUP")
         Database.database().reference(withPath: "users/\(currentUser.uid)").observeSingleEvent(of: .value, with: { (snapshot) in
-            guard  let userInfo = snapshot.value as? [String : Any] else { closure(false); return }
+            guard let userInfo = snapshot.value as? [String : Any] else { closure(false); return }
             
-            print("Got userInfo: \(userInfo)")
             currentUser.name = userInfo["name"] as? String ?? "Player"
             currentUser.postcode = userInfo["postcode"] as? String ?? ""
             currentUser.phone = userInfo["phone"] as? String ?? ""
