@@ -18,6 +18,7 @@ class NewChallengeViewController: BaseViewController {
     @IBOutlet weak var formatPicker:            UIPickerView!
     @IBOutlet weak var timePicker:              UIDatePicker!
     @IBOutlet weak var createChallengeButton:   UIButton!
+    @IBOutlet weak var walletBalanceLabel:      UILabel!
     
     let locationManager = CLLocationManager()
     
@@ -30,6 +31,9 @@ class NewChallengeViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        walletBalanceLabel.isHidden = true
+        getWallet()
         
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(hideControls)))
         
@@ -94,11 +98,11 @@ class NewChallengeViewController: BaseViewController {
         
         if let challengeToId = toId {
             challenge.toId = challengeToId
+            challenge.fromId = currentUser.uid
             self.startActivityIndicator()
+
             API().challengeFriends(challenge: challenge, friendsIds: [challenge.toId]) {
-                self.dismiss(animated: true, completion: {
-                    NCVAlertView().showSuccess("Challenge Created!", subTitle: "")
-                })
+                self.loadChallengeDetailsView(challenge: self.challenge)
             }
         } else {
             performSegue(withIdentifier: Constants.inviteFriendsNewChallengeStoryboardIdentifier, sender: self)
@@ -113,6 +117,47 @@ class NewChallengeViewController: BaseViewController {
                 destVC.mode = .challenge(challenge)
             } else {
                 destVC.mode = .teamChallenge(challenge)
+            }
+        }
+    }
+    
+    func getWallet() {
+        print("Getting wallet...")
+        if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: String] {
+            let amount = balance["amount"] ?? "0.00"
+            self.walletBalanceLabel.text = "You have $\(amount) available"
+            
+        } else {
+            API().getWallet { success in
+                if success {
+                    print("Got wallet")
+                    DispatchQueue.main.async {
+                        if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: String] {
+                            print("WALLET LOADED: \(wallet)")
+                            let amount = balance["amount"] ?? "0.00"
+                            self.walletBalanceLabel.text = "You have $\(amount) available"
+                        } else {
+                            self.walletBalanceLabel.text = "You have $0.00 available"
+                        }
+                        self.walletBalanceLabel.isHidden = false
+                    }
+                } else {
+                    print("Error getting wallet")
+                }
+            }
+        }
+    }
+    
+    func loadChallengeDetailsView(challenge: Challenge) {
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
+        self.dismiss(animated: false) {
+            guard let challengeDetailsViewController = self.storyboard?.instantiateViewController(withIdentifier: "challengeDetailsViewController") as? ChallengeDetailsViewController, let homeViewController = homeVC, homeViewController.containerViewController.childViewControllers.count > 0 else { return }
+            
+            homeViewController.showOverviewTapped()
+            challengeDetailsViewController.challenge = challenge
+            if let navController = homeViewController.containerViewController.childViewControllers[0] as? UINavigationController {
+                navController.pushViewController(challengeDetailsViewController, animated: false)
+                NCVAlertView().showSuccess("Challenge Created!", subTitle: "")
             }
         }
     }

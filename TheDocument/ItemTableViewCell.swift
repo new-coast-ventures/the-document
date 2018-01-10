@@ -46,7 +46,10 @@ class ItemTableViewCell: UITableViewCell {
         cellId.text = ""
         
         loader.isHidden = false
+        
+        itemImageView.image = UIImage()
         itemImageView.isHidden = false
+        
         resultIconImageView.isHidden = true
     }
     

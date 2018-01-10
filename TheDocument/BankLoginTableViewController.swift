@@ -48,6 +48,7 @@ class BankLoginTableViewController: UITableViewController {
                             self.navigationController?.popToRootViewController(animated: true)
                         }
                     } else {
+                        print("Error linking bank: \(response)")
                         // Something went wrong
                         self.showAlert(message: "Could not link bank account")
                     }

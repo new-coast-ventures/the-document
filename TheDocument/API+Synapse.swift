@@ -147,11 +147,12 @@ extension API {
                 "email": email,
                 "phone_number": phone,
                 "name": name,
-                "entity_type": "unknown",
-                "entity_scope": "unknown",
-                "day": "1", //currentUser.birthDay,
-                "month": "9", //currentUser.birthMonth,
-                "year": "1987", //currentUser.birthYear,
+                "ip": service.userIpAddress(),
+                "entity_type": "NOT_KNOWN",
+                "entity_scope": "Not Known",
+                "day": 1, //currentUser.birthDay,
+                "month": 9, //currentUser.birthMonth,
+                "year": 1987, //currentUser.birthYear,
                 "address_street": "123 Main Street", //currentUser.address.street
                 "address_city": "Chicago", //currentUser.address.city
                 "address_subdivision": "IL", //currentUser.address.state
@@ -183,16 +184,21 @@ extension API {
     }
     
     func addKYCInfo(_ closure : ((Bool) -> Void)? = nil) {
+        
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        
         let payload = [
             "documents": [[
                 "email": currentUser.email,
                 "phone_number": currentUser.phone!,
                 "name": currentUser.name,
-                "entity_type": "unknown",
-                "entity_scope": "unknown",
-                "day": "1", //currentUser.birthDay,
-                "month": "9", //currentUser.birthMonth,
-                "year": "1987", //currentUser.birthYear,
+                "ip": service.userIpAddress(),
+                "entity_type": "NOT_KNOWN",
+                "entity_scope": "Not Known",
+                "day": 1, //currentUser.birthDay,
+                "month": 9, //currentUser.birthMonth,
+                "year": 1987, //currentUser.birthYear,
                 "address_street": "123 Main Street", //currentUser.address.street
                 "address_city": "Chicago", //currentUser.address.city
                 "address_subdivision": "IL", //currentUser.address.state
@@ -205,8 +211,6 @@ extension API {
             ]]
         ]
         
-        let service = SynapseAPIService()
-        let request = SynapseAPIRequest()
         request.endpoint = "/users/\(service.userId())"
         request.method = .PUT
         request.parameters = payload
@@ -332,7 +336,9 @@ extension API {
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         request.endpoint = "/users/\(service.userId())/nodes"
-        request.parameters = [ "access_token": access_token, "mfa_answer": answer ]
+        
+        //TEMP FOR TESTING, replace with "answer"
+        request.parameters = [ "access_token": access_token, "mfa_answer": "test_answer" ]
         
         SynapseAPIService().request(request: request, success: { (response) in
             if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
