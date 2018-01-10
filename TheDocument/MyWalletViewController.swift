@@ -57,8 +57,6 @@ class MyWalletViewController: UIViewController {
     }
     
     @IBAction func withdrawFunds(_ sender: Any) {
-        showAlert(title: "Error", message: "There is no balance available to withdraw") { (action) in
-            print("show alert clicked")
-        }
+        
     }
 }

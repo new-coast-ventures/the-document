@@ -8,7 +8,7 @@
 
 import UIKit
 
-class DepositFundsTableViewController: UITableViewController {
+class DepositFundsTableViewController: UITableViewController, UITextFieldDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,10 +25,11 @@ class DepositFundsTableViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if (indexPath.section == 2) {
-            // Deposit funds // Check for limits // Confirm
-            self.navigationController?.popToRootViewController(animated: true)
-        }
+    @IBAction func depositFunds(_ sender: Any) {
+        self.navigationController?.popToRootViewController(animated: true)
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        textField.resignFirstResponder()
     }
 }
