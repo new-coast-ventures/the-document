@@ -67,10 +67,15 @@ class AccountsTableViewController: BaseTableViewController {
             cell.bottomLabel.text = "Click to connect a funding source"
             cell.tag = 1
             cell.accessoryType = .disclosureIndicator
+            
         } else if let nodes = nodes, nodes.count > 0 {
             if let info = nodes[indexPath.row]["info"] as? [String: Any] {
                 let nodeName = info["bank_name"] as? String ?? "Example Checking Account"
                 let lastFour = info["account_num"] as? String ?? "0000"
+                if let logoUrl = info["bank_logo"] as? String, let url = URL(string: logoUrl) {
+                    cell.itemImageView.imageFromServerURL(url) { /* do nothing */ }
+                }
+                
                 cell.topLabel.text = "\(nodeName)"
                 cell.bottomLabel.text = "•••• •••• •••• \(lastFour)"
                 cell.tag = 0
@@ -90,7 +95,6 @@ class AccountsTableViewController: BaseTableViewController {
     func getNodes() {        
         API().getLinkedAccounts { success in
             if success {
-                print("Got linked accounts")
                 DispatchQueue.main.async {
                     self.nodes = currentUser.nodes!
                     self.tableView.reloadData()

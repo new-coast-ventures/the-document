@@ -29,16 +29,22 @@ class SynapseAPIService {
     
     func request(request: SynapseAPIRequest, success: ((Any?) -> Void)? = nil, fail: ((Error) -> Void)? = nil) {
         
-        let url = request.endpoint.isBlank ? conf.baseURL : conf.baseURL.appendingPathComponent(request.endpoint)
+        var url = request.endpoint.isBlank ? conf.baseURL : conf.baseURL.appendingPathComponent(request.endpoint)
+        if let params = request.parameters as? [String: String], request.method == .GET {
+            var urlString = url.absoluteString.appending("?")
+            params.forEach({ (k, v) in
+                urlString = urlString.appending("\(k)=\(v)&")
+            })
+            
+            url = URL(string: urlString)!
+        }
         
         var headers = request.headers
         headers!["X-SP-GATEWAY"] = "\(clientId())|\(clientSecret())"
         headers!["X-SP-USER"] = "\(oauthKey())|\(fingerprint())"
         headers!["X-SP-USER-IP"] = "\(userIpAddress())"
-        
-        print("\nSynapseAPIService request: \(url)")
-        print("Parameters: \(String(describing: request.parameters))\n")
 
+        print("SYNAPSE REQUEST: \(url.absoluteString)")
         service.request(url: url, method: request.method, params: request.parameters, headers: headers!, success: { data in
             var json: Any? = nil
             if let data = data {
@@ -51,9 +57,9 @@ class SynapseAPIService {
             var json: Any? = nil
             if let data = data {
                 json = try? JSONSerialization.jsonObject(with: data, options: [])
-                print("JSON \(json ?? "")")
+                self.handleError(json)
             }
-
+            
             if let fcmError = error  {
                 print("Error \(fcmError)")
                 fail?(fcmError)
@@ -61,6 +67,18 @@ class SynapseAPIService {
                 fail?(NSError(domain: "", code: statusCode, userInfo: ["errorDescription":data ?? Data() ]))
             }
         })
+    }
+    
+    func handleError(_ errorJson: Any?) {
+        guard let json = errorJson as? [String: Any], let error_code = json["error_code"] as? String else { print("Handle error did not return expected result"); return }
+        
+        switch error_code {
+        case "110":
+            print("Invalid/expired oauth_key. Reauthorizing user now...")
+            API().authorizeSynapseUser()
+        default:
+            print("Error Code: \(error_code)")
+        }
     }
     
     func cancel() {
@@ -265,14 +283,19 @@ extension API {
     func getWallet(_ closure : ((Bool) -> Void)? = nil) {
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
+        
         request.endpoint = "/users/\(service.userId())/nodes"
-        request.parameters = [ "type": "SYNAPSE-US" ]
+        request.parameters = [ "type": "SUBACCOUNT-US" ]
         request.method = .GET
         
         SynapseAPIService().request(request: request, success: { (response) in
-            if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]], let wallet = nodes.first as? [String: Any] {
-                currentUser.wallet = wallet
-                closure?(true)
+            if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
+                currentUser.wallet = nodes.first
+                if currentUser.wallet != nil {
+                    closure?(true)
+                } else {
+                    self.createWallet() { closure?($0) }
+                }
             } else {
                 closure?(false)
             }
@@ -319,9 +342,8 @@ extension API {
         request.parameters = payload
         
         SynapseAPIService().request(request: request, success: { (response) in
-            print("CREATE WALLET... \(String(describing: response))")
             if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
-                currentUser.nodes = nodes
+                currentUser.wallet = nodes.first
                 closure?(true)
             } else {
                 closure?(false)
@@ -353,11 +375,11 @@ extension API {
         }
     }
     
-    func transferFunds(from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
+    func depositFunds(from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        request.endpoint = "/users/\(service.userId())/nodes/\(from)"
+        request.endpoint = "/users/\(service.userId())/nodes/\(from)/trans"
         
         let payload: [String: Any] = [
             "to": [
@@ -366,17 +388,17 @@ extension API {
             ],
             "amount": [
                 "amount": amount,
-                "currency": "USD" // only support USD
+                "currency": "USD"
             ],
             "fees": [
                 [ "fee": -0.05,
                   "note": "Facilitator Fee",
-                  "to": "<ID OF FIDUCIARY ACCOUNT>"
+                  "to": [ "id": "None" ]
                 ]
             ],
             "extra": [
                 "ip": service.userIpAddress(),
-                "note": "ACH to Wallet"
+                "note": "Deposit funds from bank to wallet"
             ]
         ]
         

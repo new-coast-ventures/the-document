@@ -399,20 +399,15 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func setRecordData(uid: String, cell: ItemTableViewCell) {
-        if let groupLeaderboard = UserDefaults.standard.dictionary(forKey: "leaderboard-\(self.group.id)") as? [String: [Int]] {
-            guard let memberRecord = groupLeaderboard["\(uid)"], memberRecord.count == 2 else { return }
-            cell.bottomLabel.text = "\(memberRecord[0])-\(memberRecord[1])"
-        } else {
-            Database.database().reference().child("groups/\(group.id)/leaderboard/\(uid)").observeSingleEvent(of: .value, with: { (snapshot) in
-                guard let recordData = snapshot.value as? [Int], recordData.count == 2 else { return }
-                DispatchQueue.main.async {
-                    guard let ip = self.tableView.indexPath(for: cell) else { return }
-                    if self.tableView.indexPathsForVisibleRows?.contains(ip) == true {
-                        cell.bottomLabel.text = "\(recordData[0])-\(recordData[1])"
-                    }
+        Database.database().reference().child("groups/\(group.id)/leaderboard/\(uid)").observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let recordData = snapshot.value as? [Int], recordData.count == 2 else { return }
+            DispatchQueue.main.async {
+                guard let ip = self.tableView.indexPath(for: cell) else { return }
+                if self.tableView.indexPathsForVisibleRows?.contains(ip) == true {
+                    cell.bottomLabel.text = "\(recordData[0])-\(recordData[1])"
                 }
-            })
-        }
+            }
+        })
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {

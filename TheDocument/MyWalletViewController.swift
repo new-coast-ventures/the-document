@@ -34,18 +34,14 @@ class MyWalletViewController: UIViewController {
     }
     
     func getWallet() {
-        print("Getting wallet...")
         API().getWallet { success in
             if success {
-                print("Got wallet")
+                var amount = "0.00"
+                if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: String] {
+                    amount = balance["amount"] ?? "0.00"
+                }
                 DispatchQueue.main.async {
-                    if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: String] {
-                        print("WALLET LOADED: \(wallet)")
-                        let amount = balance["amount"] ?? "0.00"
-                        self.accountBalanceLabel.text = "$\(amount)"
-                    } else {
-                        self.accountBalanceLabel.text = "$0.00"
-                    }
+                    self.accountBalanceLabel.text = "$\(amount)"
                 }
             } else {
                 print("Error getting wallet")
