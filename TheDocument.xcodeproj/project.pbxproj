@@ -17,6 +17,9 @@
 		6F25C82D1F098C3100E345C5 /* SelectBankTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F25C82C1F098C3100E345C5 /* SelectBankTableViewController.swift */; };
 		6F25C82F1F098C5300E345C5 /* BankLoginTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F25C82E1F098C5300E345C5 /* BankLoginTableViewController.swift */; };
 		6F25C8311F098C5C00E345C5 /* BankMFATableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F25C8301F098C5C00E345C5 /* BankMFATableViewController.swift */; };
+		6F30B69D201A593C003C3559 /* IntroLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F30B69C201A593C003C3559 /* IntroLocationViewController.swift */; };
+		6F30B69F201A97CF003C3559 /* FundingSourceTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F30B69E201A97CF003C3559 /* FundingSourceTableViewController.swift */; };
+		6F30B6A1201AF918003C3559 /* MFAViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F30B6A0201AF918003C3559 /* MFAViewController.swift */; };
 		6F86ADC21F95628200F8B8C2 /* TheDocumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F86ADC11F95628200F8B8C2 /* TheDocumentTests.swift */; };
 		6F8E79D11F1003EC00FDA983 /* Empty.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6F8E79D01F1003EC00FDA983 /* Empty.xib */; };
 		6F8E79D31F10065C00FDA983 /* Empty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8E79D21F10065C00FDA983 /* Empty.swift */; };
@@ -127,6 +130,9 @@
 		6F25C82C1F098C3100E345C5 /* SelectBankTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectBankTableViewController.swift; sourceTree = "<group>"; };
 		6F25C82E1F098C5300E345C5 /* BankLoginTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BankLoginTableViewController.swift; sourceTree = "<group>"; };
 		6F25C8301F098C5C00E345C5 /* BankMFATableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BankMFATableViewController.swift; sourceTree = "<group>"; };
+		6F30B69C201A593C003C3559 /* IntroLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroLocationViewController.swift; sourceTree = "<group>"; };
+		6F30B69E201A97CF003C3559 /* FundingSourceTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FundingSourceTableViewController.swift; sourceTree = "<group>"; };
+		6F30B6A0201AF918003C3559 /* MFAViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFAViewController.swift; sourceTree = "<group>"; };
 		6F86ADBF1F95628200F8B8C2 /* TheDocumentTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TheDocumentTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F86ADC11F95628200F8B8C2 /* TheDocumentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheDocumentTests.swift; sourceTree = "<group>"; };
 		6F86ADC31F95628200F8B8C2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -290,6 +296,7 @@
 				6FED1C8B20059D0100C56463 /* MyWalletViewController.swift */,
 				6FED1C8D2005B2E500C56463 /* DepositFundsTableViewController.swift */,
 				6FED1C8F2005B2FC00C56463 /* WithdrawFundsTableViewController.swift */,
+				6F30B69E201A97CF003C3559 /* FundingSourceTableViewController.swift */,
 			);
 			name = Payments;
 			sourceTree = "<group>";
@@ -367,6 +374,7 @@
 			children = (
 				EC01D4551EAF69DB00EDD39B /* IntroPageViewController.swift */,
 				EC0D016F1EAE7C770095A20D /* IntroductionViewController.swift */,
+				6F30B69C201A593C003C3559 /* IntroLocationViewController.swift */,
 			);
 			name = Intro;
 			sourceTree = "<group>";
@@ -377,6 +385,7 @@
 				EC40BD181EB9EC9900BB8899 /* Buttons */,
 				ECE9E9921E9E1B0E00A87221 /* LoginViewController.swift */,
 				EC0D016D1EAE6D5E0095A20D /* ForgotPasswordViewController.swift */,
+				6F30B6A0201AF918003C3559 /* MFAViewController.swift */,
 			);
 			name = Login;
 			sourceTree = "<group>";
@@ -826,6 +835,7 @@
 				6F8E79D31F10065C00FDA983 /* Empty.swift in Sources */,
 				EC40BD221EB9F13C00BB8899 /* BaseTableViewController.swift in Sources */,
 				EC6B45791ED58E3F00B2E277 /* DeclareWinner.swift in Sources */,
+				6F30B69F201A97CF003C3559 /* FundingSourceTableViewController.swift in Sources */,
 				EC69B7FC1EC3798E00E32F2D /* TabButton.swift in Sources */,
 				EC988D1B1EBB65DD00D6878B /* API.swift in Sources */,
 				6F091BF01FD9C6FC00EDC951 /* AccountsTableViewController.swift in Sources */,
@@ -853,6 +863,7 @@
 				EC3B878E1EC1ED1C00721DEF /* InviteFriendsViewController.swift in Sources */,
 				EC7349571EC9CB080058CF0D /* NewChallengeViewController.swift in Sources */,
 				EC73495E1EC9E8840058CF0D /* FirebaseEncodable.swift in Sources */,
+				6F30B6A1201AF918003C3559 /* MFAViewController.swift in Sources */,
 				EC40EA1B1EF2CAC3002C62AC /* TDCache.swift in Sources */,
 				EC6B45751ED5891C00B2E277 /* ChallengeRequest.swift in Sources */,
 				6F9365F81F98110E005683A4 /* EmptySegue.swift in Sources */,
@@ -885,6 +896,7 @@
 				EC0D01701EAE7C770095A20D /* IntroductionViewController.swift in Sources */,
 				EC44FDE51EC0856800E516CC /* GroupsTableViewController.swift in Sources */,
 				EC0D01761EAF3A5B0095A20D /* Extensions.swift in Sources */,
+				6F30B69D201A593C003C3559 /* IntroLocationViewController.swift in Sources */,
 				ECE9E97E1E9E187500A87221 /* AppDelegate.swift in Sources */,
 				ECDE36501ECF9106000368B1 /* FriendDetailsViewController.swift in Sources */,
 				EC6B45771ED58CDA00B2E277 /* AcceptChallengeRequest.swift in Sources */,

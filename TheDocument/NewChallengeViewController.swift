@@ -6,39 +6,60 @@
 import UIKit
 import Firebase
 import SearchTextField
-import CoreLocation
 
 class NewChallengeViewController: BaseViewController {
 
-    @IBOutlet weak var challengeName:           SearchTextField!
+    @IBOutlet weak var challengeName:           InputField!
     @IBOutlet weak var challengeFormat:         InputField!
     @IBOutlet weak var challengeLocation:       InputField!
     @IBOutlet weak var challengeTime:           InputField!
     @IBOutlet weak var challengePrice:          InputField!
-    @IBOutlet weak var formatPicker:            UIPickerView!
-    @IBOutlet weak var timePicker:              UIDatePicker!
     @IBOutlet weak var createChallengeButton:   UIButton!
     @IBOutlet weak var walletBalanceLabel:      UILabel!
-    
-    let locationManager = CLLocationManager()
     
     var challenge:Challenge!
     var toId:String? = nil
     var groupId:String? = nil
+    var dollarLabel: UILabel!
+    var toggle: UIBarButtonItem!
+    var togglePicker: Bool = true
+    
     var approvedChallenges: [String] = [String]()
     var challengeFormats: [String] = [String]()
-    var dollarLabel: UILabel!
+    var priceOptions: [Int] = [Int]()
+    
+    let challengePicker = UIPickerView()
+    let amountPicker = UIPickerView()
+    let formatPicker = UIPickerView()
+    let timePicker = UIDatePicker()
+    
+    var accountBalance: Float = 0.00
+    var walletAccount: [String: Any]?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Set initial picker values
+        priceOptions = [0, 1, 5, 10, 25, 50]
+        challengeFormats = ["1-on-1", "2-on-2"]
+        approvedChallenges = ["Cornhole", "Ladder Toss", "Washers", "Frisbee Golf", "Ring Toss", "Pop-a-Shot", "Pong",
+                              "Flip Cup", "Spinning", "Running", "Circuit Training", "Weight Lifting", "Golf", "Tennis", "Basketball", "Bowling",
+                              "Skiing", "Video Game", "Checkers", "Chess", "Backgammon"].sorted()
+        
         walletBalanceLabel.isHidden = true
-        getWallet()
+        challengePicker.delegate = self
+        amountPicker.delegate = self
+        formatPicker.delegate = self
         
-        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(hideControls)))
+        // Set up challenge picker
+        challengeName.inputView = challengePicker
         
-        self.addDoneButtonOnKeyboard()
+        // Set up challenge time
+        timePicker.minuteInterval = 30
+        timePicker.addTarget(self, action: #selector(NewChallengeViewController.setTime), for: .valueChanged)
+        challengeTime.inputView = timePicker
         
+        // Set up dollar label
         dollarLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 10, height: 20))
         dollarLabel.backgroundColor = .clear
         dollarLabel.numberOfLines = 1
@@ -47,60 +68,60 @@ class NewChallengeViewController: BaseViewController {
         dollarLabel.font = UIFont(name: "OpenSans", size: 16)!
         dollarLabel.text = "$"
         
-        challengePrice.addTarget(self, action: #selector(NewChallengeViewController.toggleDollarLabel(sender:)), for: .editingChanged)
+        // Set up price field
         challengePrice.leftViewMode = challengePrice.text == "" ? .never : .always
         challengePrice.leftView = dollarLabel
         challengePrice.isHidden = false
         challengePrice.isEnabled = false
+        challengePrice.inputView = amountPicker
         dollarLabel.sizeToFit()
         
-        timePicker.minuteInterval = 30
-        timePicker.addTarget(self, action: #selector(NewChallengeViewController.setTime), for: .valueChanged)
-        
+        // Set up format field
         challengeFormat.text = "1-on-1"
-        challengeFormats = ["1-on-1", "2-on-2"]
-        if toId != nil {
-            challengeFormat.isHidden = true
-        } else {
-            challengeFormat.isHidden = false
-        }
-
-        approvedChallenges = ["Cornhole", "Ladder Toss", "Washers", "Frisbee Golf", "Ring Toss", "Pop-a-Shot", "Pong", 
-        "Flip Cup", "Spinning", "Running", "Circuit Training", "Weight Lifting", "Golf", "Tennis", "Basketball", "Bowling", 
-        "Skiing", "Video Game", "Checkers", "Chess", "Backgammon"].sorted()
+        challengeFormat.isEnabled = true
+        challengeFormat.isHidden = (toId != nil)
+        challengeFormat.inputView = formatPicker
         
-        challengeName.theme.font = UIFont(name: "OpenSans", size: 14)!
-        challengeName.highlightAttributes = [NSAttributedStringKey(rawValue: NSAttributedStringKey.font.rawValue):UIFont(name: "OpenSans-Bold", size: 14)!]
-        challengeName.theme.bgColor = .white
-        challengeName.filterStrings(approvedChallenges)
-        challengeName.itemSelectionHandler = { filteredResults, itemPosition in
-            let item = filteredResults[itemPosition]
-            self.challengePrice.isEnabled = true
-            self.challengeName.text = item.title
-        }
+        // Final setup
+        setupChallengeNameKeyboard()
+        addDoneButtonOnKeyboard()
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(hideControls)))
+        
+        // Load wallet
+        getWallet()
     }
 
     @IBAction func closeButtonTapped(_ sender: UIBarButtonItem? = nil) { dismiss(animated: true, completion: nil) }
     
     @IBAction func createChallengeButtonTapped(_ sender: Any) {
-        guard let newChallenge = Challenge.short(name: challengeName.text, format: challengeFormat.text, location: challengeLocation.text, time: challengeTime.text) else {
+        let formatText = challengeFormat.text ?? "1-on-1"
+        guard let newChallenge = Challenge.short(name: challengeName.text, format: formatText, location: challengeLocation.text, time: challengeTime.text) else {
             showAlert(message: Constants.Errors.inputDataChallenge.rawValue)
             return
         }
-        
+
         challenge = newChallenge
         challenge.fromId = currentUser.uid
         challenge.group = groupId
         
         if let priceString = challengePrice.text, let price = Int(priceString) {
-            challenge.price = price
+            if Int(accountBalance) < price {
+                showAlert(message: "You don't have enough funds to create this challenge. Please add more funds on the Settings page.")
+            } else {
+                challenge.price = price
+                startChallenge()
+            }
+        } else {
+            startChallenge()
         }
-        
+    }
+    
+    func startChallenge() {
         if let challengeToId = toId {
             challenge.toId = challengeToId
             challenge.fromId = currentUser.uid
             self.startActivityIndicator()
-
+            
             API().challengeFriends(challenge: challenge, friendsIds: [challenge.toId]) {
                 self.loadChallengeDetailsView(challenge: self.challenge)
             }
@@ -121,30 +142,35 @@ class NewChallengeViewController: BaseViewController {
         }
     }
     
+    func updateAvailableBalance(_ amount: String?) {
+        if let newBalance = Float(amount ?? "0.00") {
+            self.accountBalance = newBalance
+        }
+        
+        DispatchQueue.main.async {
+            self.walletBalanceLabel.text = "You have $\(String(format: "%.2f", self.accountBalance)) available"
+            self.walletBalanceLabel.isHidden = false
+        }
+    }
+    
+    func refreshAccounts() {
+        if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: String] {
+            self.updateAvailableBalance(balance["amount"])
+        } else {
+            self.updateAvailableBalance("0.00")
+        }
+    }
+    
     func getWallet() {
         print("Getting wallet...")
-        if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: String] {
-            let amount = balance["amount"] ?? "0.00"
-            self.walletBalanceLabel.text = "You have $\(amount) available"
-            
+        if let wallet = currentUser.wallet, let _ = wallet["_id"] as? String {
+            walletAccount = wallet
+            self.refreshAccounts()
         } else {
-            API().getWallet { success in
-                if success {
-                    print("Got wallet")
-                    DispatchQueue.main.async {
-                        if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: String] {
-                            print("WALLET LOADED: \(wallet)")
-                            let amount = balance["amount"] ?? "0.00"
-                            self.walletBalanceLabel.text = "You have $\(amount) available"
-                        } else {
-                            self.walletBalanceLabel.text = "You have $0.00 available"
-                        }
-                        self.walletBalanceLabel.isHidden = false
-                    }
-                } else {
-                    print("Error getting wallet")
-                }
-            }
+            API().getWallet({ (success) in
+                self.walletAccount = currentUser.wallet
+                self.refreshAccounts()
+            })
         }
     }
     
@@ -162,18 +188,7 @@ class NewChallengeViewController: BaseViewController {
         }
     }
     
-    //MARK: IBActions
-    
-    @IBAction func timeButtonTapped(_ sender: Any) {
-        view.endEditing(true)
-        timePicker.isHidden = false
-    }
-    
-    //MARK: Helpers
-    
     @objc func hideControls() {
-        formatPicker.isHidden = true
-        timePicker.isHidden = true
         view.endEditing(true)
     }
     
@@ -185,7 +200,48 @@ class NewChallengeViewController: BaseViewController {
     }
     
     @objc func doneButtonAction() {
+        self.challengeName.resignFirstResponder()
+        self.challengeFormat.resignFirstResponder()
         self.challengePrice.resignFirstResponder()
+        self.challengeTime.resignFirstResponder()
+        self.challengeLocation.resignFirstResponder()
+    }
+    
+    @objc func toggleCustomName() {
+        if self.togglePicker {
+            toggle.title = "View List"
+            challengeName.text = nil
+            challengeName.inputView = nil
+        } else {
+            toggle.title = "Custom Challenge"
+            challengeName.inputView = self.challengePicker
+        }
+
+        challengeName.reloadInputViews()
+        self.togglePicker = !self.togglePicker
+    }
+    
+    func setupChallengeNameKeyboard() {
+        let doneToolbar: UIToolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
+        doneToolbar.barStyle = .default
+        doneToolbar.barTintColor = Constants.Theme.mainColor
+        doneToolbar.tintColor = .white
+        
+        toggle = UIBarButtonItem(title: "Custom Challenge", style: .done, target: self, action: #selector(NewChallengeViewController.toggleCustomName))
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(NewChallengeViewController.doneButtonAction))
+        
+        var items = [UIBarButtonItem]()
+        items.append(flexSpace)
+        items.append(toggle)
+        items.append(done)
+        doneToolbar.items = items
+        doneToolbar.sizeToFit()
+        
+        self.challengeName.inputAccessoryView = doneToolbar
+        self.challengeFormat.inputAccessoryView = doneToolbar
+        self.challengePrice.inputAccessoryView = doneToolbar
+        self.challengeTime.inputAccessoryView = doneToolbar
     }
     
     func addDoneButtonOnKeyboard()
@@ -205,36 +261,10 @@ class NewChallengeViewController: BaseViewController {
         doneToolbar.items = items
         doneToolbar.sizeToFit()
         
+        self.challengeFormat.inputAccessoryView = doneToolbar
         self.challengePrice.inputAccessoryView = doneToolbar
-    }
-    
-    @objc func toggleDollarLabel(sender: UITextField) {
-        sender.leftViewMode = sender.text == "" ? .never : .always
-    }
-}
-
-// Location Management
-extension NewChallengeViewController: CLLocationManagerDelegate {
-    
-    func enableBasicLocationServices() {
-        locationManager.delegate = self
-        
-        switch CLLocationManager.authorizationStatus() {
-        case .notDetermined:
-            // Request when-in-use authorization initially
-            locationManager.requestWhenInUseAuthorization()
-            break
-            
-        case .restricted, .denied:
-            // Disable location features
-            //disableMyLocationBasedFeatures()
-            break
-            
-        case .authorizedWhenInUse, .authorizedAlways:
-            // Enable location features
-            //enableMyWhenInUseFeatures()
-            break
-        }
+        self.challengeTime.inputAccessoryView = doneToolbar
+        self.challengeLocation.inputAccessoryView = doneToolbar
     }
 }
 
@@ -244,56 +274,51 @@ extension NewChallengeViewController: UIPickerViewDelegate, UIPickerViewDataSour
     }
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return challengeFormats.count
+        switch pickerView {
+        case challengePicker:
+            return approvedChallenges.count
+        case formatPicker:
+            return challengeFormats.count
+        case amountPicker:
+            return priceOptions.count
+        default:
+            return 0
+        }
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return challengeFormats[row]
+        switch pickerView {
+        case challengePicker:
+            return approvedChallenges[row]
+        case formatPicker:
+            return challengeFormats[row]
+        case amountPicker:
+            return "$\(priceOptions[row])"
+        default:
+            return nil
+        }
     }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        self.challengeFormat.text = challengeFormats[row]
-    }
-}
-
-extension SearchTextField {
-    override open func awakeFromNib() {
-        super.awakeFromNib()
-        let bottomLine = CALayer()
-        bottomLine.frame = CGRect(x: 0.0, y: self.frame.height - 1, width: self.frame.width, height: 1.0)
-        bottomLine.backgroundColor = Constants.Theme.grayColor.cgColor
-        self.borderStyle = .none
-        self.layer.addSublayer(bottomLine)
+        if pickerView == challengePicker {
+            challengeName.text = approvedChallenges[row]
+        } else if pickerView == formatPicker {
+            challengeFormat.text = challengeFormats[row]
+        } else if pickerView == amountPicker {
+            challengePrice.text = "\(priceOptions[row])"
+            challengePrice.leftViewMode = challengePrice.text == "" ? .never : .always
+        }
     }
 }
 
 extension NewChallengeViewController: UITextFieldDelegate {
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        timePicker.isHidden = true
-        formatPicker.isHidden = true
-        if textField == challengeTime {
-            view.endEditing(true)
-            timePicker.isHidden = false
-            return false
-        } else if textField == challengeFormat {
-            view.endEditing(true)
-            formatPicker.isHidden = false
-            return false
-        } else if textField == challengePrice {
-            textField.keyboardType = .decimalPad
-        } else {
-            textField.keyboardType = .default
-        }
-        return true
-    }
-    
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        if textField == self.challengeName, let name = textField.text {
-            if approvedChallenges.contains(name) {
+        if textField == self.challengeName {
+            if let name = textField.text, approvedChallenges.contains(name) {
                 self.challengePrice.isEnabled = true
             } else {
                 self.challengePrice.isEnabled = false
-                self.challengePrice.text = nil
+                self.challengePrice.text = ""
             }
         }
         return true

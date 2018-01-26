@@ -10,6 +10,8 @@ import UIKit
 
 class DepositFundsTableViewController: UITableViewController, UITextFieldDelegate {
     
+    @IBOutlet weak var bankLabel: UILabel!
+    
     var bankAccount: [String: Any]?
     var walletAccount: [String: Any]?
     
@@ -35,8 +37,6 @@ class DepositFundsTableViewController: UITableViewController, UITextFieldDelegat
             return
         }
         
-        //guard let amount =
-        
         API().depositFunds(from: bankId, to: walletId, amount: 20) {
             if ($0) {
                 DispatchQueue.main.async {
@@ -53,7 +53,16 @@ class DepositFundsTableViewController: UITableViewController, UITextFieldDelegat
     }
     
     func refreshAccounts() {
+        
+        var bankLabel = "---"
+        if let node = self.bankAccount, let info = node["info"] as? [String: Any] {
+            let nodeName = info["bank_name"] as? String ?? "Example Checking Account"
+            let lastFour = info["account_num"] as? String ?? "0000"
+            bankLabel = "\(nodeName) ••••\(lastFour)"
+        }
+        
         DispatchQueue.main.async {
+            self.bankLabel.text = bankLabel
             self.tableView.reloadData()
         }
     }
@@ -77,6 +86,12 @@ class DepositFundsTableViewController: UITableViewController, UITextFieldDelegat
                 self.bankAccount = nodes.first
                 self.refreshAccounts()
             }
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let vc = segue.destination as? FundingSourceTableViewController {
+            vc.source = self.bankLabel.text
         }
     }
 }

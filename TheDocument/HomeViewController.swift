@@ -7,6 +7,7 @@ import UIKit
 import Firebase
 import FirebaseStorage
 import UserNotifications
+import CoreLocation
 
 enum HomeTabs {
     case overview, friends, groups, settings
@@ -28,6 +29,8 @@ class HomeViewController: UIViewController {
     var firstRun = true
     var openedTab: HomeTabs = .overview
     var containerViewController: HomeContainerViewController!
+    
+    let locationManager = CLLocationManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,12 +92,15 @@ class HomeViewController: UIViewController {
             // Show welcome intro screens
             self.performSegue(withIdentifier: Constants.introductionVCStoryboardIdentifier, sender: self)
             return
-        } else  if !UserDefaults.standard.bool(forKey: Constants.shouldGetPhotoKey) {
+        } else if !UserDefaults.standard.bool(forKey: Constants.shouldGetPhotoKey) {
             // Set user's profile photo
             self.performSegue(withIdentifier: Constants.getPhotoVCStoryboardIdentifier, sender: self)
             return
+        } else if !UserDefaults.standard.bool(forKey: "shouldSkipLocation") {
+            // Set user's location
+            self.performSegue(withIdentifier: "shouldGetLocationSegue", sender: self)
+            return
         } else {
-            // Complete registration for push notifications
             UIApplication.shared.registerForRemoteNotifications()
             self.fadeIn()
         }
@@ -196,9 +202,31 @@ extension HomeViewController {
                 }
                 
             }
-            
         }
     }
+}
+
+// Location Management
+extension HomeViewController: CLLocationManagerDelegate {
     
-    
+    func enableBasicLocationServices() {
+        locationManager.delegate = self
+        
+        switch CLLocationManager.authorizationStatus() {
+        case .notDetermined:
+            // Request when-in-use authorization initially
+            locationManager.requestWhenInUseAuthorization()
+            break
+            
+        case .restricted, .denied:
+            // Disable location features
+            //disableMyLocationBasedFeatures()
+            break
+            
+        case .authorizedWhenInUse, .authorizedAlways:
+            // Enable location features
+            //enableMyWhenInUseFeatures()
+            break
+        }
+    }
 }

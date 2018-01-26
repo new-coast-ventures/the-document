@@ -127,28 +127,51 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if !suid.isBlank {
             // Reauthenticate User
             print("Authorizing Synapse User")
-            API().authorizeSynapseUser()
+            authenticateSynapseUser()
+            
         } else {
             // Create Synapse Account
-            print("Creating Synapse Account")
-            
+            print("Find or Create Synapse Account")
             var phone = currentUser.phone ?? "test@synapsepay.com"
             if phone.isBlank || phone.isEmpty {
                 phone = "test@synapsepay.com"
             }
             
-            API().createSynapseUser(email: currentUser.email, phone: phone, name: currentUser.name, { success in
+            API().findSynapseUserBy(email: currentUser.email, { success in
                 if success {
                     print("Authorizing Synapse User")
-                    API().authorizeSynapseUser()
+                    self.authenticateSynapseUser()
                 } else {
-                    print("Unable to create Synapse user")
+                    print("Creating NEW Synapse User")
+                    API().createSynapseUser(email: currentUser.email, phone: phone, name: currentUser.name, { success in
+                        if success {
+                            print("Authorizing Synapse User")
+                            self.authenticateSynapseUser()
+                        } else {
+                            print("Unable to create Synapse user")
+                        }
+                    })
                 }
             })
         }
         
         DispatchQueue.main.async {
             self.window?.rootViewController = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: Constants.homeVCStoryboardIdentifier)
+        }
+    }
+    
+    private func authenticateSynapseUser() {
+        API().authorizeSynapseUser { status in
+            if status == 2 {
+                DispatchQueue.main.async {
+                    let mfaVC = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "mfaVC") as! MFAViewController
+                    if let base = homeVC {
+                        base.present(mfaVC, animated: true, completion: nil)
+                    } else {
+                        print("homeVC was not defined")
+                    }
+                }
+            }
         }
     }
     

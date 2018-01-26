@@ -74,8 +74,8 @@ class SynapseAPIService {
         
         switch error_code {
         case "110":
-            print("Invalid/expired oauth_key. Reauthorizing user now...")
-            API().authorizeSynapseUser()
+            print("Invalid/expired oauth_key. Retrieving latest refresh token now...")
+            API().getUpdatedRefreshToken()
         default:
             print("Error Code: \(error_code)")
         }
@@ -150,6 +150,57 @@ class SynapseAPIService {
 }
 
 extension API {
+    
+    func getUpdatedRefreshToken(_ closure : ((Bool) -> Void)? = nil) {
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        request.method = .GET
+        request.endpoint = "/users/\(service.userId())"
+        service.request(request: request, success: { (response) in
+            if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
+                currentUser.synapseData = userRef
+                currentUser.synapseUID = uid
+                service.setUserId(id: uid)
+                service.setRefreshToken(token: refreshToken)
+                closure?(true)
+            } else {
+                closure?(false)
+            }
+        }) { (error) in
+            print("Actual error")
+            print(error.localizedDescription)
+            closure?(false)
+        }
+    }
+    
+    func findSynapseUserBy(email: String, _ closure : ((Bool) -> Void)? = nil) {
+        
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        
+        request.parameters = [ "query": email, "page": 1, "per_page": 1 ]
+        request.method = .GET
+        request.endpoint = "/users"
+        service.request(request: request, success: { (response) in
+            
+            guard let json = response as? [String: Any], let users = json["users"] as? [[String: Any]], let userRef = users.first, let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String else {
+                print("Unable to find user with email")
+                closure?(false)
+                return
+            }
+            
+            print("Found user with email: \(userRef)")
+            currentUser.synapseData = userRef
+            currentUser.synapseUID = uid
+            service.setUserId(id: uid)
+            service.setRefreshToken(token: refreshToken)
+            closure?(true)
+            
+        }) { (error) in
+            print(error.localizedDescription)
+            closure?(false)
+        }
+    }
     
     func createSynapseUser(email: String, phone: String, name: String, _ closure : ((Bool) -> Void)? = nil) {
         
@@ -241,8 +292,48 @@ extension API {
         }
     }
     
-    func authorizeSynapseUser(_ closure : ((Bool) -> Void)? = nil) {
+    func requestMFA(_ closure : ((Bool) -> Void)? = nil) {
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        request.endpoint = "/oauth/\(service.userId())"
+        request.parameters = [
+            "refresh_token": service.refreshToken(),
+            "phone_number": currentUser.phone ?? "8474364229"
+        ]
         
+        SynapseAPIService().request(request: request, success: { (response) in
+            guard let json = response as? [String: Any], let error_code = json["error_code"] as? String, error_code == "10" else { closure?(false); return }
+            closure?(true)
+        }) { (error) in
+            print(error.localizedDescription)
+            closure?(false)
+        }
+    }
+    
+    func verifyMFA(pin: String, _ closure : ((Bool) -> Void)? = nil) {
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        request.endpoint = "/oauth/\(service.userId())"
+        request.parameters = [
+            "refresh_token": service.refreshToken(),
+            "validation_pin": pin
+        ]
+        
+        SynapseAPIService().request(request: request, success: { (response) in
+            if let authRef = response as? [String: Any], let oauthKey = authRef["oauth_key"] as? String, let refreshToken = authRef["refresh_token"] as? String {
+                service.setOauthKey(key: oauthKey)
+                service.setRefreshToken(token: refreshToken)
+                closure?(true)
+            } else {
+                closure?(false)
+            }
+        }) { (error) in
+            print(error.localizedDescription)
+            closure?(false)
+        }
+    }
+    
+    func authorizeSynapseUser(_ closure : ((Int) -> Void)? = nil) {
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         request.endpoint = "/oauth/\(service.userId())"
@@ -252,11 +343,14 @@ extension API {
             if let authRef = response as? [String: Any], let oauthKey = authRef["oauth_key"] as? String, let refreshToken = authRef["refresh_token"] as? String {
                 service.setOauthKey(key: oauthKey)
                 service.setRefreshToken(token: refreshToken)
+                closure?(1)
+            } else {
+                guard let json = response as? [String: Any], let error_code = json["error_code"] as? String, error_code == "10" else { print("AUTH FAIL"); return }
+                closure?(2)
             }
-            closure?(true)
         }) { (error) in
             print(error.localizedDescription)
-            closure?(false)
+            closure?(0)
         }
     }
     
@@ -375,6 +469,43 @@ extension API {
         }
     }
     
+    func withdrawFunds(from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
+        
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        request.endpoint = "/users/\(service.userId())/nodes/\(from)/trans"
+        
+        let payload: [String: Any] = [
+            "to": [
+                "type": "ACH-US",
+                "id": to
+            ],
+            "amount": [
+                "amount": amount,
+                "currency": "USD"
+            ],
+            "fees": [
+                [ "fee": 0.99,
+                  "note": "Processing Fee",
+                  "to": [ "id": "594298a2838454002df67041" ]
+                ]
+            ],
+            "extra": [
+                "ip": service.userIpAddress(),
+                "note": "Withdraw funds from wallet to bank"
+            ]
+        ]
+        
+        request.parameters = payload
+        
+        SynapseAPIService().request(request: request, success: { (response) in
+            closure?(true)
+        }) { (error) in
+            print(error.localizedDescription)
+            closure?(false)
+        }
+    }
+    
     func depositFunds(from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
         
         let service = SynapseAPIService()
@@ -393,7 +524,7 @@ extension API {
             "fees": [
                 [ "fee": -0.05,
                   "note": "Facilitator Fee",
-                  "to": [ "id": "None" ]
+                  "to": [ "id": "594298a2838454002df67041" ]
                 ]
             ],
             "extra": [
