@@ -94,7 +94,7 @@ class SynapseAPIService {
     }
     
     func userIpAddress() -> String {
-        return "::1" // TEMP
+        return UserDefaults.standard.string(forKey: "user_last_ip") ?? "::1"
     }
     
     func fingerprint() -> String {
@@ -122,7 +122,6 @@ class SynapseAPIService {
     }
     
     func userId() -> String {
-        //return currentUser.synapseUID
         return UserDefaults.standard.string(forKey: "synapse_uid") ?? ""
     }
     
@@ -167,7 +166,6 @@ extension API {
                 closure?(false)
             }
         }) { (error) in
-            print("Actual error")
             print(error.localizedDescription)
             closure?(false)
         }
@@ -211,27 +209,7 @@ extension API {
             "logins": [[ "email": email ]],
             "phone_numbers": [ phone ],
             "legal_names": [ name ],
-            "extra": [ "cip_tag": 1, "is_business": false ],
-            "documents": [[
-                "email": email,
-                "phone_number": phone,
-                "name": name,
-                "ip": service.userIpAddress(),
-                "entity_type": "NOT_KNOWN",
-                "entity_scope": "Not Known",
-                "day": 1, //currentUser.birthDay,
-                "month": 9, //currentUser.birthMonth,
-                "year": 1987, //currentUser.birthYear,
-                "address_street": "123 Main Street", //currentUser.address.street
-                "address_city": "Chicago", //currentUser.address.city
-                "address_subdivision": "IL", //currentUser.address.state
-                "address_postal_code": currentUser.postcode!, //currentUser.address.postcode
-                "address_country_code": "US", // only allow US members for now
-                "social_docs": [[
-                    "document_value": "https://www.facebook.com/valid", // currentUser.fbAccessToken,
-                    "document_type": "FACEBOOK"
-                    ]]
-                ]]
+            "extra": [ "cip_tag": 1, "is_business": false ]
         ]
         
         request.endpoint = "/users"
@@ -252,11 +230,10 @@ extension API {
         }
     }
     
+    // NEED TO ADD A VERIFICATION SCREEN FOR ADDITIONAL KYC INFO
     func addKYCInfo(_ closure : ((Bool) -> Void)? = nil) {
-        
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        
         let payload = [
             "documents": [[
                 "email": currentUser.email,
@@ -404,9 +381,9 @@ extension API {
         let payload: [String: Any] = [
             "type": "ACH-US",
             "info": [
-                "bank_id": "synapse_good",
-                "bank_pw": "test1234",
-                "bank_name": "fake"
+                "bank_id": bank_id,
+                "bank_pw": bank_password,
+                "bank_name": bank_name
             ]
         ]
         
@@ -448,18 +425,19 @@ extension API {
         }
     }
     
-    func answerMFA(access_token: String, answer: String, _ closure : ((Bool) -> Void)? = nil) {
+    func answerMFA(access_token: String, answer: String, _ closure : ((Any) -> Void)? = nil) {
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         request.endpoint = "/users/\(service.userId())/nodes"
-        
-        //TEMP FOR TESTING, replace with "answer"
-        request.parameters = [ "access_token": access_token, "mfa_answer": "test_answer" ]
+        request.parameters = [ "access_token": access_token, "mfa_answer": answer ]
         
         SynapseAPIService().request(request: request, success: { (response) in
-            if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
+            guard let json = response as? [String: Any] else { closure?(false); return }
+            if let nodes = json["nodes"] as? [[String: Any]] {
                 currentUser.nodes = nodes
                 closure?(true)
+            } else if let error_code = json["error_code"] as? String, let mfa = json["mfa"] as? [String: String], error_code == "10" {
+                closure?(mfa)
             } else {
                 closure?(false)
             }

@@ -11,6 +11,7 @@ import FirebaseAuth
 import Instabug
 import Branch
 import FacebookCore
+import Ipify
 
 var appDelegate = UIApplication.shared.delegate as! AppDelegate
 var currentUser = TDUser()
@@ -122,12 +123,49 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private func showHome() {
         currentUser.isLogged = true
+    
+        if let _ = UserDefaults.standard.string(forKey: "user_last_ip") {
+            initSynapse()
+        } else {
+            Ipify.getPublicIPAddress { result in
+                switch result {
+                case .success(let ip):
+                    UserDefaults.standard.set(ip, forKey: "user_last_ip")
+                    UserDefaults.standard.synchronize()
+                    self.initSynapse()
+                case .failure(let error):
+                    print(error.localizedDescription)
+                    self.initSynapse()
+                }
+            }
+        }
         
+        DispatchQueue.main.async {
+            self.window?.rootViewController = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: Constants.homeVCStoryboardIdentifier)
+        }
+    }
+    
+    private func authenticateSynapseUser() {
+        API().authorizeSynapseUser { status in
+            if status == 2 {
+                DispatchQueue.main.async {
+                    let mfaVC = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "mfaVC") as! MFAViewController
+                    if let base = homeVC {
+                        base.present(mfaVC, animated: true, completion: nil)
+                    } else {
+                        print("homeVC was not defined")
+                    }
+                }
+            }
+        }
+    }
+    
+    private func initSynapse() {
         let suid = SynapseAPIService().userId()
         if !suid.isBlank {
             // Reauthenticate User
             print("Authorizing Synapse User")
-            authenticateSynapseUser()
+            self.authenticateSynapseUser()
             
         } else {
             // Create Synapse Account
@@ -153,25 +191,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     })
                 }
             })
-        }
-        
-        DispatchQueue.main.async {
-            self.window?.rootViewController = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: Constants.homeVCStoryboardIdentifier)
-        }
-    }
-    
-    private func authenticateSynapseUser() {
-        API().authorizeSynapseUser { status in
-            if status == 2 {
-                DispatchQueue.main.async {
-                    let mfaVC = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "mfaVC") as! MFAViewController
-                    if let base = homeVC {
-                        base.present(mfaVC, animated: true, completion: nil)
-                    } else {
-                        print("homeVC was not defined")
-                    }
-                }
-            }
         }
     }
     

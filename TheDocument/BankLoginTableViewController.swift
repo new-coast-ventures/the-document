@@ -34,9 +34,12 @@ class BankLoginTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.section == 2 {
+            guard let bankId = userIdTextField.text, let bankPassword = userPwTextField.text, let bankName = selectedBank["bank_name"] else {
+                showAlert(message: "Please fill out your username and password.")
+                return
+            }
             
-            // Pressed continue
-            API().linkBankAccount(bank_id: "synapse_good", bank_password: "test1234", bank_name: "fake", { (response) in
+            API().linkBankAccount(bank_id: bankId, bank_password: bankPassword, bank_name: bankName, { (response) in
                 DispatchQueue.main.async {
                     if let json = response as? [String: Any], let success = json["success"] as? Bool, success == true {
                         // Successful link

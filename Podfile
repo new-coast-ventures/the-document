@@ -17,4 +17,5 @@ target 'TheDocument' do
   pod 'Runes'
   pod 'SearchTextField'
   pod 'Instabug'
+  pod 'Ipify'
 end
