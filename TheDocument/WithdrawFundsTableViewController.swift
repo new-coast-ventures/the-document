@@ -21,7 +21,7 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        //withdrawButton.isEnabled = false
+        addDoneButtonOnKeyboard()
         getWalletAccount()
         getBankAccount()
     }
@@ -47,13 +47,27 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
             return
         }
         
-        API().withdrawFunds(from: walletId, to: bankId, amount: 20) {
+        guard let amountString = amountTextField.text, let amount = Int(amountString) else {
+            showAlert(message: "Please enter a valid dollar amount")
+            return
+        }
+        
+        guard Float(amount) <= self.accountBalance else {
+            showAlert(message: "You amount you requested is more than what you have in your wallet. Please update the amount.")
+            return
+        }
+        
+        API().withdrawFunds(from: walletId, to: bankId, amount: amount) {
             if ($0) {
                 DispatchQueue.main.async {
-                    self.navigationController?.popToRootViewController(animated: true)
+                    self.showAlert(title: "Bank Transfer Initiated", message: "Bank transfers initiated before 7 PM ET on business days will typically be available the next business day, but it can take up to 3 business days. Business days are Monday to Friday, excluding bank holidays.", closure: { action in
+                        self.navigationController?.popToRootViewController(animated: true)
+                    })
                 }
             } else {
-                self.showAlert(message: "We were unable to process this withdrawal request.")
+                DispatchQueue.main.async {
+                    self.showAlert(message: "Something went wrong and we weren't able to complete the deposit.")
+                }
             }
         }
     }
@@ -119,7 +133,32 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let vc = segue.destination as? FundingSourceTableViewController {
+            vc.title = "Bank Account"
             vc.source = self.bankLabel.text
         }
+    }
+    
+    func addDoneButtonOnKeyboard()
+    {
+        let doneToolbar: UIToolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
+        doneToolbar.barStyle = .default
+        doneToolbar.barTintColor = Constants.Theme.mainColor
+        doneToolbar.tintColor = .white
+        
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(WithdrawFundsTableViewController.doneButtonAction))
+        
+        var items = [UIBarButtonItem]()
+        items.append(flexSpace)
+        items.append(done)
+        
+        doneToolbar.items = items
+        doneToolbar.sizeToFit()
+        
+        self.amountTextField.inputAccessoryView = doneToolbar
+    }
+    
+    @objc func doneButtonAction() {
+        self.amountTextField.resignFirstResponder()
     }
 }

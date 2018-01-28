@@ -39,11 +39,7 @@ class BankMFATableViewController: UITableViewController {
             }
             
             API().answerMFA(access_token: token, answer: answer, { (response) in
-                if let success = response as? Bool, success == true {
-                    DispatchQueue.main.async {
-                        self.navigationController?.popToRootViewController(animated: true)
-                    }
-                } else if let mfa = response as? [String: String] {
+                if let mfa = response as? [String: String] {
                     DispatchQueue.main.async {
                         self.mfaInfo = mfa
                         self.mfaTextField.text = nil
@@ -51,7 +47,7 @@ class BankMFATableViewController: UITableViewController {
                     }
                 } else {
                     DispatchQueue.main.async {
-                        self.showAlert(message: "Your security answer was not correct. Please try again.")
+                        self.navigationController?.popToRootViewController(animated: true)
                     }
                 }
             })

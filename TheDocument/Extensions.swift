@@ -107,9 +107,8 @@ extension UIViewController {
         
         alertController.addAction(okAction)
         
-        
         let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = NSTextAlignment.left
+        paragraphStyle.alignment = NSTextAlignment.center
         
         let messageText = NSMutableAttributedString(
             string: message,

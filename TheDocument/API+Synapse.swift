@@ -24,27 +24,17 @@ class SynapseAPIRequest: WebRequest {
 
 class SynapseAPIService {
     
-    private let conf = SynapseAPIConfiguration(baseURL: URL(string: "https://uat-api.synapsefi.com/v3.1")!)
     private let service = NetworkService()
     
     func request(request: SynapseAPIRequest, success: ((Any?) -> Void)? = nil, fail: ((Error) -> Void)? = nil) {
-        
-        var url = request.endpoint.isBlank ? conf.baseURL : conf.baseURL.appendingPathComponent(request.endpoint)
-        if let params = request.parameters as? [String: String], request.method == .GET {
-            var urlString = url.absoluteString.appending("?")
-            params.forEach({ (k, v) in
-                urlString = urlString.appending("\(k)=\(v)&")
-            })
-            
-            url = URL(string: urlString)!
-        }
-        
+
         var headers = request.headers
         headers!["X-SP-GATEWAY"] = "\(clientId())|\(clientSecret())"
         headers!["X-SP-USER"] = "\(oauthKey())|\(fingerprint())"
         headers!["X-SP-USER-IP"] = "\(userIpAddress())"
+        
+        let url = synapseURL(request: request)
 
-        print("SYNAPSE REQUEST: \(url.absoluteString)")
         service.request(url: url, method: request.method, params: request.parameters, headers: headers!, success: { data in
             var json: Any? = nil
             if let data = data {
@@ -69,6 +59,21 @@ class SynapseAPIService {
         })
     }
     
+    func synapseURL(request: SynapseAPIRequest) -> URL {
+        var url = URL(string: loadFromConfig(key: "BASE_URL"))!.appendingPathComponent(request.endpoint)
+        
+        if let params = request.parameters as? [String: String], request.method == .GET {
+            var urlString = url.absoluteString.appending("?")
+            params.forEach({ (k, v) in
+                urlString = urlString.appending("\(k)=\(v)&")
+            })
+            
+            url = URL(string: urlString)!
+        }
+        
+        return url
+    }
+    
     func handleError(_ errorJson: Any?) {
         guard let json = errorJson as? [String: Any], let error_code = json["error_code"] as? String else { print("Handle error did not return expected result"); return }
         
@@ -85,10 +90,21 @@ class SynapseAPIService {
         service.cancel()
     }
     
-    func loadFromConfig(key: String, isSandbox: Bool = true) -> String {
-        if let path = Bundle.main.path(forResource: "Synapse-Info", ofType: "plist"), let dict = NSDictionary(contentsOfFile: path) as? [String: String] {
-            let configKey = isSandbox ? "DEV_\(key)" : key
-            return dict[configKey] ?? ""
+    func isLive() -> Bool {
+        return !isDev()
+    }
+    
+    func isDev() -> Bool {
+        if let path = Bundle.main.path(forResource: "Synapse-Info", ofType: "plist"), let dict = NSDictionary(contentsOfFile: path) as? [String: Any], let isDev = dict["IS_DEV"] as? Bool {
+            return isDev
+        }
+        return true
+    }
+    
+    func loadFromConfig(key: String) -> String {
+        if let path = Bundle.main.path(forResource: "Synapse-Info", ofType: "plist"), let dict = NSDictionary(contentsOfFile: path) as? [String: Any] {
+            let configKey = isDev() ? "DEV_\(key)" : key
+            return dict[configKey] as? String ?? ""
         }
         return ""
     }
@@ -451,6 +467,7 @@ extension API {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
+        let feeNode = service.loadFromConfig(key: "DEPOSIT_NODE")
         request.endpoint = "/users/\(service.userId())/nodes/\(from)/trans"
         
         let payload: [String: Any] = [
@@ -465,7 +482,7 @@ extension API {
             "fees": [
                 [ "fee": 0.99,
                   "note": "Processing Fee",
-                  "to": [ "id": "594298a2838454002df67041" ]
+                  "to": [ "id": feeNode ]
                 ]
             ],
             "extra": [
@@ -488,9 +505,10 @@ extension API {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
+        let feeNode = service.loadFromConfig(key: "DEPOSIT_NODE")
         request.endpoint = "/users/\(service.userId())/nodes/\(from)/trans"
         
-        let payload: [String: Any] = [
+        var payload: [String: Any] = [
             "to": [
                 "type": "SUBACCOUNT-US",
                 "id": to
@@ -499,17 +517,20 @@ extension API {
                 "amount": amount,
                 "currency": "USD"
             ],
-            "fees": [
-                [ "fee": -0.05,
-                  "note": "Facilitator Fee",
-                  "to": [ "id": "594298a2838454002df67041" ]
-                ]
-            ],
             "extra": [
                 "ip": service.userIpAddress(),
                 "note": "Deposit funds from bank to wallet"
             ]
         ]
+        
+        if service.isLive() {
+            payload["fees"] = [
+                [ "fee": -0.05,
+                  "note": "Facilitator Fee",
+                  "to": [ "id": feeNode ]
+                ]
+            ]
+        }
         
         request.parameters = payload
         

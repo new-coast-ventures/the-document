@@ -105,7 +105,7 @@ class NewChallengeViewController: BaseViewController {
         challenge.group = groupId
         
         if let priceString = challengePrice.text, let price = Int(priceString) {
-            if Int(accountBalance) < price {
+            if accountBalance < Float(price) {
                 showAlert(message: "You don't have enough funds to create this challenge. Please add more funds on the Settings page.")
             } else {
                 challenge.price = price

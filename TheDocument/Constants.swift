@@ -180,7 +180,7 @@ enum Constants {
             case chatterNotification = "cn"
         }
         
-        case resetPasswordSuccess = "You will shorty receive instructions on your email address."
+        case resetPasswordSuccess = "You password reset request was received. We will send you an email shortly with instructions."
         case savePhotoSuccess = "Your image has been saved to your photos."
         
         case friendRequestTitle = "Friend Request"
