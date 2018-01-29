@@ -28,6 +28,7 @@ class IntroLocationViewController: UIViewController {
     
     func closeModal() {
         UserDefaults.standard.set(true, forKey: "shouldSkipLocation")
+        UserDefaults.standard.synchronize()
         self.dismiss(animated: true, completion: nil)
     }
 }

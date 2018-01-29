@@ -166,6 +166,13 @@ class SynapseAPIService {
 
 extension API {
     
+    func resetUserKeys() {
+        let prefs = UserDefaults.standard
+        prefs.removeObject(forKey: "oauth_key")
+        prefs.removeObject(forKey: "refresh_token")
+        prefs.synchronize()
+    }
+    
     func getUpdatedRefreshToken(_ closure : ((Bool) -> Void)? = nil) {
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
@@ -216,16 +223,39 @@ extension API {
         }
     }
     
-    func createSynapseUser(email: String, phone: String, name: String, _ closure : ((Bool) -> Void)? = nil) {
+    func createSynapseUser(email: String, phone: String, name: String, birthDay: Int, birthMonth: Int, birthYear: Int, addressStreet: String, addressCity: String, addressState: String, addressPostalCode: String, _ closure : ((Bool) -> Void)? = nil) {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
+        
+        /*
+        "social_docs": [[
+            "document_value": "https://www.facebook.com/valid", // currentUser.fbAccessToken,
+            "document_type": "FACEBOOK"
+        ]]
+        */
         
         let payload: [String: Any] = [
             "logins": [[ "email": email ]],
             "phone_numbers": [ phone ],
             "legal_names": [ name ],
-            "extra": [ "cip_tag": 1, "is_business": false ]
+            "extra": [ "cip_tag": 1, "is_business": false ],
+            "documents": [[
+                "email": email,
+                "phone_number": phone,
+                "name": name,
+                "ip": service.userIpAddress(),
+                "entity_type": "NOT_KNOWN",
+                "entity_scope": "Not Known",
+                "day": birthDay,
+                "month": birthMonth,
+                "year": birthYear,
+                "address_street": addressStreet,
+                "address_city": addressCity,
+                "address_subdivision": addressState,
+                "address_postal_code": addressPostalCode,
+                "address_country_code": "US"
+            ]]
         ]
         
         request.endpoint = "/users"
@@ -233,51 +263,13 @@ extension API {
         
         service.request(request: request, success: { (response) in
             if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
-                print("Created user: \(userRef)")
                 currentUser.synapseData = userRef
                 currentUser.synapseUID = uid
                 service.setUserId(id: uid)
                 service.setRefreshToken(token: refreshToken)
+                UserDefaults.standard.set(true, forKey: "is_user_account_verified")
+                UserDefaults.standard.synchronize()
             }
-            closure?(true)
-        }) { (error) in
-            print(error.localizedDescription)
-            closure?(false)
-        }
-    }
-    
-    // NEED TO ADD A VERIFICATION SCREEN FOR ADDITIONAL KYC INFO
-    func addKYCInfo(_ closure : ((Bool) -> Void)? = nil) {
-        let service = SynapseAPIService()
-        let request = SynapseAPIRequest()
-        let payload = [
-            "documents": [[
-                "email": currentUser.email,
-                "phone_number": currentUser.phone!,
-                "name": currentUser.name,
-                "ip": service.userIpAddress(),
-                "entity_type": "NOT_KNOWN",
-                "entity_scope": "Not Known",
-                "day": 1, //currentUser.birthDay,
-                "month": 9, //currentUser.birthMonth,
-                "year": 1987, //currentUser.birthYear,
-                "address_street": "123 Main Street", //currentUser.address.street
-                "address_city": "Chicago", //currentUser.address.city
-                "address_subdivision": "IL", //currentUser.address.state
-                "address_postal_code": currentUser.postcode!, //currentUser.address.postcode
-                "address_country_code": "US", // only allow US members for now
-                "social_docs": [[
-                    "document_value": "https://www.facebook.com/valid", // currentUser.fbAccessToken,
-                    "document_type": "FACEBOOK"
-                ]]
-            ]]
-        ]
-        
-        request.endpoint = "/users/\(service.userId())"
-        request.method = .PUT
-        request.parameters = payload
-        
-        SynapseAPIService().request(request: request, success: { (response) in
             closure?(true)
         }) { (error) in
             print(error.localizedDescription)
@@ -291,7 +283,7 @@ extension API {
         request.endpoint = "/oauth/\(service.userId())"
         request.parameters = [
             "refresh_token": service.refreshToken(),
-            "phone_number": currentUser.phone ?? "8474364229"
+            "phone_number": currentUser.phone
         ]
         
         SynapseAPIService().request(request: request, success: { (response) in

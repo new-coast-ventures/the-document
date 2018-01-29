@@ -145,7 +145,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    private func authenticateSynapseUser() {
+    func authenticateSynapseUser() {
         API().authorizeSynapseUser { status in
             if status == 2 {
                 DispatchQueue.main.async {
@@ -160,38 +160,45 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    private func initSynapse() {
-        let suid = SynapseAPIService().userId()
-        if !suid.isBlank {
-            // Reauthenticate User
-            print("Authorizing Synapse User")
-            self.authenticateSynapseUser()
-            
-        } else {
-            // Create Synapse Account
-            print("Find or Create Synapse Account")
-            var phone = currentUser.phone ?? "test@synapsepay.com"
-            if phone.isBlank || phone.isEmpty {
-                phone = "test@synapsepay.com"
-            }
-            
-            API().findSynapseUserBy(email: currentUser.email, { success in
-                if success {
-                    print("Authorizing Synapse User")
-                    self.authenticateSynapseUser()
-                } else {
-                    print("Creating NEW Synapse User")
-                    API().createSynapseUser(email: currentUser.email, phone: phone, name: currentUser.name, { success in
-                        if success {
-                            print("Authorizing Synapse User")
-                            self.authenticateSynapseUser()
-                        } else {
-                            print("Unable to create Synapse user")
-                        }
-                    })
-                }
-            })
+    func initSynapse() {
+        print("INIT SYNAPSE")
+        var phone = currentUser.phone ?? "test@synapsepay.com"
+        if phone.isBlank || phone.isEmpty {
+            phone = "test@synapsepay.com"
         }
+        
+        API().findSynapseUserBy(email: currentUser.email, { success in
+            if success {
+                print("Found user...Authorizing...")
+                self.authenticateSynapseUser()
+            } else {
+                print("User not found...will wait until payment action to authenticate")
+                API().resetUserKeys()
+            }
+        })
+    }
+    
+    func isSynapseUserVerified() -> Bool {
+        if UserDefaults.standard.bool(forKey: "is_user_account_verified") {
+            return true
+        } else {
+            DispatchQueue.main.async {
+                let vc = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "sp_user_kyc") as! UINavigationController
+                if let base = homeVC {
+                    base.present(vc, animated: true, completion: nil)
+                } else {
+                    print("chinese was not on the menu")
+                }
+            }
+            return false
+        }
+    }
+    
+    func resetUserKeys() {
+        let prefs = UserDefaults.standard
+        prefs.removeObject(forKey: "oauth_key")
+        prefs.removeObject(forKey: "refresh_token")
+        prefs.synchronize()
     }
     
     func applicationDidEnterBackground(_ application: UIApplication) {

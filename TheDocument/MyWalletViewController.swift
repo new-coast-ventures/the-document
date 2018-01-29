@@ -16,6 +16,7 @@ class MyWalletViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         depositButton.layer.cornerRadius = 3.0
         withdrawButton.layer.cornerRadius = 3.0
         

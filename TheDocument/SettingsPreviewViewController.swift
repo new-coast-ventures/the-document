@@ -40,6 +40,14 @@ class SettingsPreviewViewController: BaseTableViewController {
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.showToolbar)"), object: nil)
     }
     
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        if ((identifier == "deposit_segue" || identifier == "wallet_segue" || identifier == "showAccounts" || identifier == "withdraw_segue") && !appDelegate.isSynapseUserVerified()) {
+            return false
+        } else {
+            return true
+        }
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         // Remove "Settings" from back button

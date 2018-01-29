@@ -63,7 +63,7 @@ class MFAViewController: UIViewController, UITextFieldDelegate {
             verifyButton.setTitle("Sending...", for: .normal)
             verifyButton.isEnabled = false
             API().requestMFA { (success) in
-                guard success else { self.showError("Something went wrong"); return }
+                guard success else { self.completeMFA(); return }
                 self.nextStep(headerText: "Your code was sent", subheaderText: "When you receive the code, enter it below and tap 'Submit PIN' to verify this device.", legalText: "", buttonText: "Submit PIN")
             }
         } else if step == 1 {
@@ -71,7 +71,7 @@ class MFAViewController: UIViewController, UITextFieldDelegate {
             verifyButton.setTitle("Verifying...", for: .normal)
             verifyButton.isEnabled = false
             API().verifyMFA(pin: pinText) { (success) in
-                guard success else { self.showError("Verification code does not match"); return }
+                guard success else { self.completeMFA(); return }
                 self.completeMFA()
             }
         }

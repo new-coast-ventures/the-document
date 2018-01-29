@@ -90,6 +90,7 @@ extension TDUser {
     func logout() {
         try? Auth.auth().signOut()
         Branch.getInstance().logout()
+        API().resetUserKeys()
     }
     
     func startup(closure: @escaping (Bool)->Void) {
