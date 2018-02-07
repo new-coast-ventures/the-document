@@ -21,34 +21,24 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>fb183780962171031</string>
 			</array>
 		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>thedocument</string>
-			</array>
-		</dict>
 	</array>
-	<key>CFBundleVersion</key>
-	<string>79</string>
 	<key>FacebookAppID</key>
 	<string>183780962171031</string>
 	<key>FacebookDisplayName</key>
 	<string>The Document</string>
+	<key>CFBundleVersion</key>
+	<string>80</string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>fbapi</string>
-		<string>fb-messenger-api</string>
+		<string>fb-messenger-share-api</string>
 		<string>fbauth2</string>
 		<string>fbshareextension</string>
 	</array>
@@ -63,7 +53,7 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We use your microphone to allow you to dictate bug reports</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We will need your profile photo to use it for your app's profile'</string>
+	<string>We will need your profile photo to use it for your app&apos;s profile</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-SemiboldItalic</string>

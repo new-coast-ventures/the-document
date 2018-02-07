@@ -31,8 +31,12 @@ class TDUser {
     var record = Record()
     
     // SynapseFi Data
-    var synapseData: [String: Any]?
     var synapseUID: String?
+    var walletID: String?
+    var bankNodeID: String?
+    var creditNodeID: String?
+    
+    var synapseData: [String: Any]?
     var nodes: [[String: Any]]?
     var transactions: [[String: Any]]?
     var wallet: [String: Any]?
@@ -66,7 +70,7 @@ class TDUser {
     }
     
     init() {
-        (uid, email, name, postcode, phone) = ("", "", "", "", "")
+        (uid, email, name, postcode, phone, synapseUID, walletID, bankNodeID, creditNodeID) = ("", "", "", "", "", "", "", "", "")
         avatar = #imageLiteral(resourceName: "logo-mark-square")
     }
 }
@@ -159,7 +163,7 @@ extension TDUser: Argo.Decodable, FirebaseEncodable {
     }
 
     func simplify() -> [String : Any] {
-        return ["uid":uid, "email": email, "name": self.name, "postcode": self.postcode as Any, "phone": self.phone as Any]
+        return ["uid":uid, "email": email, "name": self.name, "postcode": self.postcode as Any, "phone": self.phone as Any, "synapseUID": self.synapseUID as Any, "walletID": self.walletID as Any, "bankNodeID": self.bankNodeID as Any, "creditNodeID": self.creditNodeID as Any]
     }
 }
 

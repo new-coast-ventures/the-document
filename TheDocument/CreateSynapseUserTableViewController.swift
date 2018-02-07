@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import FacebookCore
+import FacebookLogin
 
 class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDelegate {
 
@@ -27,7 +29,8 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
     let birthPicker = UIDatePicker()
     let statePicker = UIPickerView()
     
-    let stateOptions = ["IL", "NY"]
+    let stateOptions = ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FM", "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MH", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PW", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VI", "VA", "WA", "WV", "WI", "WY"]
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,6 +42,33 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
         statePicker.delegate = self
         stateLabel.inputView = statePicker
         
+        if let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]], let document = documents.first {
+            if let phones = userRef["phone_numbers"] as? [String] {
+                phoneNumberLabel.text = phones.first
+            }
+            if let fullName = document["name"] as? String {
+                var nameParts = fullName.components(separatedBy: " ")
+                if nameParts.count > 1 {
+                    let lastName = nameParts.popLast()
+                    let firstName = nameParts.joined(separator: " ")
+                    firstNameLabel.text = firstName
+                    firstNameLabel.isEnabled = false
+                    lastNameLabel.text = lastName
+                    lastNameLabel.isEnabled = false
+                }
+            }
+            
+            if let social_docs = document["social_docs"] as? [[String: Any]] {
+                social_docs.forEach({ doc in
+                    guard let docType = doc["document_type"] as? String, let status = doc["status"] as? String, status == "SUBMITTED|VALID" else { return }
+                    
+                    if (docType == "PHONE_NUMBER") {
+                        phoneNumberLabel.isEnabled = false
+                    }
+                })
+            }
+        }
+        
         addDoneButtonOnKeyboard()
     }
 
@@ -47,22 +77,21 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
     }
     
     @IBAction func continueButtonTapped(_ sender: Any) {
-        guard let firstName = firstNameLabel.text, let lastName = lastNameLabel.text, let phoneNumber = phoneNumberLabel.text, let address = addressLabel.text, let city = cityLabel.text, let zip = zipLabel.text, let _ = birthDay, let _ = birthMonth, let _ = birthYear, let state = stateLabel.text else {
-            showAlert(message: "All fields are required")
-            return
-        }
-        
-        let name = "\(firstName) \(lastName)"
-        
-        API().createSynapseUser(email: currentUser.email, phone: phoneNumber, name: name, birthDay: birthDay!, birthMonth: birthMonth!, birthYear: birthYear!, addressStreet: address, addressCity: city, addressState: state, addressPostalCode: zip) { success in
-            
-            if (success) {
-                API().authorizeSynapseUser({ (status) in
-                    self.complete()
-                })
-            } else {
-                self.complete()
-            }
+        if let access_token = AccessToken.current {
+            self.handleAuthentication()
+        } else {
+            let loginManager = LoginManager()
+            loginManager.logIn(readPermissions: [ReadPermission.publicProfile], viewController: self, completion: { (loginResult) in
+                switch loginResult {
+                case .failed(let error):
+                    print(error)
+                case .cancelled:
+                    print("User cancelled login.")
+                case .success(let grantedPermissions, let declinedPermissions, let accessToken):
+                    print("Logged in!")
+                    self.handleAuthentication()
+                }
+            })
         }
     }
     
@@ -78,6 +107,40 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
             birthMonth = month
             birthYear = year
             birthdateLabel.text = "\(month)/\(day)/\(year)"
+        }
+    }
+    
+    func handleAuthentication() {
+        guard let state = stateLabel.text, ["FL", "IL", "NY"].contains(state) else {
+            showAlert(message: "Due to legal restrictions, only users from Florida, Illinois, and New York can connect a bank account. We are working hard to include additional states and countries. Thank you for understanding.")
+            return
+        }
+        
+        guard let firstName = firstNameLabel.text, let lastName = lastNameLabel.text, let phoneNumber = phoneNumberLabel.text, let address = addressLabel.text, let city = cityLabel.text, let zip = zipLabel.text, let _ = birthDay, let _ = birthMonth, let _ = birthYear else {
+            showAlert(message: "All fields are required")
+            return
+        }
+        
+        let name = "\(firstName) \(lastName)"
+        
+        if let _ = currentUser.synapseUID {
+            // User already exists, add KYC
+            API().addKYC(email: currentUser.email, phone: phoneNumber, name: name, birthDay: birthDay!, birthMonth: birthMonth!, birthYear: birthYear!, addressStreet: address, addressCity: city, addressState: state, addressPostalCode: zip) { success in
+                
+                self.complete()
+            }
+            
+        } else {
+            API().createSynapseUser(email: currentUser.email, phone: phoneNumber, name: name, birthDay: birthDay!, birthMonth: birthMonth!, birthYear: birthYear!, addressStreet: address, addressCity: city, addressState: state, addressPostalCode: zip) { success in
+                
+                if (success) {
+                    API().authorizeSynapseUser({ (status) in
+                        self.complete()
+                    })
+                } else {
+                    self.complete()
+                }
+            }
         }
     }
     

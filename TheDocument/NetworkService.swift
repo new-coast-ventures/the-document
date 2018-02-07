@@ -19,7 +19,7 @@ class NetworkService {
     private var failureCodes: Range<Int> = 400..<499
     
     enum Method: String {
-        case GET, POST, PUT, DELETE
+        case GET, POST, PATCH, PUT, DELETE
     }
     
     func request(url: URL, method: Method,

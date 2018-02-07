@@ -39,10 +39,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         
         Database.database().isPersistenceEnabled = true
-//        
-//        let apiService = SynapseAPIService()
-//        print(apiService.fingerprint())
-        
+
         Auth.auth().addStateDidChangeListener() { self.authChanged(auth: $0, authUser: $1) }
         
         if !currentUser.isLogged { try? Auth.auth().signOut() }
@@ -161,33 +158,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func initSynapse() {
-        print("INIT SYNAPSE")
-        var phone = currentUser.phone ?? "test@synapsepay.com"
-        if phone.isBlank || phone.isEmpty {
-            phone = "test@synapsepay.com"
+        print("INIT SYNAPSE. SynapseUID pulled from database: \(currentUser.synapseUID ?? "NOT AVAILABLE")")
+        if let synapseID = currentUser.synapseUID, !synapseID.isBlank {
+            API().loadUser(uid: synapseID, { success in
+                if (success) {
+                    self.authenticateSynapseUser()
+                } else {
+                    API().resetUserKeys()
+                }
+            })
+        } else {
+            print("User not found...will wait until payment action to authenticate")
+            API().resetUserKeys()
         }
-        
-        API().findSynapseUserBy(email: currentUser.email, { success in
-            if success {
-                print("Found user...Authorizing...")
-                self.authenticateSynapseUser()
-            } else {
-                print("User not found...will wait until payment action to authenticate")
-                API().resetUserKeys()
-            }
-        })
     }
     
     func isSynapseUserVerified() -> Bool {
-        if UserDefaults.standard.bool(forKey: "is_user_account_verified") {
+        if let userRef = currentUser.synapseData, let permission = userRef["permission"] as? String, permission == "SEND-AND-RECEIVE" {
             return true
         } else {
             DispatchQueue.main.async {
                 let vc = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "sp_user_kyc") as! UINavigationController
                 if let base = homeVC {
                     base.present(vc, animated: true, completion: nil)
-                } else {
-                    print("chinese was not on the menu")
                 }
             }
             return false

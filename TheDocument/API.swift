@@ -18,6 +18,10 @@ struct API {
             currentUser.name = userInfo["name"] as? String ?? "Player"
             currentUser.postcode = userInfo["postcode"] as? String ?? ""
             currentUser.phone = userInfo["phone"] as? String ?? ""
+            currentUser.synapseUID = userInfo["synapseUID"] as? String ?? ""
+            currentUser.walletID = userInfo["walletID"] as? String ?? ""
+            currentUser.bankNodeID = userInfo["bankNodeID"] as? String ?? ""
+            currentUser.creditNodeID = userInfo["creditNodeID"] as? String ?? ""
             currentUser.checkForGroups(userInfo["groups"] as? [String : Any])
             
             self.profilePhotoExists { exists in
@@ -32,7 +36,7 @@ struct API {
     func editInfo(newName:String, newPostCode:String?, newPhone:String?, closure: ((Bool)->Void)? = nil) {
         guard !newName.isBlank else { closure?(false); return }
         
-        let userInfo = ["email": currentUser.email, "name": newName, "postcode": newPostCode, "phone": newPhone]
+        let userInfo = ["email": currentUser.email, "name": newName, "postcode": newPostCode, "phone": newPhone, "synapseUID": currentUser.synapseUID, "walletID": currentUser.walletID, "bankNodeID": currentUser.bankNodeID, "creditNodeID": currentUser.creditNodeID]
         
         Database.database().reference(withPath: "users/\(currentUser.uid)").setValue(userInfo) { error , ref in
             guard error == nil else { closure?(false);return }

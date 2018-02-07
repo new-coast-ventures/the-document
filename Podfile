@@ -11,6 +11,7 @@ target 'TheDocument' do
   pod 'FacebookCore'
   pod 'FacebookLogin'
   pod 'FacebookShare'
+  pod 'FBSDKLoginKit'
   pod 'Argo'
   pod 'Branch'
   pod 'Curry'

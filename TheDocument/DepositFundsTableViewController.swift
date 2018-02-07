@@ -24,9 +24,6 @@ class DepositFundsTableViewController: UITableViewController, UITextFieldDelegat
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
-        
         depositButton.setTitle("DEPOSIT $\(depositAmount ?? 0)", for: .normal)
         addDoneButtonOnKeyboard()
         getBankAccount()

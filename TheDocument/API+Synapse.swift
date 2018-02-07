@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import FacebookCore
 
 public struct SynapseAPIConfiguration {
     let baseURL: URL
@@ -80,7 +81,7 @@ class SynapseAPIService {
         switch error_code {
         case "110":
             print("Invalid/expired oauth_key. Retrieving latest refresh token now...")
-            API().getUpdatedRefreshToken()
+            API().loadUser(uid: userId())
         default:
             print("Error Code: \(error_code)")
         }
@@ -173,17 +174,18 @@ extension API {
         prefs.synchronize()
     }
     
-    func getUpdatedRefreshToken(_ closure : ((Bool) -> Void)? = nil) {
+    func loadUser(uid: String, _ closure : ((Bool) -> Void)? = nil) {
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         request.method = .GET
-        request.endpoint = "/users/\(service.userId())"
+        request.endpoint = "/users/\(uid)"
         service.request(request: request, success: { (response) in
             if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
                 currentUser.synapseData = userRef
                 currentUser.synapseUID = uid
                 service.setUserId(id: uid)
                 service.setRefreshToken(token: refreshToken)
+                print("USER: \(userRef)")
                 closure?(true)
             } else {
                 closure?(false)
@@ -194,29 +196,53 @@ extension API {
         }
     }
     
-    func findSynapseUserBy(email: String, _ closure : ((Bool) -> Void)? = nil) {
+    func socialDocs() -> Any {
+        if let access_token = AccessToken.current {
+            return [["document_value": access_token.authenticationToken, "document_type": "FACEBOOK"]]
+        } else {
+            return ""
+        }
+    }
+    
+    func addKYC(email: String, phone: String, name: String, birthDay: Int, birthMonth: Int, birthYear: Int, addressStreet: String, addressCity: String, addressState: String, addressPostalCode: String, _ closure : ((Bool) -> Void)? = nil) {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         
-        request.parameters = [ "query": email, "page": 1, "per_page": 1 ]
-        request.method = .GET
-        request.endpoint = "/users"
+        let payload: [String: Any] = [
+            "documents": [[
+                "email": email,
+                "phone_number": phone,
+                "name": name,
+                "ip": service.userIpAddress(),
+                "entity_type": "NOT_KNOWN",
+                "entity_scope": "Not Known",
+                "day": birthDay,
+                "month": birthMonth,
+                "year": birthYear,
+                "address_street": addressStreet,
+                "address_city": addressCity,
+                "address_subdivision": addressState,
+                "address_postal_code": addressPostalCode,
+                "address_country_code": "US",
+                "social_docs": socialDocs()
+            ]]
+        ]
+        
+        request.method = .PATCH
+        request.endpoint = "/users/\(service.userId())"
+        request.parameters = payload
+        
         service.request(request: request, success: { (response) in
-            
-            guard let json = response as? [String: Any], let users = json["users"] as? [[String: Any]], let userRef = users.first, let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String else {
-                print("Unable to find user with email")
-                closure?(false)
-                return
+            if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
+                currentUser.synapseData = userRef
+                currentUser.synapseUID = uid
+                service.setUserId(id: uid)
+                service.setRefreshToken(token: refreshToken)
+                UserDefaults.standard.set(true, forKey: "is_user_account_verified")
+                UserDefaults.standard.synchronize()
             }
-            
-            print("Found user with email: \(userRef)")
-            currentUser.synapseData = userRef
-            currentUser.synapseUID = uid
-            service.setUserId(id: uid)
-            service.setRefreshToken(token: refreshToken)
             closure?(true)
-            
         }) { (error) in
             print(error.localizedDescription)
             closure?(false)
@@ -227,13 +253,6 @@ extension API {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        
-        /*
-        "social_docs": [[
-            "document_value": "https://www.facebook.com/valid", // currentUser.fbAccessToken,
-            "document_type": "FACEBOOK"
-        ]]
-        */
         
         let payload: [String: Any] = [
             "logins": [[ "email": email ]],
@@ -254,7 +273,8 @@ extension API {
                 "address_city": addressCity,
                 "address_subdivision": addressState,
                 "address_postal_code": addressPostalCode,
-                "address_country_code": "US"
+                "address_country_code": "US",
+                "social_docs": socialDocs()
             ]]
         ]
         
@@ -479,7 +499,7 @@ extension API {
             ],
             "extra": [
                 "ip": service.userIpAddress(),
-                "note": "Withdraw funds from wallet to bank"
+                "note": "Withdraw to Bank"
             ]
         ]
         
@@ -490,6 +510,25 @@ extension API {
         }) { (error) in
             print(error.localizedDescription)
             closure?(false)
+        }
+    }
+    
+    func listTransactions(nodeId: String, _ closure : (([[String: Any]]) -> Void)? = nil) {
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        let feeNode = service.loadFromConfig(key: "DEPOSIT_NODE")
+        request.endpoint = "/users/\(service.userId())/nodes/\(nodeId)/trans"
+        request.method = .GET
+        
+        SynapseAPIService().request(request: request, success: { (response) in
+            if let response = response as? [String: Any], let trans = response["trans"] as? [[String: Any]] {
+                closure?(trans)
+            } else {
+                closure?([])
+            }
+        }) { (error) in
+            print(error.localizedDescription)
+            closure?([])
         }
     }
     
@@ -511,7 +550,7 @@ extension API {
             ],
             "extra": [
                 "ip": service.userIpAddress(),
-                "note": "Deposit funds from bank to wallet"
+                "note": "Deposit to Wallet"
             ]
         ]
         
