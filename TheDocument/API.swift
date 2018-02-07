@@ -31,6 +31,10 @@ struct API {
         })
     }
     
+    func pushSynapseUID() {
+        Database.database().reference(withPath: "users/\(currentUser.uid)/synapseUID").setValue(currentUser.synapseUID)
+    }
+    
     //Edits user's info invoked from Settings Screen
     //TODO: rename from GroupsgetScoresFor
     func editInfo(newName:String, newPostCode:String?, newPhone:String?, closure: ((Bool)->Void)? = nil) {

@@ -6,6 +6,7 @@
 import UIKit
 import Firebase
 import SearchTextField
+import CoreLocation
 
 class NewChallengeViewController: BaseViewController {
 
@@ -15,14 +16,18 @@ class NewChallengeViewController: BaseViewController {
     @IBOutlet weak var challengeTime:           InputField!
     @IBOutlet weak var challengePrice:          InputField!
     @IBOutlet weak var createChallengeButton:   UIButton!
-    @IBOutlet weak var walletBalanceLabel:      UILabel!
+    @IBOutlet weak var walletBalanceButton:     UIButton!
     
-    var challenge:Challenge!
+    var locationManager: CLLocationManager!
+    let approvedStates = ["FL", "Florida", "IL", "Illinois", "NY", "New York"]
+    
+    var challenge: Challenge!
     var toId:String? = nil
     var groupId:String? = nil
     var dollarLabel: UILabel!
     var toggle: UIBarButtonItem!
-    var togglePicker: Bool = true
+    var togglePicker: Bool = false
+    var prizeable: Bool = false
     
     var approvedChallenges: [String] = [String]()
     var challengeFormats: [String] = [String]()
@@ -39,6 +44,12 @@ class NewChallengeViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Load user location
+        self.getUserLocation()
+        
+        // Initially hide the payment-related fields
+        self.handlePrizeable()
+        
         // Set initial picker values
         priceOptions = [0, 1, 5, 10, 25, 50]
         challengeFormats = ["1-on-1", "2-on-2"]
@@ -46,13 +57,13 @@ class NewChallengeViewController: BaseViewController {
                               "Flip Cup", "Spinning", "Running", "Circuit Training", "Weight Lifting", "Golf", "Tennis", "Basketball", "Bowling",
                               "Skiing", "Video Game", "Checkers", "Chess", "Backgammon"].sorted()
         
-        walletBalanceLabel.isHidden = true
+        walletBalanceButton.isHidden = true
         challengePicker.delegate = self
         amountPicker.delegate = self
         formatPicker.delegate = self
         
         // Set up challenge picker
-        challengeName.inputView = challengePicker
+        // challengeName.inputView = challengePicker
         
         // Set up challenge time
         timePicker.minuteInterval = 30
@@ -71,7 +82,7 @@ class NewChallengeViewController: BaseViewController {
         // Set up price field
         challengePrice.leftViewMode = challengePrice.text == "" ? .never : .always
         challengePrice.leftView = dollarLabel
-        challengePrice.isHidden = false
+        challengePrice.isHidden = true
         challengePrice.isEnabled = false
         challengePrice.inputView = amountPicker
         dollarLabel.sizeToFit()
@@ -143,13 +154,15 @@ class NewChallengeViewController: BaseViewController {
     }
     
     func updateAvailableBalance(_ amount: String?) {
+        guard prizeable else { return }
+        
         if let newBalance = Float(amount ?? "0.00") {
             self.accountBalance = newBalance
         }
         
         DispatchQueue.main.async {
-            self.walletBalanceLabel.text = "You have $\(String(format: "%.2f", self.accountBalance)) available"
-            self.walletBalanceLabel.isHidden = false
+            self.walletBalanceButton.setTitle("You have $\(String(format: "%.2f", self.accountBalance)) available", for: .normal)
+            self.walletBalanceButton.isHidden = false
         }
     }
     
@@ -209,7 +222,7 @@ class NewChallengeViewController: BaseViewController {
     
     @objc func toggleCustomName() {
         if self.togglePicker {
-            toggle.title = "View List"
+            toggle.title = "Prize Challenge"
             challengeName.text = nil
             challengeName.inputView = nil
         } else {
@@ -227,7 +240,7 @@ class NewChallengeViewController: BaseViewController {
         doneToolbar.barTintColor = Constants.Theme.mainColor
         doneToolbar.tintColor = .white
         
-        toggle = UIBarButtonItem(title: "Custom Challenge", style: .done, target: self, action: #selector(NewChallengeViewController.toggleCustomName))
+        toggle = UIBarButtonItem(title: "Prize Challenge", style: .done, target: self, action: #selector(NewChallengeViewController.toggleCustomName))
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let done: UIBarButtonItem = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(NewChallengeViewController.doneButtonAction))
         
@@ -265,6 +278,19 @@ class NewChallengeViewController: BaseViewController {
         self.challengePrice.inputAccessoryView = doneToolbar
         self.challengeTime.inputAccessoryView = doneToolbar
         self.challengeLocation.inputAccessoryView = doneToolbar
+    }
+    
+    func handlePrizeable(_ prizeable: Bool = false) {
+        self.prizeable = prizeable
+        self.challengePrice.isEnabled = prizeable
+        self.walletBalanceButton.isHidden = !prizeable
+        
+        if let name = self.challengeName.text, self.approvedChallenges.contains(name), prizeable == true {
+            self.challengePrice.isHidden = false
+        } else {
+            self.challengePrice.isHidden = true
+            self.challengePrice.text = ""
+        }
     }
 }
 
@@ -314,13 +340,68 @@ extension NewChallengeViewController: UIPickerViewDelegate, UIPickerViewDataSour
 extension NewChallengeViewController: UITextFieldDelegate {
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
         if textField == self.challengeName {
-            if let name = textField.text, approvedChallenges.contains(name) {
-                self.challengePrice.isEnabled = true
-            } else {
-                self.challengePrice.isEnabled = false
-                self.challengePrice.text = ""
-            }
+            self.handlePrizeable(self.prizeable)
         }
         return true
+    }
+}
+
+extension NewChallengeViewController: CLLocationManagerDelegate {
+    func getUserLocation() {
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locationManager.distanceFilter = 10000
+        locationManager.requestWhenInUseAuthorization()
+        
+        if CLLocationManager.locationServicesEnabled() {
+            locationManager.startUpdatingLocation()
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let userLocation: CLLocation = locations[0] as CLLocation
+        print("user latitude = \(userLocation.coordinate.latitude)")
+        print("user longitude = \(userLocation.coordinate.longitude)")
+        
+        self.lookUpCurrentLocation { placemark in
+            guard let location = placemark, let state = location.administrativeArea else { self.handlePrizeable(false); return }
+            
+            print("The user's current state is \(state)")
+            if self.approvedStates.contains(state) {
+                self.handlePrizeable(true)
+            } else {
+                self.handlePrizeable(false)
+            }
+        }
+    }
+    
+    func lookUpCurrentLocation(completionHandler: @escaping (CLPlacemark?) -> Void) {
+        // Use the last reported location.
+        if let lastLocation = self.locationManager.location {
+            let geocoder = CLGeocoder()
+            
+            // Look up the location and pass it to the completion handler
+            geocoder.reverseGeocodeLocation(lastLocation,
+                                            completionHandler: { (placemarks, error) in
+                                                if error == nil {
+                                                    let firstLocation = placemarks?[0]
+                                                    completionHandler(firstLocation)
+                                                }
+                                                else {
+                                                    // An error occurred during geocoding.
+                                                    completionHandler(nil)
+                                                }
+            })
+        }
+        else {
+            // No location was available.
+            completionHandler(nil)
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error)
+    {
+        print("Error \(error)")
     }
 }

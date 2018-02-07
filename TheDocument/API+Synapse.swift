@@ -135,6 +135,7 @@ class SynapseAPIService {
             currentUser.synapseUID = id
             UserDefaults.standard.set(id, forKey: "synapse_uid")
             UserDefaults.standard.synchronize()
+            API().pushSynapseUID()
         }
     }
     
@@ -182,10 +183,7 @@ extension API {
         service.request(request: request, success: { (response) in
             if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
                 currentUser.synapseData = userRef
-                currentUser.synapseUID = uid
-                service.setUserId(id: uid)
                 service.setRefreshToken(token: refreshToken)
-                print("USER: \(userRef)")
                 closure?(true)
             } else {
                 closure?(false)
@@ -236,7 +234,6 @@ extension API {
         service.request(request: request, success: { (response) in
             if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
                 currentUser.synapseData = userRef
-                currentUser.synapseUID = uid
                 service.setUserId(id: uid)
                 service.setRefreshToken(token: refreshToken)
                 UserDefaults.standard.set(true, forKey: "is_user_account_verified")
@@ -284,7 +281,6 @@ extension API {
         service.request(request: request, success: { (response) in
             if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
                 currentUser.synapseData = userRef
-                currentUser.synapseUID = uid
                 service.setUserId(id: uid)
                 service.setRefreshToken(token: refreshToken)
                 UserDefaults.standard.set(true, forKey: "is_user_account_verified")
