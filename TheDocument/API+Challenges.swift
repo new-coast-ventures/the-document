@@ -89,15 +89,15 @@ extension API {
         guard let newChallenge = Challenge.short(name: challenge.name, format: challenge.format, location: challenge.location, time: challenge.time) else { closure(false); return }
         
         var newRematchChallenge = newChallenge
-        newRematchChallenge.fromId = challenge.teammateId()
-        newRematchChallenge.toId = challenge.competitorId()
+        newRematchChallenge.fromId = challenge.teammateIds()
+        newRematchChallenge.toId = challenge.competitorIds()
         
         if newRematchChallenge.format == "1-on-1" {
-            challengeFriends(challenge: newRematchChallenge, friendsIds: [challenge.competitorId()]) {
+            challengeFriends(challenge: newRematchChallenge, friendsIds: [challenge.competitorIds()]) {
                 closure(true)
             }
         } else {
-            challengeTeams(challenge: newRematchChallenge, teammateIds: [newRematchChallenge.teammateId()], competitorIds: [newRematchChallenge.competitorId()], closure: { 
+            challengeTeams(challenge: newRematchChallenge, teammateIds: [newRematchChallenge.teammateIds()], competitorIds: [newRematchChallenge.competitorIds()], closure: {
                 closure(true)
             })
         }

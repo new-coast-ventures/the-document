@@ -85,60 +85,12 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
         resultViewDivider.isHidden = true
         playersContainerView.layer.dropShadow()
         
-        // Load Player Information
-        setupTeams()
-        
-        // Set up the chatter table
-        setupChatter()
- 
-        // Detail Labels
-        challengeNameLabel.text = challenge.challengeName()
-        challengePriceLabel.text = (challenge.price == 0) ? "None" : "$\(challenge.price)"
-        challengeLocationLabel.text = (challenge.location == "") ? "-" : challenge.location
-        challengeDateLabel.text = (challenge.time == "") ? "-" : challenge.time
-        challengeResultLabel.text = challenge.result ?? "-"
-
-        actionButton.isEnabled = true
-        
-        switch (challenge.status, challenge.accepted) {
-        case (0, 0) where challenge.isMine() == false: // Pending invite
-            actionButton.setTitle("ACCEPT CHALLENGE", for: .normal)
-            
-        case (0, 0) where challenge.isMine() == true: // Waiting for opponent
-            actionButton.setTitle("CANCEL CHALLENGE", for: .normal)
-        
-        case (1, 1) where challenge.declarator.isBlank: // Current
-            actionButton.setTitle("END CHALLENGE", for: .normal)
-            
-        case (1, 1) where challenge.pendingConfirmation() == false: // Opponent declared
-            actionButton.setTitle("CONFIRM WINNER", for: .normal)
-            
-        case (1, 1) where challenge.pendingConfirmation() == true: // Pending confirmation
-            actionButton.setTitle("WINNER PENDING...", for: .normal)
-            actionButton.backgroundColor = UIColor(red: 234/255, green: 234/255, blue: 234/255, alpha: 1.0)
-            actionButton.isEnabled = false
-            
-        case (2, 1): // Past
-            let buttonText = challenge.wonByMe() ? "SHARE RESULTS" : "REQUEST REMATCH"
-            actionButton.setTitle(buttonText, for: .normal)
-            resultStackView.isHidden = false
-            resultViewDivider.isHidden = false
-
-        default: // TDUser chose winner, Rejected, Win, Other
-            actionButton.isHidden = true
-        }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.hideToolbar)"), object: nil)
-        
         // Add keyboard notifications
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: .UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: .UIKeyboardWillHide, object: nil)
         
-        comments.removeAll()
+        // Set up the chatter table
+        setupChatter()
         
         // [START child_event_listener]
         // Listen for new comments in the Firebase database
@@ -157,16 +109,54 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
         // [END child_event_listener]
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // Load Player Information
+        setupTeams()
+        
+        // Detail Labels
+        challengeNameLabel.text = challenge.challengeName()
+        challengePriceLabel.text = (challenge.price == 0) ? "None" : "$\(challenge.price)"
+        challengeLocationLabel.text = (challenge.location == "") ? "-" : challenge.location
+        challengeDateLabel.text = (challenge.time == "") ? "-" : challenge.time
+        challengeResultLabel.text = challenge.result ?? "-"
+        
+        actionButton.isEnabled = true
+        
+        switch (challenge.status, challenge.accepted) {
+        case (0, 0) where challenge.isMine() == false: // Pending invite
+            actionButton.setTitle("ACCEPT CHALLENGE", for: .normal)
+            
+        case (0, 0) where challenge.isMine() == true: // Waiting for opponent
+            actionButton.setTitle("CANCEL CHALLENGE", for: .normal)
+            
+        case (1, 1) where challenge.declarator.isBlank: // Current
+            actionButton.setTitle("END CHALLENGE", for: .normal)
+            
+        case (1, 1) where challenge.pendingConfirmation() == false: // Opponent declared
+            actionButton.setTitle("CONFIRM WINNER", for: .normal)
+            
+        case (1, 1) where challenge.pendingConfirmation() == true: // Pending confirmation
+            actionButton.setTitle("WINNER PENDING...", for: .normal)
+            actionButton.backgroundColor = UIColor(red: 234/255, green: 234/255, blue: 234/255, alpha: 1.0)
+            actionButton.isEnabled = false
+            
+        case (2, 1): // Past
+            let buttonText = challenge.wonByMe() ? "SHARE RESULTS" : "REQUEST REMATCH"
+            actionButton.setTitle(buttonText, for: .normal)
+            resultStackView.isHidden = false
+            resultViewDivider.isHidden = false
+            
+        default: // TDUser chose winner, Rejected, Win, Other
+            actionButton.isHidden = true
+        }
+        
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.hideToolbar)"), object: nil)
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-
-        // Remove Keyboard observers
-        NotificationCenter.default.removeObserver(self, name: .UIKeyboardWillShow, object: nil)
-        NotificationCenter.default.removeObserver(self, name: .UIKeyboardWillHide, object: nil)
-        
-        // Remove Firebase observers
-        commentsRef.removeAllObservers()
-        Database.database().reference().child("users").child(currentUser.uid).removeAllObservers()
     }
     
     func indexOfMessage(_ snapshot: DataSnapshot) -> Int {
@@ -181,6 +171,13 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     }
     
     deinit {
+        // Remove Keyboard observers
+        NotificationCenter.default.removeObserver(self, name: .UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .UIKeyboardWillHide, object: nil)
+        
+        // Remove Firebase observers
+        commentsRef.removeAllObservers()
+        Database.database().reference().child("users").child(currentUser.uid).removeAllObservers()
     }
     
     fileprivate func setupChatter() {
@@ -205,7 +202,7 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             }
         } else {
             appDelegate.downloadImageFor(id: uid, section: "photos") { [weak self] success in
-                guard success, let sSelf = self, let imageData = downloadedImages[sSelf.challenge.fromId] else { return }
+                guard success, let sSelf = self, let imageData = downloadedImages[uid] else { return }
                 DispatchQueue.main.async {
                     imageView.image = UIImage(data: imageData)
                 }
@@ -291,7 +288,7 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     fileprivate func displayConfirmationAlert() {
         
         var winnerString = "you"
-        if challenge.winner == challenge.competitorId() {
+        if challenge.winner == challenge.competitorIds() {
             winnerString += "r opponent"
             if challenge.format != "1-on-1" {
                 winnerString += "s"
@@ -540,12 +537,12 @@ extension ChallengeDetailsViewController {
         challenge.declarator = currentUser.uid
         
         alertView.addButton(challenge.teammateNames()) {
-            self.challenge.winner = self.challenge.teammateId()
+            self.challenge.winner = self.challenge.teammateIds()
             self.declareWinnerAction()
         }
         
         alertView.addButton(challenge.competitorNames()) {
-            self.challenge.winner = self.challenge.competitorId()
+            self.challenge.winner = self.challenge.competitorIds()
             self.declareWinnerAction()
         }
         
@@ -578,7 +575,7 @@ extension ChallengeDetailsViewController {
                 if self.challenge.winner.contains(currentUser.uid) {
                     let newWinTotal = (currentUser.record.totalWins ?? 0) + 1
                     currentUser.record.totalWins = newWinTotal
-                    let users = self.challenge.competitorId().components(separatedBy: ",")
+                    let users = self.challenge.competitorIds().components(separatedBy: ",")
                     users.forEach { (uid) in
                         if let frIndex = currentUser.friends.index(where: { $0.uid == uid } ) {
                             let newLossTotal = (currentUser.friends[frIndex].record.totalLosses ?? 0) + 1
@@ -590,7 +587,7 @@ extension ChallengeDetailsViewController {
                 } else {
                     let newLossTotal = (currentUser.record.totalLosses ?? 0) + 1
                     currentUser.record.totalLosses = newLossTotal
-                    let users = self.challenge.competitorId().components(separatedBy: ",")
+                    let users = self.challenge.competitorIds().components(separatedBy: ",")
                     users.forEach { (uid) in
                         if let frIndex = currentUser.friends.index(where: { $0.uid == uid } ) {
                             let newTotalWins = (currentUser.friends[frIndex].record.totalWins ?? 0) + 1

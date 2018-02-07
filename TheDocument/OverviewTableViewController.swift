@@ -123,7 +123,7 @@ extension OverviewTableViewController {
             let item = section == 0 ? futureChallenges[row] : (section == 1 ? currentChallenges[row] : pastChallenges[row] )
             cell.setup(item)
             
-            if let uid = item.competitorId().components(separatedBy: ",").first {
+            if let uid = item.competitorIds().components(separatedBy: ",").first {
                 setImage(id: uid, forCell: cell)
             }
 

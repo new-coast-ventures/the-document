@@ -57,7 +57,7 @@ class HeadToHeadViewController: BaseViewController {
         versusLabel.layer.cornerRadius = 20
         
         // Grab head to head challenges
-        pastChallenges = currentUser.challenges.filter { $0.status == 2 && $0.competitorId().contains(playerTwo.uid) }.completionSorted()
+        pastChallenges = currentUser.challenges.filter { $0.status == 2 && $0.competitorIds().contains(playerTwo.uid) }.completionSorted()
         
         playerOneWins = pastChallenges.filter { $0.loserId().contains(playerTwo.uid) && $0.winner.contains(currentUser.uid) }.count
         playerTwoWins = pastChallenges.count - playerOneWins
@@ -182,7 +182,7 @@ extension HeadToHeadViewController: UITableViewDelegate, UITableViewDataSource {
         let challenge = pastChallenges[indexPath.row]
         cell.setup(challenge)
         
-        if let uid = challenge.competitorId().components(separatedBy: ",").first {
+        if let uid = challenge.competitorIds().components(separatedBy: ",").first {
             setImage(id: uid, forCell: cell)
         }
         

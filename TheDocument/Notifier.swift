@@ -35,7 +35,7 @@ struct Notifier {
     }
     
     func acceptChallenge(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
-        let competitors = challenge.competitorId().components(separatedBy: ",")
+        let competitors = challenge.competitorIds().components(separatedBy: ",")
         competitors.forEach { (uid) in
             let acceptRequest = AcceptChallengeRequest(toUID: uid, challengeId: challenge.id, challengeName: challenge.challengeName())
             FCMService().request(request: acceptRequest, success: { (responce) in
@@ -47,7 +47,7 @@ struct Notifier {
     }
     
     func sendChatter(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
-        let competitors = challenge.competitorId().components(separatedBy: ",")
+        let competitors = challenge.competitorIds().components(separatedBy: ",")
         competitors.forEach { (uid) in
             let chatterNotification = ChatterNotification(toUID: uid, challengeId: challenge.id, challengeName: challenge.challengeName())
             FCMService().request(request: chatterNotification, success: { (responce) in
@@ -73,7 +73,7 @@ struct Notifier {
     }
     
     func declareWinner(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
-        let competitors = challenge.competitorId().components(separatedBy: ",")
+        let competitors = challenge.competitorIds().components(separatedBy: ",")
         competitors.forEach { (uid) in
             let declare = DeclareWinner(toUID: uid, challengeId: challenge.id, challengeName: challenge.challengeName(), winnerName: challenge.winnerNames(), winnerID: challenge.winner, declaratorID: challenge.declarator )
             FCMService().request(request: declare, success: { (responce) in
@@ -85,7 +85,7 @@ struct Notifier {
     }
     
     func confirmWinner(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
-        let competitors = challenge.competitorId().components(separatedBy: ",")
+        let competitors = challenge.competitorIds().components(separatedBy: ",")
         competitors.forEach { (uid) in
             let confirm = ConfirmWinner(toUID: uid, challengeId:challenge.id, challengeName: challenge.challengeName(), winnerName: challenge.winnerNames())
             FCMService().request(request: confirm, success: { (responce) in
@@ -97,7 +97,7 @@ struct Notifier {
     }
     
     func denyWinner(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
-        let competitors = challenge.competitorId().components(separatedBy: ",")
+        let competitors = challenge.competitorIds().components(separatedBy: ",")
         competitors.forEach { (uid) in
             let deny = DenyWinner(toUID: uid, challengeId:challenge.id, challengeName: challenge.challengeName(), winnerName: challenge.winnerNames())
             FCMService().request(request: deny, success: { (responce) in
@@ -109,7 +109,7 @@ struct Notifier {
     }
     
     func rejectChallenge(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
-        let competitors = challenge.competitorId().components(separatedBy: ",")
+        let competitors = challenge.competitorIds().components(separatedBy: ",")
         competitors.forEach { (uid) in
             let reject = RejectChallenge(toUID: uid, challengeId: challenge.id, challengeName: challenge.challengeName())
             FCMService().request(request: reject, success: { (responce) in
@@ -121,7 +121,7 @@ struct Notifier {
     }
     
     func cancelChallenge(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
-        let competitors = challenge.competitorId().components(separatedBy: ",")
+        let competitors = challenge.competitorIds().components(separatedBy: ",")
         competitors.forEach { (uid) in
             let cancel = CancelChallenge(toUID: uid, challengeId: challenge.id, challengeName: challenge.challengeName())
             FCMService().request(request: cancel, success: { (responce) in

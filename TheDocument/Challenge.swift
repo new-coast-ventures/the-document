@@ -57,22 +57,6 @@ extension Challenge {
         return Challenge(id: generateRandomString(12), name: chName, format: chFormat, location: chLocation, time: chTime, fromId: "", toId: "", accepted: 0, status: 0, winner: "", price: 0, details: "", declarator: "", completedAt:0, result:"", group:"", participants:[[]])
     }
     
-    func teammateId()->String {
-        if fromId.contains(currentUser.uid) {
-            return fromId
-        } else {
-            return toId
-        }
-    }
-    
-    func competitorId()->String {
-        if fromId.contains(currentUser.uid) {
-            return toId
-        } else {
-            return fromId
-        }
-    }
-    
     func simplifiedParticipants() -> [[[String: Any]]] {
         return participants.map({ (team) in
             team.map({ (participant) in
@@ -110,9 +94,9 @@ extension Challenge {
     }
     
     func participantIds()->[String] {
-        let competitors = competitorId().components(separatedBy: ",")
-        let teammates   = teammateId().components(separatedBy: ",")
-        return competitors + teammates
+        let a_ids = teamA().map { $0.uid }
+        let b_ids = teamB().map { $0.uid }
+        return a_ids + b_ids
     }
     
     func loserId()->String {
@@ -128,7 +112,11 @@ extension Challenge {
     }
     
     func pendingConfirmation()->Bool {
-        return teammateId().contains(declarator)
+        if teamA().map({ $0.uid }).contains(currentUser.uid) {
+            return teamA().map({ $0.uid }).contains(declarator)
+        } else {
+            return teamB().map { $0.uid }.contains(declarator)
+        }
     }
     
     func challengeName() -> String {
@@ -149,58 +137,76 @@ extension Challenge {
         return names.joined(separator: ", ")
     }
     
-    func competitorNames() -> String {
-        var names: [String] = [String]()
-        let users = competitorId().components(separatedBy: ",")
-        users.forEach { (uid) in
-            if uid == currentUser.uid {
-                names.append("You")
-            } else {
-                names.append(currentUser.friends[uid].name)
-            }
+    func teammateIds() -> String {
+        if teamA().contains(currentUser) {
+            return teamAIds()
+        } else {
+            return teamBIds()
         }
-        
-        return names.joined(separator: ", ")
     }
     
     func teammateNames() -> String {
-        var names: [String] = [String]()
-        let users = teammateId().components(separatedBy: ",")
-        users.forEach { (uid) in
-            if uid == currentUser.uid {
-                names.append("You")
-            } else {
-                names.append(currentUser.friends[uid].name)
-            }
+        if teamA().contains(currentUser) {
+            return teamANames()
+        } else {
+            return teamBNames()
         }
-        
-        return names.joined(separator: ", ")
     }
     
+    func competitorIds() -> String {
+        if teamA().contains(currentUser) {
+            return teamBIds()
+        } else {
+            return teamAIds()
+        }
+    }
+    
+    func competitorNames() -> String {
+        if teamA().contains(currentUser) {
+            return teamBNames()
+        } else {
+            return teamANames()
+        }
+    }
+    
+    func teamAIds() -> String {
+        return teamA().map { $0.uid }.joined(separator: ",")
+    }
+    
+    func teamANames() -> String {
+        return teamA().map { user in
+            return user.name
+            }.joined(separator: ", ")
+    }
+
     func teamA() -> [TDUser] {
-        var teammates: [TDUser] = []
-        let users = teammateId().components(separatedBy: ",")
-        users.forEach { (uid) in
-            if uid == currentUser.uid {
-                teammates.append(currentUser)
-            } else {
-                teammates.append(currentUser.friends[uid])
-            }
+        if let team = participants.first {
+            return mapParticipantsToUsers(team: team)
         }
-        return teammates
+        return []
     }
     
+    func teamBIds() -> String {
+        return teamB().map { $0.uid }.joined(separator: ",")
+    }
+    
+    func teamBNames() -> String {
+        return teamB().map { user in
+            return user.name
+            }.joined(separator: ", ")
+    }
+
     func teamB() -> [TDUser] {
-        var challengers: [TDUser] = []
-        let users = competitorId().components(separatedBy: ",")
-        users.forEach { (uid) in
-            if uid == currentUser.uid {
-                challengers.append(currentUser)
-            } else {
-                challengers.append(currentUser.friends[uid])
-            }
+        if let team = participants.last {
+            return mapParticipantsToUsers(team: team)
         }
-        return challengers
+        return []
+    }
+    
+    func mapParticipantsToUsers(team: [Participant]) -> [TDUser] {
+        return team.map({ p in
+            return currentUser.friends[p.uid]
+        })
     }
 }
 

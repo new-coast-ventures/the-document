@@ -68,7 +68,7 @@ class ItemTableViewCell: UITableViewCell {
             bottomLabel.text = "Waiting for \(item.competitorNames())"
             acceptButton.isHidden = true
         
-        case (1, 1) where item.competitorId().contains(item.declarator): // Pending confirmation
+        case (1, 1) where item.competitorIds().contains(item.declarator): // Pending confirmation
             bottomLabel.text = "\(item.competitorNames()) chose a winner"
             actionTitle(title: "Confirm")
         
