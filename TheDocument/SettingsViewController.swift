@@ -110,7 +110,7 @@ class SettingsViewController: BaseViewController {
             
             Storage.storage().reference(withPath: "photos/\(currentUser.uid)").putData(imageData, metadata: nil, completion: { (metadata, error) in
                 guard let metadata = metadata else { return }
-                print("Metadata: ", metadata)
+                log.debug(metadata)
             })
         }
     }
@@ -190,7 +190,7 @@ extension SettingsViewController: UITextFieldDelegate {
         
         var result = ""
         var index = cleanPhoneNumber.startIndex
-        for ch in mask.characters {
+        for ch in mask {
             if index == cleanPhoneNumber.endIndex {
                 break
             }

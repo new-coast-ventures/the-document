@@ -67,7 +67,7 @@ extension Challenge {
     
     func accept() -> Challenge {
         var updatedChallenge = self
-        var updatedParticipants = participants.map({ (team) in
+        let updatedParticipants = participants.map({ (team) in
             team.map({ (p) in
                 return Participant(uid: p.uid, accepted: (p.uid == currentUser.uid ? 1 : p.accepted))
             })
@@ -80,7 +80,7 @@ extension Challenge {
     
     func reject() -> Challenge {
         var updatedChallenge = self
-        var updatedParticipants = participants.map({ (team) in
+        let updatedParticipants = participants.map({ (team) in
             team.map({ (p) in
                 return Participant(uid: p.uid, accepted: (p.uid == currentUser.uid ? 0 : p.accepted))
             })

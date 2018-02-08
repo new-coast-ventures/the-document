@@ -202,7 +202,7 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             }
         } else {
             appDelegate.downloadImageFor(id: uid, section: "photos") { [weak self] success in
-                guard success, let sSelf = self, let imageData = downloadedImages[uid] else { return }
+                guard success, let imageData = downloadedImages[uid] else { return }
                 DispatchQueue.main.async {
                     imageView.image = UIImage(data: imageData)
                 }

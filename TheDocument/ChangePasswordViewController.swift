@@ -58,10 +58,10 @@ extension ChangePasswordViewController {
     func updatePassword(_ newPassword: String, _ reauthenticate: Bool = true) {
         Auth.auth().currentUser?.updatePassword(to: newPassword) { (error) in
             if error != nil && reauthenticate == true {
-                print("Update password error: \(error!.localizedDescription)")
+                log.error(error!)
                 self.reauthenticateUser(newPassword)
             } else if error != nil {
-                print("Update password 2nd try error: \(error!.localizedDescription)")
+                log.error(error!)
                 self.showAlert(message: "Something went wrong. Please try again later.")
             } else {
                 self.showAlert(title: "Success!", message: "Your password has been successfully updated", closure: { action in
@@ -77,11 +77,10 @@ extension ChangePasswordViewController {
             return
         }
         
-        print("Reauthenticating \(currentUser.email) using password \(oldPassword)")
         let credential = EmailAuthProvider.credential(withEmail: currentUser.email, password: oldPassword)
         Auth.auth().currentUser?.reauthenticate(with: credential) { error in
             if error != nil {
-                print("Reauth error: \(error!.localizedDescription)")
+                log.error(error!)
                 self.showAlert(message: "We're having trouble connecting. Please try again later.")
             } else {
                 self.updatePassword(newPassword, false)

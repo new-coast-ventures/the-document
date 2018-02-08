@@ -47,7 +47,7 @@ class PhotoViewController: BaseViewController {
             
             Storage.storage().reference(withPath: "photos/\(currentUser.uid)").putData(imageData, metadata: nil, completion: { (metadata, error) in
                 guard let metadata = metadata else { return }
-                print("Metadata: ", metadata)
+                log.debug(metadata)
             })
             
             UserDefaults.standard.set(true, forKey: Constants.shouldGetPhotoKey)

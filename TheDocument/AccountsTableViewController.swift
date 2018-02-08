@@ -101,7 +101,7 @@ class AccountsTableViewController: BaseTableViewController {
                     self.refresh()
                 }
             } else {
-                print("Error getting linked accounts")
+                log.warning("Error getting linked accounts")
             }
         }
     }

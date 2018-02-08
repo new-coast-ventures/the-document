@@ -34,6 +34,6 @@ class TDWebViewController: UIViewController, UIWebViewDelegate {
     
     func webView(_ webView: UIWebView, didFailLoadWithError error: Error) {
         spinner.stopAnimating()
-        print("Error: \(error)")
+        log.error(error)
     }
 }

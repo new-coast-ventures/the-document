@@ -10,9 +10,7 @@ import Argo
 
 extension API {
     
-    func challengeFriends(challenge:Challenge, friendsIds:Set<String>, closure: @escaping ( )->Void) {
-        guard friendsIds.count > 0 else { closure(); return }
-        
+    func processFriendChallenge(challenge:Challenge, friendsIds:Set<String>, closure: @escaping ( )->Void) {
         let challengeRef = Database.database().reference().child("challenges")
         
         friendsIds.forEach { friendId in
@@ -36,9 +34,37 @@ extension API {
         }
     }
     
-    func challengeTeams(challenge:Challenge, teammateIds:Set<String>, competitorIds:Set<String>, closure: @escaping ( )->Void) {
-        guard teammateIds.count > 0 && competitorIds.count > 0 else { closure(); return }
+    func challengeFriends(challenge:Challenge, friendsIds:Set<String>, closure: @escaping ( )->Void) {
+        guard friendsIds.count > 0 else { closure(); return }
         
+        self.processFriendChallenge(challenge: challenge, friendsIds: friendsIds) {
+            closure()
+        }
+        
+//
+//        if (challenge.price > 0) {
+//            guard let wallet = currentUser.wallet, let walletId = wallet["_id"] as? String else { closure(); return }
+//
+//            API().createChallengeWallet(challenge: challenge) { success in
+//                if success {
+//                    self.processFriendChallenge(challenge: challenge, friendsIds: friendsIds) {
+//                        print("Processed friend challenge - PAID")
+//                        closure()
+//                    }
+//                } else {
+//                    closure()
+//                }
+//            }
+//        } else {
+//            self.processFriendChallenge(challenge: challenge, friendsIds: friendsIds) {
+//                print("Processed friend challenge - FREE")
+//                closure()
+//            }
+//            closure()
+//        }
+    }
+    
+    func processTeamChallenge(challenge:Challenge, teammateIds:Set<String>, competitorIds:Set<String>, closure: @escaping ( )->Void) {
         let challengeRef = Database.database().reference().child("challenges")
         let participantIds = competitorIds.union(teammateIds)
         
@@ -59,6 +85,32 @@ extension API {
                 closure()
             }
         }
+    }
+    
+    func challengeTeams(challenge:Challenge, teammateIds:Set<String>, competitorIds:Set<String>, closure: @escaping ( )->Void) {
+        guard teammateIds.count > 0 && competitorIds.count > 0 else { closure(); return }
+        
+        self.processTeamChallenge(challenge: challenge, teammateIds: teammateIds, competitorIds: competitorIds) {
+            closure()
+        }
+
+//        if (challenge.price > 0) {
+//            guard let wallet = currentUser.wallet, let walletId = wallet["_id"] as? String else { closure(); return }
+//            API().createChallengeWallet(challenge: challenge) { success in
+//                if success {
+//                    self.processTeamChallenge(challenge: challenge, teammateIds: teammateIds, competitorIds: competitorIds) {
+//                        closure()
+//                    }
+//                } else {
+//                    closure()
+//                }
+//
+//            }
+//        } else {
+//            self.processTeamChallenge(challenge: challenge, teammateIds: teammateIds, competitorIds: competitorIds) {
+//                closure()
+//            }
+//        }
     }
     
     func getChallenges(friendId: String = currentUser.uid, closure: @escaping ( [Challenge] )->Void) {
@@ -129,24 +181,48 @@ extension API {
         }
     }
     
-    // Accept Challenge
-    func acceptChallenge(challenge: Challenge, closure: @escaping ( Bool )->Void) {
-        var updatedChallenge = challenge.accept()
+    func processAcceptance(challenge: Challenge, closure: @escaping ( )->Void) {
+        let updatedChallenge = challenge.accept()
         var childUpdates: [String: Any] = [String: Any]()
         challenge.participantIds().forEach { uid in
             childUpdates["/\(uid)/\(updatedChallenge.id)"] = updatedChallenge.simplify()
         }
         
         Database.database().reference().child("challenges").updateChildValues(childUpdates) { (error, ref) in
-            guard error == nil else { closure(false);return }
+            guard error == nil else { closure(); return }
             Notifier().acceptChallenge(challenge: updatedChallenge)
+            closure()
+        }
+    }
+    
+    // Accept Challenge
+    func acceptChallenge(challenge: Challenge, closure: @escaping ( Bool )->Void) {
+        self.processAcceptance(challenge: challenge) {
             closure(true)
         }
+        
+//        if (challenge.price > 0) {
+//            guard let wallet = currentUser.wallet, let walletId = wallet["_id"] as? String else { closure(false); return }
+//
+//            API().createChallengeWallet(challenge: challenge) { success in
+//                if success {
+//                    self.processAcceptance(challenge: challenge) {
+//                        closure(true)
+//                    }
+//                } else {
+//                    closure(false)
+//                }
+//            }
+//        } else {
+//            self.processAcceptance(challenge: challenge) {
+//                closure(true)
+//            }
+//        }
     }
     
     // Reject Challenge
     func rejectChallenge(challenge: Challenge, closure: @escaping ( Bool )->Void) {
-        var rejectedChallenge = challenge.reject()
+        let rejectedChallenge = challenge.reject()
         var childUpdates: [String: Any] = [String: Any]()
         challenge.participantIds().forEach { uid in
             childUpdates["/\(uid)/\(challenge.id)"] = rejectedChallenge.simplify()

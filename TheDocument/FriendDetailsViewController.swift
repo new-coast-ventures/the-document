@@ -52,7 +52,7 @@ class FriendDetailsViewController: UIViewController {
                     sSelf.stopActivityIndicator()
                     
                     if success {
-                        if let friendIndex = currentUser.friends.index(where: { $0.uid == sSelf.friend.uid }){
+                        if currentUser.friends.index(where: { $0.uid == sSelf.friend.uid }) != nil {
                             //currentUser.friends[friendIndex].accepted = true
                             //currentUser.getScores()
                         } else {

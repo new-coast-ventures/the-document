@@ -59,32 +59,24 @@ class MyWalletViewController: UIViewController {
         }
     }
     
-    func updateAvailableBalance(_ amount: String?) {
-        if let newBalance = Float(amount ?? "0.00") {
-            self.accountBalance = newBalance
-        }
+    func updateAvailableBalance(_ amount: Double) {
+        self.accountBalance = Float(amount)
         DispatchQueue.main.async {
             self.accountBalanceLabel.text = "$\(String(format: "%.2f", self.accountBalance))"
         }
     }
     
     func refreshAccounts() {
-        if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: String] {
-            print("WALLET LOADED: \(wallet)")
-            self.updateAvailableBalance(balance["amount"])
-        } else {
-            self.updateAvailableBalance("0.00")
-        }
-        
+        let balance = API().getCurrentWalletBalance()
+        self.updateAvailableBalance(balance)
         self.getTransactions()
-        DispatchQueue.main.async {
+        DispatchQueue.main.async {  
             self.transactionsTableView.reloadData()
             
         }
     }
     
     func getWalletAccount() {
-        print("Getting wallet...")
         if let wallet = currentUser.wallet, let _ = wallet["_id"] as? String {
             walletAccount = wallet
             self.refreshAccounts()

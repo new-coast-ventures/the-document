@@ -8,10 +8,12 @@ import UIKit
 import UserNotifications
 import Firebase
 import FirebaseAuth
-import Instabug
 import Branch
 import FacebookCore
 import Ipify
+
+import SwiftyBeaver
+let log = SwiftyBeaver.self
 
 var appDelegate = UIApplication.shared.delegate as! AppDelegate
 var currentUser = TDUser()
@@ -29,19 +31,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
+        let console = ConsoleDestination()  // log to Xcode Console
+        let file = FileDestination()  // log to default swiftybeaver.log file
+        let cloud = SBPlatformDestination(appID: "89AgW5", appSecret: "rYsvf1jskVseeDujrutys76wi40u9ezy", encryptionKey: "FD14torking0v88mp2pnjtTbqeentcdk")
+        
+        console.format = "$DHH:mm:ss$d $L $M"
+        
+        log.addDestination(console)
+        log.addDestination(file)
+        log.addDestination(cloud)
+        
         let barBtnAppearance = UIBarButtonItem.appearance()
         barBtnAppearance.tintColor = UIColor.white
-        
         UIApplication.shared.statusBarStyle = .lightContent
         
-        Instabug.start(withToken: "936e97e6a9d22e84dc652bab777ac20f", invocationEvent: .shake)
-        
         FirebaseApp.configure()
-        
         Database.database().isPersistenceEnabled = true
-
         Auth.auth().addStateDidChangeListener() { self.authChanged(auth: $0, authUser: $1) }
-        
         if !currentUser.isLogged { try? Auth.auth().signOut() }
         
         // [START set_messaging_delegate]
@@ -131,7 +137,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     UserDefaults.standard.synchronize()
                     self.initSynapse()
                 case .failure(let error):
-                    print(error.localizedDescription)
+                    log.error(error)
                     self.initSynapse()
                 }
             }
@@ -158,7 +164,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func initSynapse() {
-        print("INIT SYNAPSE. SynapseUID pulled from database: \(currentUser.synapseUID ?? "NOT AVAILABLE")")
+        log.debug("Init Synapse")
         if let synapseID = currentUser.synapseUID, !synapseID.isBlank {
             API().loadUser(uid: synapseID, { success in
                 if (success) {
@@ -168,22 +174,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
             })
         } else {
-            print("User not found...will wait until payment action to authenticate")
             API().resetUserKeys()
         }
     }
     
     func isSynapseUserVerified() -> Bool {
+        log.debug("Checking if user \(currentUser.uid) is verified")
+        log.info(currentUser.synapseData)
         if let userRef = currentUser.synapseData, let permission = userRef["permission"] as? String, permission == "SEND-AND-RECEIVE" {
+            log.info("User is verified")
             return true
         } else {
-            DispatchQueue.main.async {
-                let vc = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "sp_user_kyc") as! UINavigationController
-                if let base = homeVC {
-                    base.present(vc, animated: true, completion: nil)
-                }
-            }
+            log.info("User is not verified")
+            self.loadKYCModal()
             return false
+        }
+    }
+    
+    func loadKYCModal() {
+        DispatchQueue.main.async {
+            let vc = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "sp_user_kyc") as! UINavigationController
+            if let base = homeVC {
+                base.present(vc, animated: true, completion: nil)
+            }
         }
     }
     
@@ -248,8 +261,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // If swizzling is disabled then this function must be implemented so that the APNs token can be paired to
     // the FCM registration token.
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        print("APNs token retrieved: \(deviceToken)")
-        
+        log.debug("APNs token retrieved: \(deviceToken)")
         // With swizzling disabled you must set the APNs token here.
         Messaging.messaging().apnsToken = deviceToken
     }
@@ -267,15 +279,9 @@ extension AppDelegate : UNUserNotificationCenterDelegate {
         
         // With swizzling disabled you must let Messaging know about the message, for Analytics
         Messaging.messaging().appDidReceiveMessage(userInfo)
-        // Print message ID.
-        if let messageID = userInfo[gcmMessageIDKey] {
-            print("Message ID: \(messageID)")
-        }
         
         // Print full message.
-        print(userInfo)
-        
-        // Change this to your preferred presentation option
+        log.info(userInfo)
         completionHandler([.alert, .badge, .sound])
     }
     
@@ -288,9 +294,7 @@ extension AppDelegate : UNUserNotificationCenterDelegate {
             print("Message ID: \(messageID)")
         }
         
-        // Print full message.
-        print(userInfo)
-        
+        log.info(userInfo)
         completionHandler()
     }
 }
@@ -323,7 +327,7 @@ extension AppDelegate {
         URLSession.shared.dataTask(with: imageURL, completionHandler: { (data, response, error) -> Void in
             
             guard let imgData = data, error == nil else {
-                print(error?.localizedDescription ?? "Error loading image \(imageURL)")
+                log.error(error)
                 closure?(false)
                 return
             }
@@ -331,7 +335,6 @@ extension AppDelegate {
             if let httpResponse = response as? HTTPURLResponse {
                 let statusCode = httpResponse.statusCode
                 if statusCode != 200 {
-                    print("Got status code ", statusCode)
                     closure?(false)
                     return
                 }

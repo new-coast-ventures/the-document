@@ -153,29 +153,19 @@ class NewChallengeViewController: BaseViewController {
         }
     }
     
-    func updateAvailableBalance(_ amount: String?) {
-        guard prizeable else { return }
-        
-        if let newBalance = Float(amount ?? "0.00") {
-            self.accountBalance = newBalance
-        }
-        
+    func updateAvailableBalance(_ amount: Double) {
+        self.accountBalance = Float(amount)
         DispatchQueue.main.async {
             self.walletBalanceButton.setTitle("You have $\(String(format: "%.2f", self.accountBalance)) available", for: .normal)
-            self.walletBalanceButton.isHidden = false
         }
     }
     
     func refreshAccounts() {
-        if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: String] {
-            self.updateAvailableBalance(balance["amount"])
-        } else {
-            self.updateAvailableBalance("0.00")
-        }
+        let balance = API().getCurrentWalletBalance()
+        self.updateAvailableBalance(balance)
     }
     
     func getWallet() {
-        print("Getting wallet...")
         if let wallet = currentUser.wallet, let _ = wallet["_id"] as? String {
             walletAccount = wallet
             self.refreshAccounts()
@@ -361,13 +351,10 @@ extension NewChallengeViewController: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let userLocation: CLLocation = locations[0] as CLLocation
-        print("user latitude = \(userLocation.coordinate.latitude)")
-        print("user longitude = \(userLocation.coordinate.longitude)")
-        
         self.lookUpCurrentLocation { placemark in
             guard let location = placemark, let state = location.administrativeArea else { self.handlePrizeable(false); return }
             
-            print("The user's current state is \(state)")
+            log.debug("The user's current state is \(state)")
             if self.approvedStates.contains(state) {
                 self.handlePrizeable(true)
             } else {
@@ -402,6 +389,6 @@ extension NewChallengeViewController: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error)
     {
-        print("Error \(error)")
+        log.warning(error)
     }
 }

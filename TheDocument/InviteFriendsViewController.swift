@@ -23,6 +23,9 @@ class InviteFriendsTableViewController: BaseTableViewController {
     var selectedTeammateIds = Set<String>()
     var selectedCompetitorIds = Set<String>()
     
+    let kSectionSearchResults = 0
+    let kSectionSuggestions = 1
+    
     @IBOutlet weak var doneButton: UIBarButtonItem!
     @IBOutlet weak var searchBarContainer: UIView!
     
@@ -130,6 +133,10 @@ class InviteFriendsTableViewController: BaseTableViewController {
                         var newChallenge = challenge
                         newChallenge.toId = friendId
                         newChallenge.fromId = currentUser.uid
+                        newChallenge.participants = [
+                            [Challenge.Participant(uid: friendId, accepted: -1)],
+                            [Challenge.Participant(uid: currentUser.uid, accepted: 1)]
+                        ]
                         self.loadChallengeDetailsView(challenge: newChallenge)
                     }
                     
@@ -157,6 +164,10 @@ class InviteFriendsTableViewController: BaseTableViewController {
                         var newChallenge = challenge
                         newChallenge.toId = self.selectedFriendsIds.joined(separator: ",")
                         newChallenge.fromId = self.selectedTeammateIds.joined(separator: ",")
+                        newChallenge.participants = [
+                            self.selectedFriendsIds.map { Challenge.Participant(uid: $0, accepted: -1) },
+                            self.selectedTeammateIds.map { Challenge.Participant(uid: $0, accepted: 1) }
+                        ]
                         self.loadChallengeDetailsView(challenge: newChallenge)
                         return
                     }
@@ -170,32 +181,56 @@ class InviteFriendsTableViewController: BaseTableViewController {
 extension InviteFriendsTableViewController {
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return 2
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return searchController.isActive ? filteredFriends.count : friends.count
+        switch section {
+        case kSectionSearchResults where searchController.isActive:
+            return filteredFriends.count
+        case kSectionSuggestions where !searchController.isActive:
+            return friends.count
+        default:
+            return 0
+        }
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ItemTableViewCell") as! ItemTableViewCell
-        let item = searchController.isActive ? filteredFriends[indexPath.row] : friends[indexPath.row]
-        cell.setup(item, selected: selectedFriendsIds.contains( item.uid ) )
-        setImage(id: item.uid, forCell: cell)
+        
+        var contact: TDUser
+        switch indexPath.section {
+        case kSectionSearchResults where searchController.isActive:
+            contact = filteredFriends[indexPath.row]
+        case kSectionSuggestions where !searchController.isActive:
+            contact = friends[indexPath.row]
+        default:
+            contact = TDUser.empty()
+        }
+        
+        cell.setup(contact, selected: selectedFriendsIds.contains( contact.uid ) )
+        setImage(id: contact.uid, forCell: cell)
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        let friendId = searchController.isActive ? filteredFriends[indexPath.row].uid : friends[indexPath.row].uid
         let selectionCount = selectedTeammateIds.isEmpty ? selectedFriendsIds.count+1 : selectedFriendsIds.count
+        var contact: TDUser
+        switch indexPath.section {
+        case kSectionSearchResults where searchController.isActive:
+            contact = filteredFriends[indexPath.row]
+        case kSectionSuggestions where !searchController.isActive:
+            contact = friends[indexPath.row]
+        default:
+            contact = TDUser.empty()
+        }
         
-        if selectedFriendsIds.contains(friendId) {
-            selectedFriendsIds.remove(friendId)
+        if selectedFriendsIds.contains(contact.uid) {
+            selectedFriendsIds.remove(contact.uid)
         } else if case Mode.group( _ ) = self.mode {
-            selectedFriendsIds.insert(friendId)
+            selectedFriendsIds.insert(contact.uid)
         } else if selectionCount < 2 {
-            selectedFriendsIds.insert(friendId)
+            selectedFriendsIds.insert(contact.uid)
         }
         
         tableView.reloadRows(at: [indexPath], with: .none)
@@ -208,6 +243,7 @@ extension InviteFriendsTableViewController: UISearchResultsUpdating, UISearchCon
         guard let searchTerm = searchController.searchBar.text else { return }
         self.filterData(searchTerm)
     }
+    
     func filterData( _ searchTerm: String) -> Void {
         
         guard searchTerm.count > 2 else {  return }

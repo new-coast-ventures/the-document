@@ -40,7 +40,7 @@ class NetworkService {
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode else { failure?(data,error, 0); return  }
             
             if error != nil || !self.successCodes.contains(statusCode) {
-                print("Error sending request data: \(String(describing: data)) error: \(String(describing: error)) statusCode: \(statusCode)")
+                log.error([data, error])
                 failure?(data,error,statusCode)
                 return
             }

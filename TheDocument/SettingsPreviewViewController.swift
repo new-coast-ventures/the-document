@@ -77,8 +77,6 @@ class SettingsPreviewViewController: BaseTableViewController {
                 currentUser.logout()
                 UIApplication.shared.keyWindow?.rootViewController = viewController
                 viewController.showLogin()
-            } else {
-                print("Something went wrong!")
             }
         default:
             performSegue(withIdentifier: "open_webview", sender: nil)
@@ -117,7 +115,7 @@ extension SettingsPreviewViewController {
         alert.addAction(UIAlertAction(title: Constants.resetButtonTitle, style: UIAlertActionStyle.default){ _ in
             Auth.auth().sendPasswordReset(withEmail: currentUser.email) { (error) in
                 if error != nil {
-                    print(error.debugDescription)
+                    log.error(error)
                     self.showAlert(message: Constants.Errors.defaultError.rawValue)
                     return
                 }

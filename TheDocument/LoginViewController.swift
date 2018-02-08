@@ -119,7 +119,7 @@ class LoginViewController: UIViewController {
                 
                 Auth.auth().sendPasswordReset(withEmail: email) { (error) in
                     if error != nil {
-                        print(error.debugDescription)
+                        log.error(error)
                         self.showAlert(message: Constants.Errors.defaultError.rawValue)
                         return
                     }
@@ -169,7 +169,7 @@ extension LoginViewController {
             
             guard error == nil else {
                 self.stopActivityIndicator()
-                print("\(error?.localizedDescription ?? "error creating user")")
+                log.error(error!)
                 self.showAlert(message: Constants.Errors.defaultError.rawValue)
                 return
             }
@@ -182,7 +182,7 @@ extension LoginViewController {
                 Database.database().reference(withPath: "users/\(createdUser.uid)").setValue(userDict) { error, ref in
                     guard error == nil else {
                         self.showAlert(message: Constants.Errors.defaultError.rawValue)
-                        print("Adding additional info for the user failed with: \(error?.localizedDescription ?? "")" )
+                        log.error(error!)
                         return
                     }
                     Database.database().reference(withPath: "emails/\(createdUser.uid)").setValue(createdUser.email)

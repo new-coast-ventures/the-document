@@ -121,7 +121,7 @@ class DiskProxy: Cacherable {
                     try FileManager.default.removeItem(atPath: path)
                 }
             } catch {
-                print("cache error = \(error)")
+                log.error(error)
             }
         }
     }

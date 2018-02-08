@@ -99,12 +99,12 @@ extension API {
         guard !friend.isEmpty else {closure(false);return}
         
         Database.database().reference(withPath: "friends/\(currentUser.uid)/\(friend.uid)/accepted").setValue(1) { error, ref in
-            guard error == nil else { print("Error accepting friend: \(error?.localizedDescription ?? "")" ); closure(false); return }
+            guard error == nil else { log.error(error!); closure(false); return }
             
             let newFriendData = ["accepted":1,"name":currentUser.name] as [String : Any]
             
             Database.database().reference(withPath: "friends/\(friend.uid)/\(currentUser.uid)").setValue(newFriendData) { error, ref in
-                guard error == nil else { print("Error accepting friend: \(error?.localizedDescription ?? "")" ); closure(false); return}
+                guard error == nil else { log.error(error!); closure(false); return}
                 
                 Notifier().acceptFriend(to: friend.uid)
                 closure(true)
@@ -135,7 +135,7 @@ extension API {
         
         guard let friendId = uid else { closure(false); return }
         Database.database().reference(withPath: "friends/\(currentUser.uid)/\(friendId)/accepted").setValue(1) { error, ref in
-            guard error == nil else { print("Error accepting friend: \(error?.localizedDescription ?? "")" ); closure(false); return }
+            guard error == nil else { log.error(error!); closure(false); return }
 
             let newFriendData = ["accepted":1,"name":currentUser.name] as [String : Any]
             Database.database().reference(withPath: "friends/\(friendId)/\(currentUser.uid)").setValue(newFriendData) { error, ref in

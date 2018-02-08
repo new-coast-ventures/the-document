@@ -35,7 +35,15 @@ class SynapseAPIService {
         headers!["X-SP-USER-IP"] = "\(userIpAddress())"
         
         let url = synapseURL(request: request)
-
+        
+        var logData: [String: Any] = [
+            "url": url.absoluteString,
+            "method": request.method,
+            "data": request.parameters ?? "n/a",
+            "UID": currentUser.uid
+        ]
+        log.debug("Loading Synapse URL", context: logData)
+        
         service.request(url: url, method: request.method, params: request.parameters, headers: headers!, success: { data in
             var json: Any? = nil
             if let data = data {
@@ -48,11 +56,12 @@ class SynapseAPIService {
             var json: Any? = nil
             if let data = data {
                 json = try? JSONSerialization.jsonObject(with: data, options: [])
+                log.error(data)
                 self.handleError(json)
             }
             
             if let fcmError = error  {
-                print("Error \(fcmError)")
+                log.error(fcmError)
                 fail?(fcmError)
             } else {
                 fail?(NSError(domain: "", code: statusCode, userInfo: ["errorDescription":data ?? Data() ]))
@@ -76,14 +85,14 @@ class SynapseAPIService {
     }
     
     func handleError(_ errorJson: Any?) {
-        guard let json = errorJson as? [String: Any], let error_code = json["error_code"] as? String else { print("Handle error did not return expected result"); return }
+        guard let json = errorJson as? [String: Any], let error_code = json["error_code"] as? String else { log.debug("Handle error did not return expected result"); return }
         
         switch error_code {
         case "110":
-            print("Invalid/expired oauth_key. Retrieving latest refresh token now...")
+            log.info("Invalid/expired oauth_key. Retrieving latest refresh token now...")
             API().loadUser(uid: userId())
         default:
-            print("Error Code: \(error_code)")
+            log.info("handleError default switch")
         }
     }
     
@@ -189,7 +198,7 @@ extension API {
                 closure?(false)
             }
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
             closure?(false)
         }
     }
@@ -227,7 +236,7 @@ extension API {
             ]]
         ]
         
-        request.method = .PATCH
+        request.method = .PUT
         request.endpoint = "/users/\(service.userId())"
         request.parameters = payload
         
@@ -241,7 +250,7 @@ extension API {
             }
             closure?(true)
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
             closure?(false)
         }
     }
@@ -288,7 +297,7 @@ extension API {
             }
             closure?(true)
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
             closure?(false)
         }
     }
@@ -306,7 +315,7 @@ extension API {
             guard let json = response as? [String: Any], let error_code = json["error_code"] as? String, error_code == "10" else { closure?(false); return }
             closure?(true)
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
             closure?(false)
         }
     }
@@ -329,7 +338,7 @@ extension API {
                 closure?(false)
             }
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
             closure?(false)
         }
     }
@@ -346,11 +355,11 @@ extension API {
                 service.setRefreshToken(token: refreshToken)
                 closure?(1)
             } else {
-                guard let json = response as? [String: Any], let error_code = json["error_code"] as? String, error_code == "10" else { print("AUTH FAIL"); return }
+                guard let json = response as? [String: Any], let error_code = json["error_code"] as? String, error_code == "10" else { log.debug("AUTH FAIL"); return }
                 closure?(2)
             }
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
             closure?(0)
         }
     }
@@ -370,7 +379,7 @@ extension API {
                 closure?(false)
             }
         }) { (error) in
-            print("Get Linked Accounts Error: \(error.localizedDescription)")
+            log.error(error)
             closure?(false)
         }
     }
@@ -395,8 +404,16 @@ extension API {
                 closure?(false)
             }
         }) { (error) in
-            print("Get Wallet Error: \(error.localizedDescription)")
+            log.error(error)
             closure?(false)
+        }
+    }
+    
+    func getCurrentWalletBalance() -> Double {
+        if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: Any], let amount = balance["amount"] as? Double {
+            return amount
+        } else {
+            return 0.00
         }
     }
     
@@ -419,8 +436,7 @@ extension API {
         SynapseAPIService().request(request: request, success: { (response) in
             closure?(response)
         }) { (error) in
-            print(error.localizedDescription)
-            closure?(false)
+            log.error(error)
         }
     }
     
@@ -444,7 +460,7 @@ extension API {
                 closure?(false)
             }
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
             closure?(false)
         }
     }
@@ -466,7 +482,73 @@ extension API {
                 closure?(false)
             }
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
+            closure?(false)
+        }
+    }
+    
+    func createChallengeWallet(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
+        
+        log.info("Creating challenge wallet...", context: challenge.id)
+        let payload: [String: Any] = [
+            "type": "SUBACCOUNT-US",
+            "info": [ "nickname": "\(challenge.name) Wallet" ]
+        ]
+        
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        request.endpoint = "/users/\(service.userId())/nodes"
+        request.parameters = payload
+        
+        SynapseAPIService().request(request: request, success: { (response) in
+            if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
+                var challenge_wallet: [String: Any]?
+                nodes.forEach({ node in
+                    if let extra = node["extra"] as? [String: Any], let supp_id = extra["supp_id"] as? String, supp_id == challenge.id {
+                        challenge_wallet = node
+                    }
+                })
+                
+                guard let from = currentUser.wallet, let fromId = from["_id"] as? String, let to = challenge_wallet, let toId = to["_id"] as? String else { closure?(false); return }
+                
+                self.processTransaction(from: fromId, to: toId, amount: challenge.price, { processed in
+                    closure?(processed)
+                })
+            } else {
+                closure?(false)
+            }
+        }) { (error) in
+            log.error(error)
+            closure?(false)
+        }
+    }
+    
+    func processTransaction(from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        request.endpoint = "/users/\(service.userId())/nodes/\(from)/trans"
+        
+        let payload: [String: Any] = [
+            "to": [
+                "type": "DEPOSIT-US",
+                "id": to
+            ],
+            "amount": [
+                "amount": amount,
+                "currency": "USD"
+            ],
+            "extra": [
+                "ip": service.userIpAddress(),
+                "note": "Challenge Entry Fee"
+            ]
+        ]
+        
+        request.parameters = payload
+        
+        SynapseAPIService().request(request: request, success: { (response) in
+            closure?(true)
+        }) { (error) in
+            log.error(error)
             closure?(false)
         }
     }
@@ -504,7 +586,7 @@ extension API {
         SynapseAPIService().request(request: request, success: { (response) in
             closure?(true)
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
             closure?(false)
         }
     }
@@ -512,7 +594,6 @@ extension API {
     func listTransactions(nodeId: String, _ closure : (([[String: Any]]) -> Void)? = nil) {
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        let feeNode = service.loadFromConfig(key: "DEPOSIT_NODE")
         request.endpoint = "/users/\(service.userId())/nodes/\(nodeId)/trans"
         request.method = .GET
         
@@ -523,7 +604,7 @@ extension API {
                 closure?([])
             }
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
             closure?([])
         }
     }
@@ -564,7 +645,7 @@ extension API {
         SynapseAPIService().request(request: request, success: { (response) in
             closure?(true)
         }) { (error) in
-            print(error.localizedDescription)
+            log.error(error)
             closure?(false)
         }
     }

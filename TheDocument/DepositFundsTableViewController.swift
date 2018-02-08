@@ -162,7 +162,6 @@ class DepositFundsTableViewController: UITableViewController, UITextFieldDelegat
     }
     
     func getWalletAccount() {
-        print("Getting wallet...")
         if let wallet = currentUser.wallet, let _ = wallet["_id"] as? String {
             walletAccount = wallet
             self.refreshAccounts()

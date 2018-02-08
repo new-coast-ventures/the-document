@@ -77,18 +77,19 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
     }
     
     @IBAction func continueButtonTapped(_ sender: Any) {
-        if let access_token = AccessToken.current {
+        if let _ = AccessToken.current {
             self.handleAuthentication()
         } else {
             let loginManager = LoginManager()
             loginManager.logIn(readPermissions: [ReadPermission.publicProfile], viewController: self, completion: { (loginResult) in
                 switch loginResult {
                 case .failed(let error):
-                    print(error)
+                    log.error(error)
                 case .cancelled:
+                    log.debug("User cancelled Facebook login")
                     print("User cancelled login.")
                 case .success(let grantedPermissions, let declinedPermissions, let accessToken):
-                    print("Logged in!")
+                    log.debug("Granted: \(grantedPermissions) Declined: \(declinedPermissions) Token: \(accessToken)")
                     self.handleAuthentication()
                 }
             })
@@ -112,6 +113,7 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
     
     func handleAuthentication() {
         guard let state = stateLabel.text, ["FL", "IL", "NY"].contains(state) else {
+            log.info("handleAuthentication failed guard statement due to state requirements: \(stateLabel.text)")
             showAlert(message: "Due to legal restrictions, only users from Florida, Illinois, and New York can connect a bank account. We are working hard to include additional states and countries. Thank you for understanding.")
             return
         }
@@ -123,16 +125,13 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
         
         let name = "\(firstName) \(lastName)"
         
-        if let _ = currentUser.synapseUID {
+        if let uid = currentUser.synapseUID, uid.isBlank == false {
             // User already exists, add KYC
             API().addKYC(email: currentUser.email, phone: phoneNumber, name: name, birthDay: birthDay!, birthMonth: birthMonth!, birthYear: birthYear!, addressStreet: address, addressCity: city, addressState: state, addressPostalCode: zip) { success in
-                
                 self.complete()
             }
-            
         } else {
             API().createSynapseUser(email: currentUser.email, phone: phoneNumber, name: name, birthDay: birthDay!, birthMonth: birthMonth!, birthYear: birthYear!, addressStreet: address, addressCity: city, addressState: state, addressPostalCode: zip) { success in
-                
                 if (success) {
                     API().authorizeSynapseUser({ (status) in
                         self.complete()

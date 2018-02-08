@@ -176,7 +176,7 @@ class HomeViewController: UIViewController {
     }
     
     func fadeOut() {
-        let token = Messaging.messaging().fcmToken
+        //let token = Messaging.messaging().fcmToken
         Messaging.messaging().subscribe(toTopic: "\(FCMPrefix)\(currentUser.uid)")
         self.toolbarContainer.alpha = 0
     }

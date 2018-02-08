@@ -37,7 +37,7 @@ extension UIImageView {
             
             if error != nil {
                 //TODO: default image placeholder
-                print(error?.localizedDescription ?? "Error loading image \(imageURL)")
+                log.error(error!)
                 closure()
                 return
             }

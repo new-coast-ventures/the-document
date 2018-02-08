@@ -17,6 +17,6 @@ target 'TheDocument' do
   pod 'Curry'
   pod 'Runes'
   pod 'SearchTextField'
-  pod 'Instabug'
+  pod 'SwiftyBeaver'  
   pod 'Ipify'
 end

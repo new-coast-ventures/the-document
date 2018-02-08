@@ -76,25 +76,16 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
         textField.resignFirstResponder()
     }
     
-    func updateAvailableBalance(_ amount: String?) {
-        if let newBalance = Float(amount ?? "0.00") {
-            self.accountBalance = newBalance
-        }
-        
+    func updateAvailableBalance(_ amount: Double) {
+        self.accountBalance = Float(amount)
         DispatchQueue.main.async {
             self.walletBalanceLabel.text = "$\(String(format: "%.2f", self.accountBalance)) available"
-            //self.withdrawButton.isEnabled = (self.accountBalance > 0.99)
         }
     }
     
     func refreshAccounts() {
-        
-        if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: String] {
-            print("WALLET LOADED: \(wallet)")
-            self.updateAvailableBalance(balance["amount"])
-        } else {
-            self.updateAvailableBalance("0.00")
-        }
+        let balance = API().getCurrentWalletBalance()
+        self.updateAvailableBalance(balance)
         
         var bankLabel = "---"
         if let node = self.bankAccount, let info = node["info"] as? [String: Any] {
@@ -110,7 +101,6 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
     }
     
     func getWalletAccount() {
-        print("Getting wallet...")
         if let wallet = currentUser.wallet, let _ = wallet["_id"] as? String {
             walletAccount = wallet
             self.refreshAccounts()

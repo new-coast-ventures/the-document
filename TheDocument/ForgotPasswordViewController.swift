@@ -28,7 +28,7 @@ class ForgotPasswordViewController: BaseViewController {
         
         Auth.auth().sendPasswordReset(withEmail: email) { (error) in
             if error != nil {
-                print(error.debugDescription)
+                log.error(error!)
                 self.showAlert(message: Constants.Errors.defaultError.rawValue)
                 return
             }

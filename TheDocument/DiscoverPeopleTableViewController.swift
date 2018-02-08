@@ -91,25 +91,7 @@ class DiscoverPeopleTableViewController: BaseTableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
         phoneContacts.removeAll()
-        
-        /* Phone Contacts */
-//        let store = CNContactStore()
-//        let keys  = [CNContactPhoneNumbersKey, CNContactEmailAddressesKey, CNContactImageDataKey, CNContactFormatter.descriptorForRequiredKeys(for: .fullName)] as! [CNKeyDescriptor]
-//        let fetch = CNContactFetchRequest(keysToFetch: keys)
-//        fetch.sortOrder = .userDefault
-//        
-//        do {
-//            try store.enumerateContacts(with: fetch, usingBlock: { (contact, pointer) in
-//                self.phoneContacts.append(contact)
-//            })
-//            
-//            self.tableView.reloadData()
-//            
-//        } catch let error {
-//            print("Error fetching contact: ", error)
-//        }
     }
     
     @IBAction func shareInvite(_ sender: Any) {
