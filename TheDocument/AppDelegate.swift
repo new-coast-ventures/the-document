@@ -179,11 +179,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func isSynapseUserVerified() -> Bool {
-        if let userRef = currentUser.synapseData, let permission = userRef["permission"] as? String, permission == "SEND-AND-RECEIVE" {
-            return true
+        if let userRef = currentUser.synapseData, let permission = userRef["permission"] as? String {
+            if permission == "SEND-AND-RECEIVE" {
+                return true
+            } else {
+                self.loadUnderReviewModal()
+                return false
+            }
         } else {
             self.loadKYCModal()
             return false
+        }
+    }
+    
+    func loadUnderReviewModal() {
+        DispatchQueue.main.async {
+            let vc = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "sp_user_review") as! UserReviewViewController
+            if let base = homeVC {
+                base.present(vc, animated: true, completion: nil)
+            }
         }
     }
     

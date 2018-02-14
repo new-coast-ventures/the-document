@@ -71,6 +71,16 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
         
         addDoneButtonOnKeyboard()
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.title = ""
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.title = "Verify Me"
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -179,6 +189,10 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
         self.stateLabel.inputAccessoryView = doneToolbar
         self.zipLabel.inputAccessoryView = doneToolbar
     }
+//
+//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        // Temp
+//    }
 }
 
 extension CreateSynapseUserTableViewController: UIPickerViewDelegate, UIPickerViewDataSource {

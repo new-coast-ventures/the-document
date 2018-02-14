@@ -21,6 +21,8 @@
 		6F30B69F201A97CF003C3559 /* FundingSourceTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F30B69E201A97CF003C3559 /* FundingSourceTableViewController.swift */; };
 		6F30B6A1201AF918003C3559 /* MFAViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F30B6A0201AF918003C3559 /* MFAViewController.swift */; };
 		6F3B7E6E201EA85400A24C87 /* CreateSynapseUserTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F3B7E6D201EA85400A24C87 /* CreateSynapseUserTableViewController.swift */; };
+		6F81A5CD2034A84400B1E308 /* UserReviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F81A5CC2034A84400B1E308 /* UserReviewViewController.swift */; };
+		6F81A5CF2034F51800B1E308 /* AddKYCTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F81A5CE2034F51800B1E308 /* AddKYCTableViewController.swift */; };
 		6F86ADC21F95628200F8B8C2 /* TheDocumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F86ADC11F95628200F8B8C2 /* TheDocumentTests.swift */; };
 		6F8E79D11F1003EC00FDA983 /* Empty.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6F8E79D01F1003EC00FDA983 /* Empty.xib */; };
 		6F8E79D31F10065C00FDA983 /* Empty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8E79D21F10065C00FDA983 /* Empty.swift */; };
@@ -132,6 +134,8 @@
 		6F30B69E201A97CF003C3559 /* FundingSourceTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FundingSourceTableViewController.swift; sourceTree = "<group>"; };
 		6F30B6A0201AF918003C3559 /* MFAViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFAViewController.swift; sourceTree = "<group>"; };
 		6F3B7E6D201EA85400A24C87 /* CreateSynapseUserTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSynapseUserTableViewController.swift; sourceTree = "<group>"; };
+		6F81A5CC2034A84400B1E308 /* UserReviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserReviewViewController.swift; sourceTree = "<group>"; };
+		6F81A5CE2034F51800B1E308 /* AddKYCTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddKYCTableViewController.swift; sourceTree = "<group>"; };
 		6F86ADBF1F95628200F8B8C2 /* TheDocumentTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TheDocumentTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F86ADC11F95628200F8B8C2 /* TheDocumentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheDocumentTests.swift; sourceTree = "<group>"; };
 		6F86ADC31F95628200F8B8C2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -293,6 +297,8 @@
 				6FED1C8F2005B2FC00C56463 /* WithdrawFundsTableViewController.swift */,
 				6F30B69E201A97CF003C3559 /* FundingSourceTableViewController.swift */,
 				6F3B7E6D201EA85400A24C87 /* CreateSynapseUserTableViewController.swift */,
+				6F81A5CC2034A84400B1E308 /* UserReviewViewController.swift */,
+				6F81A5CE2034F51800B1E308 /* AddKYCTableViewController.swift */,
 			);
 			name = Payments;
 			sourceTree = "<group>";
@@ -813,10 +819,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				EC6B457D1ED58E7400B2E277 /* DenyWinner.swift in Sources */,
+				6F81A5CF2034F51800B1E308 /* AddKYCTableViewController.swift in Sources */,
 				EC6B457F1ED5971D00B2E277 /* Toast.swift in Sources */,
 				EC6B45811ED5975000B2E277 /* TDNotification.swift in Sources */,
 				6F1C5AE41FD1D2890071A838 /* API+Synapse.swift in Sources */,
 				EC3BCFF11EC038180001D3D1 /* CircleImageView.swift in Sources */,
+				6F81A5CD2034A84400B1E308 /* UserReviewViewController.swift in Sources */,
 				6F8E79D31F10065C00FDA983 /* Empty.swift in Sources */,
 				EC40BD221EB9F13C00BB8899 /* BaseTableViewController.swift in Sources */,
 				EC6B45791ED58E3F00B2E277 /* DeclareWinner.swift in Sources */,

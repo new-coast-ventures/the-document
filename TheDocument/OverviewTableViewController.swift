@@ -189,11 +189,13 @@ extension OverviewTableViewController {
     }
     
     func refreshHeldFunds() {
-        var fundsToHold = 0
+        var fundsToHold: Double = 0.0
         self.currentChallenges.forEach({ challenge in
-            fundsToHold += challenge.price
+            fundsToHold += Double(challenge.price)
         })
-        currentUser.updateFundsHeld(amount: Double(fundsToHold))
+
+        UserDefaults.standard.set(fundsToHold, forKey: "fundsHeld")
+        UserDefaults.standard.synchronize()
     }
     
     func buildLeaderboard() {

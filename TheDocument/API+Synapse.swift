@@ -83,7 +83,7 @@ class SynapseAPIService {
     }
     
     func handleError(_ errorJson: Any?) {
-        guard let json = errorJson as? [String: Any], let error_code = json["error_code"] as? String else { log.debug("Handle error did not return expected result"); return }
+        guard let json = errorJson as? [String: Any], let error_code = json["error_code"] as? String else { log.debug("handleError guard failure: \(errorJson ?? "n/a")"); return }
         
         switch error_code {
         case "110":
@@ -248,7 +248,7 @@ extension API {
             ]]
         ]
         
-        request.method = .PUT
+        request.method = .PATCH
         request.endpoint = "/users/\(service.userId())"
         request.parameters = payload
         
@@ -426,6 +426,8 @@ extension API {
         guard let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: Any], let amount = balance["amount"] as? Double else { return 0.00 }
         
         let fundsHeld = UserDefaults.standard.double(forKey: "fundsHeld")
+        print("Funds Held: \(fundsHeld)")
+        print("Amount: \(amount)")
         
         return amount - fundsHeld
     }
