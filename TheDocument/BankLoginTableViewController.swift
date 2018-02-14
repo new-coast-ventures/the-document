@@ -34,7 +34,7 @@ class BankLoginTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.section == 2 {
-            guard let bankId = userIdTextField.text, let bankPassword = userPwTextField.text, let bankName = selectedBank["bank_name"] else {
+            guard let bankId = userIdTextField.text, let bankPassword = userPwTextField.text, let bankName = selectedBank["bank_code"] else {
                 showAlert(message: "Please fill out your username and password.")
                 return
             }

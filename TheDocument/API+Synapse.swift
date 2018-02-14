@@ -36,13 +36,13 @@ class SynapseAPIService {
         
         let url = synapseURL(request: request)
         
-        var logData: [String: Any] = [
+        let logData: [String: Any] = [
             "url": url.absoluteString,
             "method": request.method,
             "data": request.parameters ?? "n/a",
             "UID": currentUser.uid
         ]
-        log.debug("Loading Synapse URL", context: logData)
+        log.debug("Loading Synapse URL: \(logData)")
         
         service.request(url: url, method: request.method, params: request.parameters, headers: headers!, success: { data in
             var json: Any? = nil
@@ -56,12 +56,10 @@ class SynapseAPIService {
             var json: Any? = nil
             if let data = data {
                 json = try? JSONSerialization.jsonObject(with: data, options: [])
-                log.error(data)
                 self.handleError(json)
             }
             
             if let fcmError = error  {
-                log.error(fcmError)
                 fail?(fcmError)
             } else {
                 fail?(NSError(domain: "", code: statusCode, userInfo: ["errorDescription":data ?? Data() ]))
@@ -92,7 +90,7 @@ class SynapseAPIService {
             log.info("Invalid/expired oauth_key. Retrieving latest refresh token now...")
             API().loadUser(uid: userId())
         default:
-            log.info("handleError default switch")
+            log.info("ERROR WITH CODE \(error_code): \(json)")
         }
     }
     
@@ -148,6 +146,19 @@ class SynapseAPIService {
         }
     }
     
+    func setWalletId() {
+        if let wallet = currentUser.wallet, let id = wallet["_id"] as? String {
+            currentUser.walletID = id
+            UserDefaults.standard.set(id, forKey: "wallet_id")
+            UserDefaults.standard.synchronize()
+            API().pushWalletID()
+        }
+    }
+    
+    func walletId() -> String {
+        return UserDefaults.standard.string(forKey: "wallet_id") ?? ""
+    }
+    
     func userId() -> String {
         return UserDefaults.standard.string(forKey: "synapse_uid") ?? ""
     }
@@ -193,6 +204,7 @@ extension API {
             if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
                 currentUser.synapseData = userRef
                 service.setRefreshToken(token: refreshToken)
+                service.setUserId(id: uid)
                 closure?(true)
             } else {
                 closure?(false)
@@ -396,6 +408,7 @@ extension API {
             if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
                 currentUser.wallet = nodes.first
                 if currentUser.wallet != nil {
+                    service.setWalletId()
                     closure?(true)
                 } else {
                     self.createWallet() { closure?($0) }
@@ -410,11 +423,11 @@ extension API {
     }
     
     func getCurrentWalletBalance() -> Double {
-        if let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: Any], let amount = balance["amount"] as? Double {
-            return amount
-        } else {
-            return 0.00
-        }
+        guard let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: Any], let amount = balance["amount"] as? Double else { return 0.00 }
+        
+        let fundsHeld = UserDefaults.standard.double(forKey: "fundsHeld")
+        
+        return amount - fundsHeld
     }
     
     func linkBankAccount(bank_id: String, bank_password: String, bank_name: String, _ closure : ((Any) -> Void)? = nil) {
@@ -455,6 +468,7 @@ extension API {
         SynapseAPIService().request(request: request, success: { (response) in
             if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
                 currentUser.wallet = nodes.first
+                service.setWalletId()
                 closure?(true)
             } else {
                 closure?(false)
@@ -486,51 +500,22 @@ extension API {
             closure?(false)
         }
     }
-    
-    func createChallengeWallet(challenge: Challenge, _ closure : ((Bool) -> Void)? = nil) {
-        
-        log.info("Creating challenge wallet...", context: challenge.id)
-        let payload: [String: Any] = [
-            "type": "SUBACCOUNT-US",
-            "info": [ "nickname": "\(challenge.name) Wallet" ]
-        ]
-        
-        let service = SynapseAPIService()
-        let request = SynapseAPIRequest()
-        request.endpoint = "/users/\(service.userId())/nodes"
-        request.parameters = payload
-        
-        SynapseAPIService().request(request: request, success: { (response) in
-            if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
-                var challenge_wallet: [String: Any]?
-                nodes.forEach({ node in
-                    if let extra = node["extra"] as? [String: Any], let supp_id = extra["supp_id"] as? String, supp_id == challenge.id {
-                        challenge_wallet = node
-                    }
-                })
-                
-                guard let from = currentUser.wallet, let fromId = from["_id"] as? String, let to = challenge_wallet, let toId = to["_id"] as? String else { closure?(false); return }
-                
-                self.processTransaction(from: fromId, to: toId, amount: challenge.price, { processed in
-                    closure?(processed)
-                })
-            } else {
-                closure?(false)
-            }
-        }) { (error) in
-            log.error(error)
-            closure?(false)
-        }
-    }
-    
+
     func processTransaction(from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         request.endpoint = "/users/\(service.userId())/nodes/\(from)/trans"
         
+        var note = "Challenge Entry Fee"
+        if currentUser.walletID == from {
+            note = "Challenge Entry Fee"
+        } else {
+            note = "Challenge Prize"
+        }
+        
         let payload: [String: Any] = [
             "to": [
-                "type": "DEPOSIT-US",
+                "type": "SUBACCOUNT-US",
                 "id": to
             ],
             "amount": [
@@ -539,7 +524,7 @@ extension API {
             ],
             "extra": [
                 "ip": service.userIpAddress(),
-                "note": "Challenge Entry Fee"
+                "note": note
             ]
         ]
         

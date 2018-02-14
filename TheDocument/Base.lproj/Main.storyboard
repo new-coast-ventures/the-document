@@ -3991,7 +3991,7 @@
                             <outlet property="delegate" destination="xxx-p8-m9E" id="L8T-2z-6Jp"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Account Checklist" id="F4v-SX-nZ2"/>
+                    <navigationItem key="navigationItem" title="Create Your Wallet" id="F4v-SX-nZ2"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="9ON-2O-iXH" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

@@ -10,7 +10,12 @@ import Argo
 
 extension API {
     
-    func processFriendChallenge(challenge:Challenge, friendsIds:Set<String>, closure: @escaping ( )->Void) {
+    func challengeFriends(challenge:Challenge, friendsIds:Set<String>, closure: @escaping ( )->Void) {
+        guard friendsIds.count > 0 else { closure(); return }
+        
+        // Add challenge price to funds held
+        currentUser.updateFundsHeld(amount: Double(challenge.price))
+        
         let challengeRef = Database.database().reference().child("challenges")
         
         friendsIds.forEach { friendId in
@@ -34,37 +39,12 @@ extension API {
         }
     }
     
-    func challengeFriends(challenge:Challenge, friendsIds:Set<String>, closure: @escaping ( )->Void) {
-        guard friendsIds.count > 0 else { closure(); return }
+    func challengeTeams(challenge:Challenge, teammateIds:Set<String>, competitorIds:Set<String>, closure: @escaping ( )->Void) {
+        guard teammateIds.count > 0 && competitorIds.count > 0 else { closure(); return }
         
-        self.processFriendChallenge(challenge: challenge, friendsIds: friendsIds) {
-            closure()
-        }
+        // Add challenge price to funds held
+        currentUser.updateFundsHeld(amount: Double(challenge.price))
         
-//
-//        if (challenge.price > 0) {
-//            guard let wallet = currentUser.wallet, let walletId = wallet["_id"] as? String else { closure(); return }
-//
-//            API().createChallengeWallet(challenge: challenge) { success in
-//                if success {
-//                    self.processFriendChallenge(challenge: challenge, friendsIds: friendsIds) {
-//                        print("Processed friend challenge - PAID")
-//                        closure()
-//                    }
-//                } else {
-//                    closure()
-//                }
-//            }
-//        } else {
-//            self.processFriendChallenge(challenge: challenge, friendsIds: friendsIds) {
-//                print("Processed friend challenge - FREE")
-//                closure()
-//            }
-//            closure()
-//        }
-    }
-    
-    func processTeamChallenge(challenge:Challenge, teammateIds:Set<String>, competitorIds:Set<String>, closure: @escaping ( )->Void) {
         let challengeRef = Database.database().reference().child("challenges")
         let participantIds = competitorIds.union(teammateIds)
         
@@ -85,32 +65,6 @@ extension API {
                 closure()
             }
         }
-    }
-    
-    func challengeTeams(challenge:Challenge, teammateIds:Set<String>, competitorIds:Set<String>, closure: @escaping ( )->Void) {
-        guard teammateIds.count > 0 && competitorIds.count > 0 else { closure(); return }
-        
-        self.processTeamChallenge(challenge: challenge, teammateIds: teammateIds, competitorIds: competitorIds) {
-            closure()
-        }
-
-//        if (challenge.price > 0) {
-//            guard let wallet = currentUser.wallet, let walletId = wallet["_id"] as? String else { closure(); return }
-//            API().createChallengeWallet(challenge: challenge) { success in
-//                if success {
-//                    self.processTeamChallenge(challenge: challenge, teammateIds: teammateIds, competitorIds: competitorIds) {
-//                        closure()
-//                    }
-//                } else {
-//                    closure()
-//                }
-//
-//            }
-//        } else {
-//            self.processTeamChallenge(challenge: challenge, teammateIds: teammateIds, competitorIds: competitorIds) {
-//                closure()
-//            }
-//        }
     }
     
     func getChallenges(friendId: String = currentUser.uid, closure: @escaping ( [Challenge] )->Void) {
@@ -164,7 +118,14 @@ extension API {
         }
 
         challengeRef.updateChildValues(childUpdates) { (error, ref) in
-            closure(error == nil)
+            if (error != nil) {
+                closure(false)
+            } else {
+                // Refund held challenge funds
+                let reimbursement = Double(-1 * challenge.price)
+                currentUser.updateFundsHeld(amount: reimbursement)
+                closure(true)
+            }
         }
     }
     
@@ -181,43 +142,23 @@ extension API {
         }
     }
     
-    func processAcceptance(challenge: Challenge, closure: @escaping ( )->Void) {
+    // Accept Challenge
+    func acceptChallenge(challenge: Challenge, closure: @escaping ( Bool )->Void) {
         let updatedChallenge = challenge.accept()
         var childUpdates: [String: Any] = [String: Any]()
+        
+        // Add challenge price to funds held
+        currentUser.updateFundsHeld(amount: Double(challenge.price))
+        
         challenge.participantIds().forEach { uid in
             childUpdates["/\(uid)/\(updatedChallenge.id)"] = updatedChallenge.simplify()
         }
         
         Database.database().reference().child("challenges").updateChildValues(childUpdates) { (error, ref) in
-            guard error == nil else { closure(); return }
+            guard error == nil else { closure(false); return }
             Notifier().acceptChallenge(challenge: updatedChallenge)
-            closure()
-        }
-    }
-    
-    // Accept Challenge
-    func acceptChallenge(challenge: Challenge, closure: @escaping ( Bool )->Void) {
-        self.processAcceptance(challenge: challenge) {
             closure(true)
         }
-        
-//        if (challenge.price > 0) {
-//            guard let wallet = currentUser.wallet, let walletId = wallet["_id"] as? String else { closure(false); return }
-//
-//            API().createChallengeWallet(challenge: challenge) { success in
-//                if success {
-//                    self.processAcceptance(challenge: challenge) {
-//                        closure(true)
-//                    }
-//                } else {
-//                    closure(false)
-//                }
-//            }
-//        } else {
-//            self.processAcceptance(challenge: challenge) {
-//                closure(true)
-//            }
-//        }
     }
     
     // Reject Challenge
@@ -259,6 +200,10 @@ extension API {
         newPastChallenge.result = result ?? ""
         newPastChallenge.status = 2
         newPastChallenge.accepted = 1
+        
+        // Refund held challenge funds
+        let reimbursement = Double(-1 * challenge.price)
+        currentUser.updateFundsHeld(amount: reimbursement)
         
         var challengeHash = newPastChallenge.simplify()
         challengeHash["completedAt"] = [".sv": "timestamp"]

@@ -242,7 +242,12 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     @IBAction func actionButtonTapped(_ sender: UIButton) {
         switch (challenge.status, challenge.accepted) {
         case (0, 0) where challenge.isMine() == false: // Pending invite
-            acceptChallenge()
+            let accountBalance = API().getCurrentWalletBalance()
+            if accountBalance < Double(self.challenge.price) {
+                showAlert(message: "You don't have enough funds to join this challenge. Please add more funds on the Settings page.")
+            } else {
+                self.acceptChallenge()
+            }
     
         case (0, 0) where challenge.isMine() == true: // Waiting for opponent
             cancelChallenge()
@@ -534,7 +539,7 @@ extension ChallengeDetailsViewController {
  
     func declareWinner() {
         let alertView = customAlert()
-        challenge.declarator = currentUser.uid
+        self.challenge.declarator = currentUser.uid
         
         alertView.addButton(challenge.teammateNames()) {
             self.challenge.winner = self.challenge.teammateIds()
@@ -543,7 +548,7 @@ extension ChallengeDetailsViewController {
         
         alertView.addButton(challenge.competitorNames()) {
             self.challenge.winner = self.challenge.competitorIds()
-            self.declareWinnerAction()
+            self.confirmWinner()
         }
         
         alertView.addButton("Cancel", backgroundColor: UIColor.clear, textColor: Constants.Theme.authButtonNormalBorderColor) { self.challenge.declarator = "" }
@@ -559,6 +564,39 @@ extension ChallengeDetailsViewController {
             } else {
                 self.showAlert(message: Constants.Errors.defaultError.rawValue)
             }
+        }
+    }
+    
+    func payWinner() {
+        guard self.challenge.price > 0 else { return }
+        
+        var playerToPay: TDUser
+        if currentUser == playerOne {
+            playerToPay = playerTwo
+        } else if currentUser == playerTwo {
+            playerToPay = playerOne
+        } else if currentUser == playerThree {
+            playerToPay = playerFour!
+        } else {
+            playerToPay = playerThree!
+        }
+
+        Database.database().reference().child("users").child(playerToPay.uid).observeSingleEvent(of: .value, with: { (snapshot) in
+            // Get user value
+            let value = snapshot.value as? NSDictionary
+            if let toID = value?["walletID"] as? String, let fromID = currentUser.walletID {
+                API().processTransaction(from: fromID, to: toID, amount: self.challenge.price) { success in
+                    if (success) {
+                        log.info("Processed transaction")
+                    } else {
+                        log.error("Transaction failed")
+                    }
+                }
+            } else {
+                log.error("Unable to grab walletID from user snapshot")
+            }
+        }) { (error) in
+            print(error.localizedDescription)
         }
     }
     
@@ -585,6 +623,11 @@ extension ChallengeDetailsViewController {
                         }
                     }
                 } else {
+                    
+                    if self.challenge.price > 0 {
+                        self.payWinner()
+                    }
+                    
                     let newLossTotal = (currentUser.record.totalLosses ?? 0) + 1
                     currentUser.record.totalLosses = newLossTotal
                     let users = self.challenge.competitorIds().components(separatedBy: ",")
@@ -609,8 +652,6 @@ extension ChallengeDetailsViewController {
             self.challenge.declarator = ""
             self.challenge.winner = ""
             if success {
-                //currentUser.currentChallenges.removeObject(self.challenge)
-                //currentUser.currentChallenges.append(self.challenge)
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.challengesRefresh)"), object: nil)
                 self.navigationController?.popViewController(animated: true)
             } else {

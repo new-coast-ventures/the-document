@@ -179,13 +179,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func isSynapseUserVerified() -> Bool {
-        log.debug("Checking if user \(currentUser.uid) is verified")
-        log.info(currentUser.synapseData)
         if let userRef = currentUser.synapseData, let permission = userRef["permission"] as? String, permission == "SEND-AND-RECEIVE" {
-            log.info("User is verified")
             return true
         } else {
-            log.info("User is not verified")
             self.loadKYCModal()
             return false
         }

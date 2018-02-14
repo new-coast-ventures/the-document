@@ -91,6 +91,15 @@ extension TDUser {
         }
     }
     
+    func updateFundsHeld(amount: Double) {
+        let userDict = UserDefaults.standard
+        let heldValue = userDict.double(forKey: "fundsHeld")
+        let newValue = heldValue + amount
+        
+        userDict.set(newValue, forKey: "fundsHeld")
+        userDict.synchronize()
+    }
+    
     func logout() {
         try? Auth.auth().signOut()
         Branch.getInstance().logout()

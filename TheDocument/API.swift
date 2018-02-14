@@ -35,6 +35,10 @@ struct API {
         Database.database().reference(withPath: "users/\(currentUser.uid)/synapseUID").setValue(currentUser.synapseUID)
     }
     
+    func pushWalletID() {
+        Database.database().reference(withPath: "users/\(currentUser.uid)/walletID").setValue(currentUser.walletID)
+    }
+    
     //Edits user's info invoked from Settings Screen
     //TODO: rename from GroupsgetScoresFor
     func editInfo(newName:String, newPostCode:String?, newPhone:String?, closure: ((Bool)->Void)? = nil) {
