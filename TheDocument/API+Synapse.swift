@@ -60,8 +60,10 @@ class SynapseAPIService {
             }
             
             if let fcmError = error  {
+                log.error("statusCode: \(statusCode) fcmError: \(fcmError)")
                 fail?(fcmError)
             } else {
+                log.error("statusCode: \(statusCode)")
                 fail?(NSError(domain: "", code: statusCode, userInfo: ["errorDescription":data ?? Data() ]))
             }
         })
@@ -215,14 +217,6 @@ extension API {
         }
     }
     
-    func socialDocs() -> Any {
-        if let access_token = AccessToken.current {
-            return [["document_value": access_token.authenticationToken, "document_type": "FACEBOOK"]]
-        } else {
-            return ""
-        }
-    }
-    
     func addKYC(email: String, phone: String, name: String, birthDay: Int, birthMonth: Int, birthYear: Int, addressStreet: String, addressCity: String, addressState: String, addressPostalCode: String, _ closure : ((Bool) -> Void)? = nil) {
         
         let service = SynapseAPIService()
@@ -231,7 +225,7 @@ extension API {
         let payload: [String: Any] = [
             "documents": [[
                 "email": email,
-                "phone_number": phone,
+                "phone_number": phone.trimmingCharacters(in: .whitespacesAndNewlines),
                 "name": name,
                 "ip": service.userIpAddress(),
                 "entity_type": "NOT_KNOWN",
@@ -244,7 +238,10 @@ extension API {
                 "address_subdivision": addressState,
                 "address_postal_code": addressPostalCode,
                 "address_country_code": "US",
-                "social_docs": socialDocs()
+                "social_docs": [[
+                    "document_value": phone.trimmingCharacters(in: .whitespacesAndNewlines),
+                    "document_type": "PHONE_NUMBER_2FA"
+                ]]
             ]]
         ]
         
@@ -271,15 +268,14 @@ extension API {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
-        
         let payload: [String: Any] = [
             "logins": [[ "email": email ]],
-            "phone_numbers": [ phone ],
+            "phone_numbers": [ phone.trimmingCharacters(in: .whitespacesAndNewlines) ],
             "legal_names": [ name ],
             "extra": [ "cip_tag": 1, "is_business": false ],
             "documents": [[
                 "email": email,
-                "phone_number": phone,
+                "phone_number": phone.trimmingCharacters(in: .whitespacesAndNewlines),
                 "name": name,
                 "ip": service.userIpAddress(),
                 "entity_type": "NOT_KNOWN",
@@ -292,7 +288,10 @@ extension API {
                 "address_subdivision": addressState,
                 "address_postal_code": addressPostalCode,
                 "address_country_code": "US",
-                "social_docs": socialDocs()
+                "social_docs": [[
+                    "document_value": phone.trimmingCharacters(in: .whitespacesAndNewlines),
+                    "document_type": "PHONE_NUMBER_2FA"
+                ]]
             ]]
         ]
         
@@ -314,13 +313,49 @@ extension API {
         }
     }
     
+    func updatePhoneKYC(documentId: String, phoneNumber: String, phoneDocumentId: String, code: String, _ closure : ((Bool) -> Void)? = nil) {
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        let payload: [String: Any] = [
+            "documents": [[
+                "id": documentId,
+                "social_docs": [[
+                    "id": phoneDocumentId,
+                    "document_value": phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines),
+                    "document_type": "PHONE_NUMBER_2FA",
+                    "mfa_answer": code
+                ]]
+            ]]
+        ]
+        
+        request.method = .PATCH
+        request.endpoint = "/users/\(service.userId())"
+        request.parameters = payload
+        
+        service.request(request: request, success: { (response) in
+            if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
+                currentUser.synapseData = userRef
+                service.setUserId(id: uid)
+                service.setRefreshToken(token: refreshToken)
+                UserDefaults.standard.set(true, forKey: "is_user_account_verified")
+                UserDefaults.standard.synchronize()
+            }
+            closure?(true)
+        }) { (error) in
+            log.error(error)
+            closure?(false)
+        }
+    }
+    
     func requestMFA(_ closure : ((Bool) -> Void)? = nil) {
+        guard let phone = currentUser.phone else { closure?(false); return }
+
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         request.endpoint = "/oauth/\(service.userId())"
         request.parameters = [
             "refresh_token": service.refreshToken(),
-            "phone_number": currentUser.phone
+            "phone_number": phone.trimmingCharacters(in: .whitespacesAndNewlines)
         ]
         
         SynapseAPIService().request(request: request, success: { (response) in
@@ -385,7 +420,14 @@ extension API {
 
         SynapseAPIService().request(request: request, success: { (response) in
             if let json = response as? [String: Any], let nodes = json["nodes"] as? [[String: Any]] {
-                currentUser.nodes = nodes
+                var bankNodes: [[String: Any]] = []
+                for (_, node) in nodes.enumerated() {
+                    guard let nodeInfo = node["info"] as? [String: Any], let classInfo = nodeInfo["class"] as? String, let type = nodeInfo["type"] as? String else { continue }
+                    if (classInfo == "CHECKING" && type == "PERSONAL") {
+                        bankNodes.append(node)
+                    }
+                }
+                currentUser.nodes = bankNodes
                 closure?(true)
             } else {
                 closure?(false)
@@ -490,7 +532,15 @@ extension API {
         SynapseAPIService().request(request: request, success: { (response) in
             guard let json = response as? [String: Any] else { closure?(false); return }
             if let nodes = json["nodes"] as? [[String: Any]] {
-                currentUser.nodes = nodes
+                
+                var bankNodes: [[String: Any]] = []
+                for (_, node) in nodes.enumerated() {
+                    guard let nodeInfo = node["info"] as? [String: Any], let classInfo = nodeInfo["class"] as? String, let type = nodeInfo["type"] as? String else { continue }
+                    if (classInfo == "CHECKING" && type == "PERSONAL") {
+                        bankNodes.append(node)
+                    }
+                }
+                currentUser.nodes = bankNodes
                 closure?(true)
             } else if let error_code = json["error_code"] as? String, let mfa = json["mfa"] as? [String: String], error_code == "10" {
                 closure?(mfa)
@@ -557,7 +607,7 @@ extension API {
                 "currency": "USD"
             ],
             "fees": [
-                [ "fee": 0.99,
+                [ "fee": 0.05,
                   "note": "Processing Fee",
                   "to": [ "id": feeNode ]
                 ]
@@ -620,8 +670,8 @@ extension API {
         
         if service.isLive() {
             payload["fees"] = [
-                [ "fee": -0.05,
-                  "note": "Facilitator Fee",
+                [ "fee": 0.05,
+                  "note": "Processing Fee",
                   "to": [ "id": feeNode ]
                 ]
             ]

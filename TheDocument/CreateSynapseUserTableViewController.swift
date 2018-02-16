@@ -31,7 +31,6 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
     
     let stateOptions = ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FM", "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MH", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PW", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VI", "VA", "WA", "WV", "WI", "WY"]
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -87,27 +86,13 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
     }
     
     @IBAction func continueButtonTapped(_ sender: Any) {
-        if let _ = AccessToken.current {
-            self.handleAuthentication()
-        } else {
-            let loginManager = LoginManager()
-            loginManager.logIn(readPermissions: [ReadPermission.publicProfile], viewController: self, completion: { (loginResult) in
-                switch loginResult {
-                case .failed(let error):
-                    log.error(error)
-                case .cancelled:
-                    log.debug("User cancelled Facebook login")
-                    print("User cancelled login.")
-                case .success(let grantedPermissions, let declinedPermissions, let accessToken):
-                    log.debug("Granted: \(grantedPermissions) Declined: \(declinedPermissions) Token: \(accessToken)")
-                    self.handleAuthentication()
-                }
-            })
-        }
+        self.handleAuthentication()
     }
     
     @IBAction func closeModal(_ sender: Any) {
-        self.complete()
+        DispatchQueue.main.async {
+            self.navigationController!.dismiss(animated: true, completion: nil)
+        }
     }
     
     @objc func setBirthdate() {
@@ -133,12 +118,18 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
             return
         }
         
-        let name = "\(firstName) \(lastName)"
+        self.continueButton.setTitle("VERIFYING...", for: .normal)
+        self.continueButton.isEnabled = false
         
+        let name = "\(firstName) \(lastName)"
         if let uid = currentUser.synapseUID, uid.isBlank == false {
             // User already exists, add KYC
             API().addKYC(email: currentUser.email, phone: phoneNumber, name: name, birthDay: birthDay!, birthMonth: birthMonth!, birthYear: birthYear!, addressStreet: address, addressCity: city, addressState: state, addressPostalCode: zip) { success in
-                self.complete()
+                if (success) {
+                    self.complete()
+                } else {
+                    self.handleError()
+                }
             }
         } else {
             API().createSynapseUser(email: currentUser.email, phone: phoneNumber, name: name, birthDay: birthDay!, birthMonth: birthMonth!, birthYear: birthYear!, addressStreet: address, addressCity: city, addressState: state, addressPostalCode: zip) { success in
@@ -147,15 +138,28 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
                         self.complete()
                     })
                 } else {
-                    self.complete()
+                    self.handleError()
                 }
             }
         }
     }
     
+    func handleError() {
+        DispatchQueue.main.async {
+            self.continueButton.setTitle("VERIFY & CONTINUE", for: .normal)
+            self.continueButton.isEnabled = true
+        }
+    }
+    
     func complete() {
         DispatchQueue.main.async {
-            self.navigationController!.dismiss(animated: true, completion: nil)
+            self.performSegue(withIdentifier: "verify_phone_segue", sender: self)
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let vc = segue.destination as? AddKYCTableViewController {
+            vc.phoneNumber = self.phoneNumberLabel.text
         }
     }
     
@@ -171,7 +175,7 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
         doneToolbar.tintColor = .white
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let done: UIBarButtonItem = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(NewChallengeViewController.doneButtonAction))
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Close", style: .done, target: self, action: #selector(CreateSynapseUserTableViewController.doneButtonAction))
         
         var items = [UIBarButtonItem]()
         items.append(flexSpace)
@@ -189,10 +193,6 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
         self.stateLabel.inputAccessoryView = doneToolbar
         self.zipLabel.inputAccessoryView = doneToolbar
     }
-//
-//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        // Temp
-//    }
 }
 
 extension CreateSynapseUserTableViewController: UIPickerViewDelegate, UIPickerViewDataSource {

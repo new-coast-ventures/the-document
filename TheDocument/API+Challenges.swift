@@ -196,20 +196,33 @@ extension API {
     
     func confirmWinner(challenge: Challenge, result: String?, closure:@escaping (Bool)->Void) {
         
+        let teamA: [TDUser] = challenge.teamA()
+        let teamB: [TDUser] = challenge.teamB()
+        let playerOne = teamA[0]
+        let playerTwo = teamB[0]
+        let playerThree = teamA.count == 2 ? teamA[1] : nil
+        let playerFour = teamB.count == 2 ? teamB[1] : nil
+        var playerToPay: TDUser
+        if currentUser == playerOne {
+            playerToPay = playerTwo
+        } else if currentUser == playerTwo {
+            playerToPay = playerOne
+        } else if currentUser == playerThree {
+            playerToPay = playerFour!
+        } else {
+            playerToPay = playerThree!
+        }
+        
         var newPastChallenge = challenge
         newPastChallenge.result = result ?? ""
         newPastChallenge.status = 2
         newPastChallenge.accepted = 1
         
-        // Refund held challenge funds
-        let reimbursement = Double(-1 * challenge.price)
-        currentUser.updateFundsHeld(amount: reimbursement)
-        
         var challengeHash = newPastChallenge.simplify()
         challengeHash["completedAt"] = [".sv": "timestamp"]
         
         var childUpdates: [String: Any] = [String: Any]()
-        challenge.participantIds().forEach { uid in
+        [currentUser.uid, playerToPay.uid].forEach { uid in
             childUpdates["challenges/\(uid)/\(newPastChallenge.id)"] = challengeHash
             
             var person: TDUser = TDUser()
@@ -253,5 +266,4 @@ extension API {
             closure(true)
         }
     }
-
 }

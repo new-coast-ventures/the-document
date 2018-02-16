@@ -179,15 +179,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func isSynapseUserVerified() -> Bool {
-        if let userRef = currentUser.synapseData, let permission = userRef["permission"] as? String {
-            if permission == "SEND-AND-RECEIVE" {
-                return true
-            } else {
-                self.loadUnderReviewModal()
-                return false
-            }
-        } else {
+        guard let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]], let document = documents.first, let documentId = document["id"] as? String, let socialDocs = document["social_docs"] as? [[String: Any]], let permission = userRef["permission"] as? String else {
+            log.debug("User document did not exist")
             self.loadKYCModal()
+            return false
+        }
+        
+        var hasInitiatedMFA = false
+        socialDocs.forEach { doc in
+            if let type = doc["document_type"] as? String, type == "PHONE_NUMBER_2FA" {
+                hasInitiatedMFA = true
+            }
+        }
+        
+        if (permission == "SEND-AND-RECEIVE") {
+            return true
+        } else if (hasInitiatedMFA == false) {
+            self.loadKYCModal()
+            return false
+        } else {
+            API().loadUser(uid: currentUser.synapseUID!)
+            self.loadUnderReviewModal()
             return false
         }
     }

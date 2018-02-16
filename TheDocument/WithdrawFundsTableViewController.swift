@@ -8,7 +8,7 @@
 
 import UIKit
 
-class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelegate {
+class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelegate, SelectedAccountProtocol {
 
     @IBOutlet weak var walletBalanceLabel: UILabel!
     @IBOutlet weak var withdrawButton: UIButton!
@@ -24,6 +24,14 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
         addDoneButtonOnKeyboard()
         getWalletAccount()
         getBankAccount()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if let _ = bankAccount {
+            self.refreshAccounts()
+        }
     }
     
     override func didReceiveMemoryWarning() {
@@ -47,20 +55,52 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
             return
         }
         
+        guard let amountString = amountTextField.text, let amount = Int(amountString), amount >= 1 else {
+            showAlert(message: "Please enter a valid dollar amount. The minimum withdrawal amount is $1.")
+            return
+        }
+        
+        guard Float(amount) <= self.accountBalance else {
+            showAlert(message: "The amount you requested is more than what you have in your wallet. Please update the amount.")
+            return
+        }
+        
+        let alertView = customAlert()
+        alertView.addButton("Yes",backgroundColor: Constants.Theme.authButtonSelectedBGColor) { self.processWithdrawal() }
+        alertView.addButton("No",backgroundColor: Constants.Theme.deleteButtonBGColor) {  /* cancel deposit */ }
+        alertView.showInfo("Confirm Withdrawal", subTitle: "Withdrawals are subject to a $0.10 processing fee. Do you want to proceed with the withdrawal?")
+    }
+    
+    func processWithdrawal() {
+        guard accountBalance > 0.99 else {
+            showAlert(message: "You must have at least $1.00 to make a withdrawal.")
+            return
+        }
+        
+        guard let walletId = walletAccount?["_id"] as? String else {
+            showAlert(message: "A wallet account has not been set up to deposit funds to.")
+            return
+        }
+        
+        guard let bankId = bankAccount?["_id"] as? String else {
+            showAlert(message: "Please select an ACH account with enough funds available.")
+            return
+        }
+        
         guard let amountString = amountTextField.text, let amount = Int(amountString) else {
             showAlert(message: "Please enter a valid dollar amount")
             return
         }
         
         guard Float(amount) <= self.accountBalance else {
-            showAlert(message: "You amount you requested is more than what you have in your wallet. Please update the amount.")
+            showAlert(message: "The amount you requested is more than what you have in your wallet. Please update the amount.")
             return
         }
         
         API().withdrawFunds(from: walletId, to: bankId, amount: amount) {
             if ($0) {
                 DispatchQueue.main.async {
-                    self.showAlert(title: "Bank Transfer Initiated", message: "Bank transfers initiated before 7 PM ET on business days will typically be available the next business day, but it can take up to 3 business days. Business days are Monday to Friday, excluding bank holidays.", closure: { action in
+                    self.showAlert(title: "Withdrawal Initiated", message: "Bank transfers initiated before 7 PM ET on business days will typically be available the next business day, but it can take up to 3 business days. Business days are Monday to Friday, excluding bank holidays.", closure: { action in
                         self.navigationController?.popToRootViewController(animated: true)
                     })
                 }
@@ -70,6 +110,10 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
                 }
             }
         }
+    }
+    
+    func customAlert() -> NCVAlertView {
+        return NCVAlertView(appearance: NCVAlertView.NCVAppearance(kTitleFont: UIFont(name: "OpenSans-Bold", size: 16)!,kTextFont: UIFont(name: "OpenSans", size: 14)!,kButtonFont: UIFont(name: "OpenSans-Bold", size: 14)!,showCloseButton: false, showCircularIcon: false, titleColor: Constants.Theme.authButtonSelectedBGColor))
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
@@ -124,7 +168,8 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let vc = segue.destination as? FundingSourceTableViewController {
             vc.title = "Bank Account"
-            vc.source = self.bankLabel.text
+            vc.delegate = self
+            vc.selectedAccount = self.bankAccount
         }
     }
     
@@ -150,5 +195,10 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
     
     @objc func doneButtonAction() {
         self.amountTextField.resignFirstResponder()
+    }
+    
+    func setSelectedAccount(account: [String : Any]) {
+        self.bankAccount = account
+        self.refreshAccounts()
     }
 }

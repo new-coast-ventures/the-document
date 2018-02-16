@@ -8,7 +8,7 @@
 
 import UIKit
 
-class DepositFundsTableViewController: UITableViewController, UITextFieldDelegate {
+class DepositFundsTableViewController: UITableViewController, UITextFieldDelegate, SelectedAccountProtocol {
     
     @IBOutlet weak var bankLabel: UILabel!
     @IBOutlet weak var customAmountTextField: UITextField!
@@ -28,6 +28,14 @@ class DepositFundsTableViewController: UITableViewController, UITextFieldDelegat
         addDoneButtonOnKeyboard()
         getBankAccount()
         getWalletAccount()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if let _ = bankAccount {
+            self.refreshAccounts()
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -56,7 +64,8 @@ class DepositFundsTableViewController: UITableViewController, UITextFieldDelegat
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let vc = segue.destination as? FundingSourceTableViewController {
-            vc.source = self.bankLabel.text
+            vc.delegate = self
+            vc.selectedAccount = self.bankAccount
         }
     }
     
@@ -65,6 +74,39 @@ class DepositFundsTableViewController: UITableViewController, UITextFieldDelegat
     }
     
     @IBAction func depositFunds(_ sender: Any) {
+        
+        guard let amount = depositAmount else {
+            showAlert(message: "Please select an amount")
+            return
+        }
+        
+        guard amount >= 5 else {
+            showAlert(message: "The minimum deposit amount is $5.")
+            return
+        }
+        
+        guard amount <= 100 else {
+            showAlert(message: "The maximum deposit amount is currently $100.")
+            return
+        }
+        
+        guard let walletId = walletAccount?["_id"] as? String else {
+            showAlert(message: "A wallet account has not been set up to deposit funds to.")
+            return
+        }
+        
+        guard let bankId = bankAccount?["_id"] as? String else {
+            showAlert(message: "Please select an ACH account with enough funds available.")
+            return
+        }
+        
+        let alertView = customAlert()
+        alertView.addButton("Yes",backgroundColor: Constants.Theme.authButtonSelectedBGColor) { self.processDeposit() }
+        alertView.addButton("No",backgroundColor: Constants.Theme.deleteButtonBGColor) {  /* cancel deposit */ }
+        alertView.showInfo("Confirm Deposit", subTitle: "All deposits and withdrawals are subject to a $0.10 processing fee. Do you want to proceed with the deposit?")
+    }
+    
+    func processDeposit() {
         
         guard let amount = depositAmount else {
             showAlert(message: "Please select an amount")
@@ -104,6 +146,10 @@ class DepositFundsTableViewController: UITableViewController, UITextFieldDelegat
                 }
             }
         }
+    }
+
+    func customAlert() -> NCVAlertView {
+        return NCVAlertView(appearance: NCVAlertView.NCVAppearance(kTitleFont: UIFont(name: "OpenSans-Bold", size: 16)!,kTextFont: UIFont(name: "OpenSans", size: 14)!,kButtonFont: UIFont(name: "OpenSans-Bold", size: 14)!,showCloseButton: false, showCircularIcon: false, titleColor: Constants.Theme.authButtonSelectedBGColor))
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
@@ -204,5 +250,10 @@ class DepositFundsTableViewController: UITableViewController, UITextFieldDelegat
     
     @objc func doneButtonAction() {
         self.customAmountTextField.resignFirstResponder()
+    }
+    
+    func setSelectedAccount(account: [String : Any]) {
+        self.bankAccount = account
+        self.refreshAccounts()
     }
 }

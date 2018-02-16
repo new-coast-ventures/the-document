@@ -108,14 +108,12 @@ extension MyWalletViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 
         let imageView     = cell.viewWithTag(2) as! UIImageView
-        let headlineLabel = cell.viewWithTag(3) as! UILabel
         let subtextLabel  = cell.viewWithTag(4) as! UILabel
         let dateLabel     = cell.viewWithTag(5) as! UILabel
         let statusLabel   = cell.viewWithTag(6) as! UILabel
 
         if (indexPath.row < transactions.count) {
             let transaction = transactions[indexPath.row]
-            var headline = "Deposit to Wallet"
             var status = "Pending"
             var amount = 0.00
             var accountName = ""
@@ -126,8 +124,20 @@ extension MyWalletViewController: UITableViewDelegate, UITableViewDataSource {
                 amount = amt
             }
             
-            if let fromBlock = transaction["from"] as? [String: Any], let nickname = fromBlock["nickname"] as? String {
-                accountName = nickname
+            if let fromBlock = transaction["from"] as? [String: Any], let nodeID = fromBlock["id"] as? String, let type = fromBlock["type"] as? String {
+                if (type == "ACH-US") {
+                    accountName = "Deposit to Wallet"
+                } else if (nodeID == currentUser.walletID) {
+                    accountName = "Challenge Entry Fee"
+                } else {
+                    accountName = "Challenge Payout"
+                }
+            }
+            
+            if let toBlock = transaction["to"] as? [String: Any], let type = toBlock["type"] as? String {
+                if (type == "ACH-US") {
+                    accountName = "Withdrawal to Bank"
+                }
             }
             
             if let extraBlock = transaction["extra"] as? [String: Any] {
@@ -135,14 +145,6 @@ extension MyWalletViewController: UITableViewDelegate, UITableViewDataSource {
                     let epochTime = TimeInterval(timestamp) / 1000
                     let date = Date(timeIntervalSince1970: epochTime)
                     dateString = dateFormatter.string(from: date)
-                }
-                
-                if let note = extraBlock["note"] as? String {
-                    if note == "Deposit funds from bank to wallet" {
-                        headline = "Deposit to Wallet"
-                    } else {
-                        headline = note
-                    }
                 }
             }
             
@@ -160,7 +162,6 @@ extension MyWalletViewController: UITableViewDelegate, UITableViewDataSource {
                 }
             }
             
-            headlineLabel.text = headline
             subtextLabel.text = "$\(String(format: "%.2f", amount)) - \(accountName)"
             dateLabel.text = dateString
             statusLabel.text = status

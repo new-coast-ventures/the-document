@@ -142,8 +142,13 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             actionButton.backgroundColor = UIColor(red: 234/255, green: 234/255, blue: 234/255, alpha: 1.0)
             actionButton.isEnabled = false
             
+        case (1, 2): // Pending payment
+            actionButton.setTitle("PAYOUT PENDING...", for: .normal)
+            actionButton.backgroundColor = UIColor(red: 234/255, green: 234/255, blue: 234/255, alpha: 1.0)
+            actionButton.isEnabled = false
+            
         case (2, 1): // Past
-            let buttonText = challenge.wonByMe() ? "SHARE RESULTS" : "REQUEST REMATCH"
+            let buttonText = "SHARE RESULTS"
             actionButton.setTitle(buttonText, for: .normal)
             resultStackView.isHidden = false
             resultViewDivider.isHidden = false
@@ -259,23 +264,18 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
             displayConfirmationAlert()
             
         case (2, 1):
-            if challenge.wonByMe() {
-                
-                let content = LinkShareContent(url: URL(string: "https://www.refertothedocument.com/")!)
-                let shareDialog = ShareDialog(content: content)
-                shareDialog.mode = .native
-                shareDialog.mode = ShareDialogMode.automatic
-                shareDialog.failsOnInvalidData = false
-                shareDialog.completion = { result in
-                }
-                
-                do {
-                    try shareDialog.show()
-                } catch {
-                    self.stopActivityIndicator()
-                }
-            } else {
-                requestRematch()
+            let content = LinkShareContent(url: URL(string: "https://www.refertothedocument.com/")!)
+            let shareDialog = ShareDialog(content: content)
+            shareDialog.mode = .native
+            shareDialog.mode = ShareDialogMode.automatic
+            shareDialog.failsOnInvalidData = false
+            shareDialog.completion = { result in
+            }
+            
+            do {
+                try shareDialog.show()
+            } catch {
+                self.stopActivityIndicator()
             }
     
         default:
@@ -354,6 +354,8 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     }
     
     fileprivate func requestRematch() {
+        guard self.challenge.price <= 0 else { return }
+        
         let alertView = ncvAlert()
         alertView.addButton("Yes", backgroundColor: Constants.Theme.buttonBGColor) {
             API().rematchChallenge(challenge: self.challenge) { success in
