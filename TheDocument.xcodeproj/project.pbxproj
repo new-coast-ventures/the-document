@@ -17,6 +17,8 @@
 		6F25C82D1F098C3100E345C5 /* SelectBankTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F25C82C1F098C3100E345C5 /* SelectBankTableViewController.swift */; };
 		6F25C82F1F098C5300E345C5 /* BankLoginTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F25C82E1F098C5300E345C5 /* BankLoginTableViewController.swift */; };
 		6F25C8311F098C5C00E345C5 /* BankMFATableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F25C8301F098C5C00E345C5 /* BankMFATableViewController.swift */; };
+		6F276BD5203CB516003FC945 /* terms.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 6F276BD3203CB516003FC945 /* terms.pdf */; };
+		6F276BD6203CB516003FC945 /* privacy.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 6F276BD4203CB516003FC945 /* privacy.pdf */; };
 		6F30B69D201A593C003C3559 /* IntroLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F30B69C201A593C003C3559 /* IntroLocationViewController.swift */; };
 		6F30B69F201A97CF003C3559 /* FundingSourceTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F30B69E201A97CF003C3559 /* FundingSourceTableViewController.swift */; };
 		6F30B6A1201AF918003C3559 /* MFAViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F30B6A0201AF918003C3559 /* MFAViewController.swift */; };
@@ -130,6 +132,8 @@
 		6F25C82C1F098C3100E345C5 /* SelectBankTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectBankTableViewController.swift; sourceTree = "<group>"; };
 		6F25C82E1F098C5300E345C5 /* BankLoginTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BankLoginTableViewController.swift; sourceTree = "<group>"; };
 		6F25C8301F098C5C00E345C5 /* BankMFATableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BankMFATableViewController.swift; sourceTree = "<group>"; };
+		6F276BD3203CB516003FC945 /* terms.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = terms.pdf; sourceTree = "<group>"; };
+		6F276BD4203CB516003FC945 /* privacy.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = privacy.pdf; sourceTree = "<group>"; };
 		6F30B69C201A593C003C3559 /* IntroLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroLocationViewController.swift; sourceTree = "<group>"; };
 		6F30B69E201A97CF003C3559 /* FundingSourceTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FundingSourceTableViewController.swift; sourceTree = "<group>"; };
 		6F30B6A0201AF918003C3559 /* MFAViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFAViewController.swift; sourceTree = "<group>"; };
@@ -265,6 +269,15 @@
 				AD2040B086D3DAB96F03168C /* Pods-TheDocument.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		6F276BD2203CB4EF003FC945 /* Files */ = {
+			isa = PBXGroup;
+			children = (
+				6F276BD4203CB516003FC945 /* privacy.pdf */,
+				6F276BD3203CB516003FC945 /* terms.pdf */,
+			);
+			name = Files;
 			sourceTree = "<group>";
 		};
 		6F86ADC01F95628200F8B8C2 /* TheDocumentTests */ = {
@@ -431,6 +444,7 @@
 		EC445E101EB0B0EB00C843F0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				6F276BD2203CB4EF003FC945 /* Files */,
 				ECE9E9841E9E187500A87221 /* Assets.xcassets */,
 				EC445E251EB0B11800C843F0 /* Fonts */,
 			);
@@ -692,11 +706,13 @@
 				EC445E1F1EB0B11100C843F0 /* OpenSans-Italic.ttf in Resources */,
 				EC445E1C1EB0B11100C843F0 /* OpenSans-BoldItalic.ttf in Resources */,
 				EC8E76821ED2EC62006FF63C /* ItemCell.xib in Resources */,
+				6F276BD5203CB516003FC945 /* terms.pdf in Resources */,
 				ECE9E9881E9E187500A87221 /* LaunchScreen.storyboard in Resources */,
 				EC445E231EB0B11100C843F0 /* OpenSans-Semibold.ttf in Resources */,
 				EC445E1D1EB0B11100C843F0 /* OpenSans-ExtraBold.ttf in Resources */,
 				ECE9E9901E9E190900A87221 /* GoogleService-Info.plist in Resources */,
 				EC445E211EB0B11100C843F0 /* OpenSans-LightItalic.ttf in Resources */,
+				6F276BD6203CB516003FC945 /* privacy.pdf in Resources */,
 				ECE9E9851E9E187500A87221 /* Assets.xcassets in Resources */,
 				6F8E79D11F1003EC00FDA983 /* Empty.xib in Resources */,
 				EC445E1B1EB0B11100C843F0 /* OpenSans-Bold.ttf in Resources */,

@@ -148,17 +148,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    func authenticateSynapseUser() {
-        API().authorizeSynapseUser { status in
-            if status == 2 {
-                DispatchQueue.main.async {
-                    let mfaVC = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "mfaVC") as! MFAViewController
-                    if let base = homeVC {
-                        base.present(mfaVC, animated: true, completion: nil)
-                    } else {
-                        print("homeVC was not defined")
-                    }
-                }
+    func presentMFAViewController() {
+        DispatchQueue.main.async {
+            let mfaVC = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "mfaVC") as! MFAViewController
+            if let base = homeVC {
+                log.debug("Presenting MFA VC")
+                base.present(mfaVC, animated: true, completion: nil)
+            } else {
+                log.debug("homeVC was not defined")
             }
         }
     }
@@ -168,7 +165,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let synapseID = currentUser.synapseUID, !synapseID.isBlank {
             API().loadUser(uid: synapseID, { success in
                 if (success) {
-                    self.authenticateSynapseUser()
+                    API().authorizeSynapseUser()
                 } else {
                     API().resetUserKeys()
                 }
@@ -180,7 +177,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func isSynapseUserVerified() -> Bool {
         guard let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]], let document = documents.first, let documentId = document["id"] as? String, let socialDocs = document["social_docs"] as? [[String: Any]], let permission = userRef["permission"] as? String else {
-            log.debug("User document did not exist")
+            log.debug("Failed first guard in isSynapseUserVerified")
             self.loadKYCModal()
             return false
         }
@@ -195,7 +192,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if (permission == "SEND-AND-RECEIVE") {
             return true
         } else if (hasInitiatedMFA == false) {
-            self.loadKYCModal()
+            // Make sure user is authorized before loading KYC
+            API().authorizeSynapseUser({ success in
+                if (success) {
+                    self.loadKYCModal()
+                }
+            })
             return false
         } else {
             API().loadUser(uid: currentUser.synapseUID!)
