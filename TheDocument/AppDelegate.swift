@@ -187,22 +187,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         if (permission == "SEND-AND-RECEIVE") {
             return true
-        } else if (hasInitiatedMFA == false) {
-            // Make sure user is authorized before loading KYC
+        } else {
             API().loadUser(uid: currentUser.synapseUID!, { success in
                 if (success) {
                     API().authorizeSynapseUser({ result in
-                        if (result) {
+                        if (result && !hasInitiatedMFA) {
                             self.loadKYCModal()
+                        } else {
+                            self.loadUnderReviewModal()
                         }
                     })
                 }
             })
             
-            return false
-        } else {
-            API().loadUser(uid: currentUser.synapseUID!)
-            self.loadUnderReviewModal()
             return false
         }
     }
