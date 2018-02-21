@@ -90,6 +90,11 @@ class SynapseAPIService {
         
         switch error_code {
         case "110":
+            API().loadUser(uid: currentUser.synapseUID!, { success in
+                if (success) {
+                    API().authorizeSynapseUser()
+                }
+            })
             API().authorizeSynapseUser()
         default:
             log.info("ERROR WITH CODE \(error_code): \(json)")
