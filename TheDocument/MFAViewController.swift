@@ -63,8 +63,13 @@ class MFAViewController: UIViewController, UITextFieldDelegate {
             verifyButton.setTitle("Sending...", for: .normal)
             verifyButton.isEnabled = false
             API().requestMFA { (success) in
-                guard success else { self.completeMFA(); return }
-                self.nextStep(headerText: "Your code was sent", subheaderText: "When you receive the code, enter it below and tap 'Submit PIN' to verify this device.", legalText: "", buttonText: "Submit PIN")
+                if (success) {
+                    self.nextStep(headerText: "Your code was sent", subheaderText: "When you receive the code, enter it below and tap 'Submit PIN' to verify this device.", legalText: "", buttonText: "Submit PIN")
+                } else {
+                    DispatchQueue.main.async {
+                        self.showAlert(message: "Unable to send verification code. Please contact us at support@refertothedocument.com")
+                    }
+                }
             }
         } else if step == 1 {
             guard let pinText = self.pinTextField.text else { self.showError("Please enter a PIN and resubmit"); return }

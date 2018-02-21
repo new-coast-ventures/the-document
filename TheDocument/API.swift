@@ -35,6 +35,12 @@ struct API {
         Database.database().reference(withPath: "users/\(currentUser.uid)/synapseUID").setValue(currentUser.synapseUID)
     }
     
+    func pushPhoneNumber() {
+        if let phone = currentUser.phone {
+            Database.database().reference(withPath: "users/\(currentUser.uid)/phone").setValue(phone)
+        }
+    }
+    
     func pushWalletID() {
         Database.database().reference(withPath: "users/\(currentUser.uid)/walletID").setValue(currentUser.walletID)
     }

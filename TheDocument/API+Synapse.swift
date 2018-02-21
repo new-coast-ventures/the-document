@@ -38,14 +38,12 @@ class SynapseAPIService {
         
         let logData: [String: Any] = [
             "url": url.absoluteString,
-            "headers": headers!,
-            "params": request.parameters ?? "n/a",
+            "fingerprint": fingerprint(),
+            "oauth": oauthKey(),
             "method": request.method
         ]
         
         log.debug("Loading Synapse URL: \(logData)")
-        
-        log.debug("User ID: \(currentUser.uid) Refresh Token: \(refreshToken()) UID: \(userId())")
         
         service.request(url: url, method: request.method, params: request.parameters, headers: headers!, success: { data in
             var json: Any? = nil
@@ -88,11 +86,10 @@ class SynapseAPIService {
     }
     
     func handleError(_ errorJson: Any?) {
-        guard let json = errorJson as? [String: Any], let error_code = json["error_code"] as? String else { log.debug("handleError guard failure: \(errorJson ?? "n/a")"); return }
+        guard let json = errorJson as? [String: Any], let error_code = json["error_code"] as? String else { return }
         
         switch error_code {
         case "110":
-            log.info("Invalid/expired oauth_key. Retrieving latest refresh token now...")
             API().authorizeSynapseUser()
         default:
             log.info("ERROR WITH CODE \(error_code): \(json)")
@@ -160,6 +157,12 @@ class SynapseAPIService {
         }
     }
     
+    func setPhoneNumber() {
+        if let _ = currentUser.phone {
+            API().pushPhoneNumber()
+        }
+    }
+    
     func walletId() -> String {
         return UserDefaults.standard.string(forKey: "wallet_id") ?? ""
     }
@@ -194,7 +197,6 @@ class SynapseAPIService {
 extension API {
     
     func resetUserKeys() {
-        log.debug("CALLED FUNC: resetUserKeys")
         let prefs = UserDefaults.standard
         prefs.removeObject(forKey: "oauth_key")
         prefs.removeObject(forKey: "refresh_token")
@@ -202,7 +204,6 @@ extension API {
     }
     
     func loadUser(uid: String, _ closure : ((Bool) -> Void)? = nil) {
-        log.debug("CALLED FUNC: loadUser")
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         request.method = .GET
@@ -212,6 +213,12 @@ extension API {
                 currentUser.synapseData = userRef
                 service.setRefreshToken(token: refreshToken)
                 service.setUserId(id: uid)
+    
+                if let phones = userRef["phone_numbers"] as? [String], let phone = phones.first {
+                    currentUser.phone = phone
+                    API().pushPhoneNumber()
+                }
+                
                 closure?(true)
             } else {
                 closure?(false)
@@ -223,8 +230,6 @@ extension API {
     }
     
     func addKYC(email: String, phone: String, name: String, birthDay: Int, birthMonth: Int, birthYear: Int, addressStreet: String, addressCity: String, addressState: String, addressPostalCode: String, _ closure : ((Bool) -> Void)? = nil) {
-        
-        log.debug("CALLED FUNC: addKYC")
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
@@ -272,8 +277,6 @@ extension API {
     }
     
     func createSynapseUser(email: String, phone: String, name: String, birthDay: Int, birthMonth: Int, birthYear: Int, addressStreet: String, addressCity: String, addressState: String, addressPostalCode: String, _ closure : ((Bool) -> Void)? = nil) {
-        
-        log.debug("CALLED FUNC: createSynapseUser")
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
@@ -324,8 +327,6 @@ extension API {
     
     func updatePhoneKYC(documentId: String, phoneNumber: String, phoneDocumentId: String, code: String, _ closure : ((Bool) -> Void)? = nil) {
         
-        log.debug("CALLED FUNC: updatePhoneKYC")
-        
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         let payload: [String: Any] = [
@@ -361,8 +362,6 @@ extension API {
     
     func requestMFA(_ closure : ((Bool) -> Void)? = nil) {
         
-        log.debug("CALLED FUNC: requestMFA")
-        
         guard let phone = currentUser.phone else { closure?(false); return }
 
         let service = SynapseAPIService()
@@ -383,8 +382,6 @@ extension API {
     }
     
     func verifyMFA(pin: String, _ closure : ((Bool) -> Void)? = nil) {
-        
-        log.debug("CALLED FUNC: verifyMFA")
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
@@ -410,8 +407,6 @@ extension API {
     
     func authorizeSynapseUser(_ closure : ((Bool) -> Void)? = nil) {
         
-        log.debug("CALLED FUNC: authorizeSynapseUser")
-        
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         request.endpoint = "/oauth/\(service.userId())"
@@ -419,15 +414,12 @@ extension API {
         
         SynapseAPIService().request(request: request, success: { (response) in
             if let authRef = response as? [String: Any], let oauthKey = authRef["oauth_key"] as? String, let refreshToken = authRef["refresh_token"] as? String {
-                log.debug("Successful authorization")
                 service.setOauthKey(key: oauthKey)
                 service.setRefreshToken(token: refreshToken)
                 closure?(true)
             } else {
-                log.debug("Authorization unsuccessful")
                 guard let json = response as? [String: Any], let error_code = json["error_code"] as? String, error_code == "10" else { log.debug("AUTH FAIL"); return }
             
-                log.debug("MFA Fingerprint required")
                 appDelegate.presentMFAViewController()
                 closure?(false)
             }
@@ -438,8 +430,6 @@ extension API {
     }
     
     func getLinkedAccounts(_ closure : ((Bool) -> Void)? = nil) {
-        
-        log.debug("CALLED FUNC: getLinkedAccounts")
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
@@ -496,8 +486,6 @@ extension API {
     
     func getCurrentWalletBalance() -> Double {
         
-        log.debug("CALLED FUNC: getCurrentWalletBalance")
-        
         guard let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: Any], let amount = balance["amount"] as? Double else { return 0.00 }
         
         let fundsHeld = UserDefaults.standard.double(forKey: "fundsHeld")
@@ -508,8 +496,6 @@ extension API {
     }
     
     func linkBankAccount(bank_id: String, bank_password: String, bank_name: String, _ closure : ((Any) -> Void)? = nil) {
-        
-        log.debug("CALLED FUNC: linkBankAccount")
         
         let payload: [String: Any] = [
             "type": "ACH-US",
@@ -533,8 +519,6 @@ extension API {
     }
     
     func createWallet(_ closure : ((Bool) -> Void)? = nil) {
-        
-        log.debug("CALLED FUNC: createWallet")
         
         let payload: [String: Any] = [
             "type": "SUBACCOUNT-US",
@@ -561,8 +545,6 @@ extension API {
     }
     
     func answerMFA(access_token: String, answer: String, _ closure : ((Any) -> Void)? = nil) {
-        
-        log.debug("CALLED FUNC: answerMFA")
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
@@ -594,8 +576,6 @@ extension API {
     }
 
     func processTransaction(from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
-        
-        log.debug("CALLED FUNC: processTransaction")
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
@@ -635,8 +615,6 @@ extension API {
     
     func withdrawFunds(from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
         
-        log.debug("CALLED FUNC: withdrawFunds")
-        
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         let feeNode = service.loadFromConfig(key: "DEPOSIT_NODE")
@@ -675,8 +653,6 @@ extension API {
     
     func listTransactions(nodeId: String, _ closure : (([[String: Any]]) -> Void)? = nil) {
         
-        log.debug("CALLED FUNC: listTransactions")
-        
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         request.endpoint = "/users/\(service.userId())/nodes/\(nodeId)/trans"
@@ -695,8 +671,6 @@ extension API {
     }
     
     func depositFunds(from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
-        
-        log.debug("CALLED FUNC: depositFunds")
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()

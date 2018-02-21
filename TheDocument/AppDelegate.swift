@@ -166,12 +166,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             API().loadUser(uid: synapseID, { success in
                 if (success) {
                     API().authorizeSynapseUser()
-                } else {
-                    API().resetUserKeys()
                 }
             })
-        } else {
-            API().resetUserKeys()
         }
     }
     
@@ -193,11 +189,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return true
         } else if (hasInitiatedMFA == false) {
             // Make sure user is authorized before loading KYC
-            API().authorizeSynapseUser({ success in
+            API().loadUser(uid: currentUser.synapseUID!, { success in
                 if (success) {
-                    self.loadKYCModal()
+                    API().authorizeSynapseUser({ result in
+                        if (result) {
+                            self.loadKYCModal()
+                        }
+                    })
                 }
             })
+            
             return false
         } else {
             API().loadUser(uid: currentUser.synapseUID!)
@@ -222,13 +223,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 base.present(vc, animated: true, completion: nil)
             }
         }
-    }
-    
-    func resetUserKeys() {
-        let prefs = UserDefaults.standard
-        prefs.removeObject(forKey: "oauth_key")
-        prefs.removeObject(forKey: "refresh_token")
-        prefs.synchronize()
     }
     
     func applicationDidEnterBackground(_ application: UIApplication) {
