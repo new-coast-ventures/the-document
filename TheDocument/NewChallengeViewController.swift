@@ -39,6 +39,8 @@ class NewChallengeViewController: BaseViewController {
     let timePicker = UIDatePicker()
     
     var accountBalance: Float = 0.00
+    var walletBalance: Double = 0.00
+    var ledgerBalance: Double = 0.00
     var walletAccount: [String: Any]?
     
     override func viewDidLoad() {
@@ -97,9 +99,29 @@ class NewChallengeViewController: BaseViewController {
         setupChallengeNameKeyboard()
         addDoneButtonOnKeyboard()
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(hideControls)))
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.getWallet()
+        self.refreshTransactions()
         
-        // Load wallet
-        getWallet()
+        Database.database().reference(withPath: "ledger/\(currentUser.uid)").observe(.value, with: { (snapshot) in
+            // Get user value
+            let dict = snapshot.value as? NSDictionary
+            let _ = dict?.allKeys
+            let fundsHeld = dict?.allValues
+            
+            var totalHeld = 0
+            if let amounts = fundsHeld as? [Int] {
+                amounts.forEach({ amount in
+                    totalHeld += amount
+                })
+            }
+            
+            self.ledgerBalance = Double(totalHeld)
+            self.updateAvailableBalance()
+        })
     }
 
     @IBAction func closeButtonTapped(_ sender: UIBarButtonItem? = nil) { dismiss(animated: true, completion: nil) }
@@ -153,16 +175,28 @@ class NewChallengeViewController: BaseViewController {
         }
     }
     
-    func updateAvailableBalance(_ amount: Double) {
-        self.accountBalance = Float(amount)
+    func updateAvailableBalance() {
+        self.accountBalance = Float(walletBalance - ledgerBalance)
         DispatchQueue.main.async {
-            self.walletBalanceButton.setTitle("You have $\(String(format: "%.2f", self.accountBalance)) available", for: .normal)
+            if (self.accountBalance < 0) {
+                self.walletBalanceButton.isHidden = true
+            } else {
+                self.walletBalanceButton.setTitle("You have $\(String(format: "%.2f", self.accountBalance)) available", for: .normal)
+                self.walletBalanceButton.isHidden = false
+            }
         }
     }
     
     func refreshAccounts() {
-        let balance = API().getCurrentWalletBalance()
-        self.updateAvailableBalance(balance)
+        API().getCurrentWalletBalance { balance in
+            self.walletBalance = balance
+            self.updateAvailableBalance()
+        }
+    }
+    
+    func refreshTransactions() {
+        guard let wallet = currentUser.wallet, let walletId = wallet["_id"] as? String else { return }
+        API().listTransactions(nodeId: walletId)
     }
     
     func getWallet() {

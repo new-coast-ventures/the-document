@@ -14,7 +14,7 @@ extension API {
         guard friendsIds.count > 0 else { closure(); return }
         
         // Add challenge price to funds held
-        currentUser.updateFundsHeld(amount: Double(challenge.price))
+        currentUser.updateLedger(challenge: challenge)
         
         let challengeRef = Database.database().reference().child("challenges")
         
@@ -43,7 +43,7 @@ extension API {
         guard teammateIds.count > 0 && competitorIds.count > 0 else { closure(); return }
         
         // Add challenge price to funds held
-        currentUser.updateFundsHeld(amount: Double(challenge.price))
+        currentUser.updateLedger(challenge: challenge)
         
         let challengeRef = Database.database().reference().child("challenges")
         let participantIds = competitorIds.union(teammateIds)
@@ -121,9 +121,7 @@ extension API {
             if (error != nil) {
                 closure(false)
             } else {
-                // Refund held challenge funds
-                let reimbursement = Double(-1 * challenge.price)
-                currentUser.updateFundsHeld(amount: reimbursement)
+                currentUser.removeLedgerHold(challenge: challenge)
                 closure(true)
             }
         }
@@ -148,7 +146,7 @@ extension API {
         var childUpdates: [String: Any] = [String: Any]()
         
         // Add challenge price to funds held
-        currentUser.updateFundsHeld(amount: Double(challenge.price))
+        currentUser.updateLedger(challenge: challenge)
         
         challenge.participantIds().forEach { uid in
             childUpdates["/\(uid)/\(updatedChallenge.id)"] = updatedChallenge.simplify()

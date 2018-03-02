@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Firebase
 
 class MyWalletViewController: UIViewController {
 
@@ -21,13 +22,16 @@ class MyWalletViewController: UIViewController {
     var walletAccount: [String: Any]?
     var transactions: [[String: Any]] = []
     
+    var walletBalance: Double = 0.00
+    var ledgerBalance: Double = 0.00
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        dateFormatter.timeZone = TimeZone(abbreviation: "GMT") //Set timezone that you want
+        dateFormatter.timeZone = TimeZone.current
         dateFormatter.locale = NSLocale.current
         dateFormatter.dateStyle = .long
-        //dateFormatter.dateFormat = "yyyy-MM-dd HH:mm" //Specify your format that you want
+        dateFormatter.timeStyle = .short
         
         depositButton.layer.cornerRadius = 3.0
         withdrawButton.layer.cornerRadius = 3.0
@@ -41,8 +45,28 @@ class MyWalletViewController: UIViewController {
         
         // Remove extra seperator lines
         transactionsTableView.tableFooterView = UIView()
-
-        getWalletAccount()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.getWalletAccount()
+        
+        Database.database().reference(withPath: "ledger/\(currentUser.uid)").observe(.value, with: { (snapshot) in
+            // Get user value
+            let dict = snapshot.value as? NSDictionary
+            let _ = dict?.allKeys
+            let fundsHeld = dict?.allValues
+            
+            var totalHeld = 0
+            if let amounts = fundsHeld as? [Int] {
+                amounts.forEach({ amount in
+                    totalHeld += amount
+                })
+            }
+            
+            self.ledgerBalance = Double(totalHeld)
+            self.updateAvailableBalance()
+        })
     }
 
     override func didReceiveMemoryWarning() {
@@ -59,17 +83,25 @@ class MyWalletViewController: UIViewController {
         }
     }
     
-    func updateAvailableBalance(_ amount: Double) {
-        self.accountBalance = Float(amount)
+    func updateAvailableBalance() {
+        self.accountBalance = Float(walletBalance - ledgerBalance)
+        
         DispatchQueue.main.async {
-            self.accountBalanceLabel.text = "$\(String(format: "%.2f", self.accountBalance))"
+            if (self.accountBalance <= 0) {
+                self.accountBalanceLabel.text = "---"
+            } else {
+                self.accountBalanceLabel.text = "$\(String(format: "%.2f", self.accountBalance))"
+            }
         }
     }
     
     func refreshAccounts() {
-        let balance = API().getCurrentWalletBalance()
-        self.updateAvailableBalance(balance)
         self.getTransactions()
+        API().getCurrentWalletBalance { balance in
+            self.walletBalance = balance
+            self.updateAvailableBalance()
+        }
+        
         DispatchQueue.main.async {  
             self.transactionsTableView.reloadData()
             
@@ -106,19 +138,17 @@ extension MyWalletViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-
-        let imageView     = cell.viewWithTag(2) as! UIImageView
-        let subtextLabel  = cell.viewWithTag(4) as! UILabel
-        let dateLabel     = cell.viewWithTag(5) as! UILabel
-        let statusLabel   = cell.viewWithTag(6) as! UILabel
+        let amountLabel = cell.viewWithTag(2) as! UILabel
+        let infoLabel = cell.viewWithTag(3) as! UILabel
+        let subtextLabel = cell.viewWithTag(4) as! UILabel
 
         if (indexPath.row < transactions.count) {
             let transaction = transactions[indexPath.row]
-            var status = "Pending"
+            
             var amount = 0.00
+            var amountString = ""
             var accountName = ""
             var dateString = "-"
-            var image = #imageLiteral(resourceName: "PendingIcon")
             
             if let amountBlock = transaction["amount"] as? [String: Any], let amt = amountBlock["amount"] as? Double {
                 amount = amt
@@ -127,16 +157,24 @@ extension MyWalletViewController: UITableViewDelegate, UITableViewDataSource {
             if let fromBlock = transaction["from"] as? [String: Any], let nodeID = fromBlock["id"] as? String, let type = fromBlock["type"] as? String {
                 if (type == "ACH-US") {
                     accountName = "Deposit to Wallet"
+                    amountString = "$\(String(format: "%.2f", amount))"
+                    amountLabel.textColor = UIColor(red: 0/255, green: 84/255, blue: 147/255, alpha: 1.0)
                 } else if (nodeID == currentUser.walletID) {
                     accountName = "Challenge Entry Fee"
+                    amountString = "-$\(String(format: "%.2f", amount))"
+                    amountLabel.textColor = .red
                 } else {
                     accountName = "Challenge Payout"
+                    amountString = "$\(String(format: "%.2f", amount))"
+                    amountLabel.textColor = UIColor(red: 0/255, green: 84/255, blue: 147/255, alpha: 1.0)
                 }
             }
             
             if let toBlock = transaction["to"] as? [String: Any], let type = toBlock["type"] as? String {
                 if (type == "ACH-US") {
                     accountName = "Withdrawal to Bank"
+                    amountString = "-$\(String(format: "%.2f", amount)) - \(accountName)"
+                    amountLabel.textColor = .red
                 }
             }
             
@@ -148,24 +186,24 @@ extension MyWalletViewController: UITableViewDelegate, UITableViewDataSource {
                 }
             }
             
+            var status = "Pending"
             if let statusBlock = transaction["recent_status"] as? [String: Any], let statusString = statusBlock["status"] as? String {
                 if statusString == "CANCELED" {
                     status = "Canceled"
-                    image = #imageLiteral(resourceName: "ErrorIcon")
+                    amountString = "---"
+                    amountLabel.textColor = .lightGray
                 } else if statusString == "QUEUED-BY-SYNAPSE" {
                     status = "Pending"
                 } else if statusString == "PROCESSING-DEBIT" {
                     status = "Processing"
                 } else if statusString == "SETTLED" {
-                    status = "Complete"
-                    image = #imageLiteral(resourceName: "SuccessIcon")
+                    status = dateString
                 }
             }
             
-            subtextLabel.text = "$\(String(format: "%.2f", amount)) - \(accountName)"
-            dateLabel.text = dateString
-            statusLabel.text = status
-            imageView.image = image
+            amountLabel.text = amountString
+            infoLabel.text = accountName
+            subtextLabel.text = status
         }
         
         return cell

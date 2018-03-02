@@ -177,7 +177,7 @@ extension LoginViewController {
             if let createdUser = user {
                 var userDict = [String:String]()
                 userDict["name"] = name
-                userDict["phone"] = phone
+                userDict["phone"] = phone.toNumeric()
                 userDict["email"] = email
                 Database.database().reference(withPath: "users/\(createdUser.uid)").setValue(userDict) { error, ref in
                     guard error == nil else {

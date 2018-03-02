@@ -179,23 +179,12 @@ extension OverviewTableViewController {
             self.currentChallenges = currentUser.challenges.filter { $0.status == 1 }
             self.pastChallenges = currentUser.challenges.filter { $0.status == 2 }.completionSorted()
             self.tableView.reloadData()
-            self.refreshHeldFunds()
             
             currentUser.getFriends() {
                 self.refreshControl?.endRefreshing()
                 self.refresh()
             }
         }
-    }
-    
-    func refreshHeldFunds() {
-        var fundsToHold: Double = 0.0
-        self.currentChallenges.forEach({ challenge in
-            fundsToHold += Double(challenge.price)
-        })
-
-        UserDefaults.standard.set(fundsToHold, forKey: "fundsHeld")
-        UserDefaults.standard.synchronize()
     }
     
     func buildLeaderboard() {

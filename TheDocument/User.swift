@@ -4,6 +4,7 @@
 //
 
 import FirebaseAuth
+import Firebase
 import Foundation
 import UIKit
 import Branch
@@ -91,13 +92,12 @@ extension TDUser {
         }
     }
     
-    func updateFundsHeld(amount: Double) {
-        let userDict = UserDefaults.standard
-        let heldValue = userDict.double(forKey: "fundsHeld")
-        let newValue = heldValue + amount
-        
-        userDict.set(newValue, forKey: "fundsHeld")
-        userDict.synchronize()
+    func updateLedger(challenge: Challenge) {
+        Database.database().reference(withPath: "ledger/\(currentUser.uid)/\(challenge.id)").setValue(challenge.price)
+    }
+    
+    func removeLedgerHold(challenge: Challenge) {
+        Database.database().reference(withPath: "ledger/\(currentUser.uid)/\(challenge.id)").setValue(nil)
     }
     
     func logout() {

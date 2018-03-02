@@ -8,6 +8,7 @@
 
 import Foundation
 import FacebookCore
+import Firebase
 
 public struct SynapseAPIConfiguration {
     let baseURL: URL
@@ -164,6 +165,7 @@ class SynapseAPIService {
     
     func setPhoneNumber() {
         if let _ = currentUser.phone {
+            currentUser.phone = currentUser.phone?.toNumeric()
             API().pushPhoneNumber()
         }
     }
@@ -220,7 +222,7 @@ extension API {
                 service.setUserId(id: uid)
     
                 if let phones = userRef["phone_numbers"] as? [String], let phone = phones.first {
-                    currentUser.phone = phone
+                    currentUser.phone = phone.toNumeric()
                     API().pushPhoneNumber()
                 }
                 
@@ -242,7 +244,7 @@ extension API {
         let payload: [String: Any] = [
             "documents": [[
                 "email": email,
-                "phone_number": phone.trimmingCharacters(in: .whitespacesAndNewlines),
+                "phone_number": phone.toNumeric(),
                 "name": name,
                 "ip": service.userIpAddress(),
                 "entity_type": "NOT_KNOWN",
@@ -256,7 +258,7 @@ extension API {
                 "address_postal_code": addressPostalCode,
                 "address_country_code": "US",
                 "social_docs": [[
-                    "document_value": phone.trimmingCharacters(in: .whitespacesAndNewlines),
+                    "document_value": phone.toNumeric(),
                     "document_type": "PHONE_NUMBER_2FA"
                 ]]
             ]]
@@ -287,12 +289,12 @@ extension API {
         let request = SynapseAPIRequest()
         let payload: [String: Any] = [
             "logins": [[ "email": email ]],
-            "phone_numbers": [ phone.trimmingCharacters(in: .whitespacesAndNewlines) ],
+            "phone_numbers": [ phone.toNumeric() ],
             "legal_names": [ name ],
             "extra": [ "cip_tag": 1, "is_business": false ],
             "documents": [[
                 "email": email,
-                "phone_number": phone.trimmingCharacters(in: .whitespacesAndNewlines),
+                "phone_number": phone.toNumeric(),
                 "name": name,
                 "ip": service.userIpAddress(),
                 "entity_type": "NOT_KNOWN",
@@ -306,7 +308,7 @@ extension API {
                 "address_postal_code": addressPostalCode,
                 "address_country_code": "US",
                 "social_docs": [[
-                    "document_value": phone.trimmingCharacters(in: .whitespacesAndNewlines),
+                    "document_value": phone.toNumeric(),
                     "document_type": "PHONE_NUMBER_2FA"
                 ]]
             ]]
@@ -339,7 +341,7 @@ extension API {
                 "id": documentId,
                 "social_docs": [[
                     "id": phoneDocumentId,
-                    "document_value": phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines),
+                    "document_value": phoneNumber.toNumeric(),
                     "document_type": "PHONE_NUMBER_2FA",
                     "mfa_answer": code
                 ]]
@@ -374,7 +376,7 @@ extension API {
         request.endpoint = "/oauth/\(service.userId())"
         request.parameters = [
             "refresh_token": service.refreshToken(),
-            "phone_number": phone.trimmingCharacters(in: .whitespacesAndNewlines)
+            "phone_number": phone.toNumeric()
         ]
         
         SynapseAPIService().request(request: request, success: { (response) in
@@ -489,15 +491,12 @@ extension API {
         }
     }
     
-    func getCurrentWalletBalance() -> Double {
-        
-        guard let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: Any], let amount = balance["amount"] as? Double else { return 0.00 }
-        
-        let fundsHeld = UserDefaults.standard.double(forKey: "fundsHeld")
-        print("Funds Held: \(fundsHeld)")
-        print("Amount: \(amount)")
-        
-        return amount - fundsHeld
+    func getCurrentWalletBalance(closure: @escaping ( Double )->Void) {
+        guard let wallet = currentUser.wallet, let info = wallet["info"] as? [String: Any], let balance = info["balance"] as? [String: Any], let amount = balance["amount"] as? Double else {
+            closure(0.00); return
+        }
+
+        closure(amount)
     }
     
     func linkBankAccount(bank_id: String, bank_password: String, bank_name: String, _ closure : ((Any) -> Void)? = nil) {
@@ -580,17 +579,17 @@ extension API {
         }
     }
 
-    func processTransaction(from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
+    func processTransaction(challenge: Challenge, from: String, to: String, amount: Int, _ closure : ((Bool) -> Void)? = nil) {
         
         let service = SynapseAPIService()
         let request = SynapseAPIRequest()
         request.endpoint = "/users/\(service.userId())/nodes/\(from)/trans"
         
-        var note = "Challenge Entry Fee"
+        var note = "Entry Fee | \(challenge.name)"
         if currentUser.walletID == from {
-            note = "Challenge Entry Fee"
+            note = "Entry Fee | \(challenge.name)"
         } else {
-            note = "Challenge Prize"
+            note = "Winner Payout | \(challenge.name)"
         }
         
         let payload: [String: Any] = [
@@ -604,7 +603,8 @@ extension API {
             ],
             "extra": [
                 "ip": service.userIpAddress(),
-                "note": note
+                "note": note.truncate(length: 80, trailing: ""),
+                "supp_id": challenge.id
             ]
         ]
         
@@ -665,6 +665,16 @@ extension API {
         
         SynapseAPIService().request(request: request, success: { (response) in
             if let response = response as? [String: Any], let trans = response["trans"] as? [[String: Any]] {
+                trans.forEach({ transaction in
+                    if let extraBlock = transaction["extra"] as? [String: Any], let supp_id = extraBlock["supp_id"] as? String {
+                        if let statusBlock = transaction["recent_status"] as? [String: Any], let statusString = statusBlock["status"] as? String {
+                            if statusString == "SETTLED" && supp_id != "" {
+                                Database.database().reference(withPath: "ledger/\(currentUser.uid)/\(supp_id)").setValue(nil)
+                            }
+                        }
+                    }
+                })
+                
                 closure?(trans)
             } else {
                 closure?([])
@@ -682,13 +692,15 @@ extension API {
         let feeNode = service.loadFromConfig(key: "DEPOSIT_NODE")
         request.endpoint = "/users/\(service.userId())/nodes/\(from)/trans"
         
+        let depositAmount = Double(amount) + 0.10
+        
         var payload: [String: Any] = [
             "to": [
                 "type": "SUBACCOUNT-US",
                 "id": to
             ],
             "amount": [
-                "amount": amount,
+                "amount": depositAmount,
                 "currency": "USD"
             ],
             "extra": [

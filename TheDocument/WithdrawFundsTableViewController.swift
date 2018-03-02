@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Firebase
 
 class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelegate, SelectedAccountProtocol {
 
@@ -16,6 +17,8 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
     @IBOutlet weak var bankLabel: UILabel!
     
     var accountBalance: Float = 0.00
+    var walletBalance: Double = 0.00
+    var ledgerBalance: Double = 0.00
     var bankAccount: [String: Any]?
     var walletAccount: [String: Any]?
     
@@ -24,6 +27,7 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
         addDoneButtonOnKeyboard()
         getWalletAccount()
         getBankAccount()
+        refreshTransactions()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -32,6 +36,23 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
         if let _ = bankAccount {
             self.refreshAccounts()
         }
+        
+        Database.database().reference(withPath: "ledger/\(currentUser.uid)").observe(.value, with: { (snapshot) in
+            // Get user value
+            let dict = snapshot.value as? NSDictionary
+            let _ = dict?.allKeys
+            let fundsHeld = dict?.allValues
+            
+            var totalHeld = 0
+            if let amounts = fundsHeld as? [Int] {
+                amounts.forEach({ amount in
+                    totalHeld += amount
+                })
+            }
+            
+            self.ledgerBalance = Double(totalHeld)
+            self.updateAvailableBalance()
+        })
     }
     
     override func didReceiveMemoryWarning() {
@@ -120,16 +141,23 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
         textField.resignFirstResponder()
     }
     
-    func updateAvailableBalance(_ amount: Double) {
-        self.accountBalance = Float(amount)
+    func updateAvailableBalance() {
+        self.accountBalance = Float(walletBalance - ledgerBalance)
         DispatchQueue.main.async {
+            if (self.accountBalance <= 0 ) {
+                
+            } else {
+                
+            }
             self.walletBalanceLabel.text = "$\(String(format: "%.2f", self.accountBalance)) available"
         }
     }
     
     func refreshAccounts() {
-        let balance = API().getCurrentWalletBalance()
-        self.updateAvailableBalance(balance)
+        API().getCurrentWalletBalance { balance in
+            self.walletBalance = balance
+            self.updateAvailableBalance()
+        }
         
         var bankLabel = "---"
         if let node = self.bankAccount, let info = node["info"] as? [String: Any] {
@@ -142,6 +170,11 @@ class WithdrawFundsTableViewController: UITableViewController, UITextFieldDelega
             self.bankLabel.text = bankLabel
             self.tableView.reloadData()
         }
+    }
+    
+    func refreshTransactions() {
+        guard let wallet = currentUser.wallet, let walletId = wallet["_id"] as? String else { return }
+        API().listTransactions(nodeId: walletId)
     }
     
     func getWalletAccount() {

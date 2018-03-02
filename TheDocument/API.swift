@@ -37,7 +37,8 @@ struct API {
     
     func pushPhoneNumber() {
         if let phone = currentUser.phone {
-            Database.database().reference(withPath: "users/\(currentUser.uid)/phone").setValue(phone)
+            let formattedPhone = phone.toNumeric()
+            Database.database().reference(withPath: "users/\(currentUser.uid)/phone").setValue(formattedPhone)
         }
     }
     
@@ -50,7 +51,12 @@ struct API {
     func editInfo(newName:String, newPostCode:String?, newPhone:String?, closure: ((Bool)->Void)? = nil) {
         guard !newName.isBlank else { closure?(false); return }
         
-        let userInfo = ["email": currentUser.email, "name": newName, "postcode": newPostCode, "phone": newPhone, "synapseUID": currentUser.synapseUID, "walletID": currentUser.walletID, "bankNodeID": currentUser.bankNodeID, "creditNodeID": currentUser.creditNodeID]
+        var updatedPhone = newPhone
+        if let phone = newPhone {
+            updatedPhone = phone.toNumeric()
+        }
+        
+        let userInfo = ["email": currentUser.email, "name": newName, "postcode": newPostCode, "phone": updatedPhone, "synapseUID": currentUser.synapseUID, "walletID": currentUser.walletID, "bankNodeID": currentUser.bankNodeID, "creditNodeID": currentUser.creditNodeID]
         
         Database.database().reference(withPath: "users/\(currentUser.uid)").setValue(userInfo) { error , ref in
             guard error == nil else { closure?(false);return }

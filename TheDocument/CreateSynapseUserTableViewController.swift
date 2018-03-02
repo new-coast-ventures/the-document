@@ -37,38 +37,32 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
         birthPicker.datePickerMode = UIDatePickerMode.date
         birthPicker.addTarget(self, action: #selector(CreateSynapseUserTableViewController.setBirthdate), for: .valueChanged)
         birthdateLabel.inputView = birthPicker
-        
         statePicker.delegate = self
         stateLabel.inputView = statePicker
         
+        addDoneButtonOnKeyboard()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        var shouldMoveToPhoneVerification = false
         if let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]], let document = documents.first {
-            if let phones = userRef["phone_numbers"] as? [String] {
-                phoneNumberLabel.text = phones.first
-            }
-            if let fullName = document["name"] as? String {
-                var nameParts = fullName.components(separatedBy: " ")
-                if nameParts.count > 1 {
-                    let lastName = nameParts.popLast()
-                    let firstName = nameParts.joined(separator: " ")
-                    firstNameLabel.text = firstName
-                    firstNameLabel.isEnabled = false
-                    lastNameLabel.text = lastName
-                    lastNameLabel.isEnabled = false
-                }
-            }
-            
             if let social_docs = document["social_docs"] as? [[String: Any]] {
                 social_docs.forEach({ doc in
-                    guard let docType = doc["document_type"] as? String, let status = doc["status"] as? String, status == "SUBMITTED|VALID" else { return }
+                    guard let docType = doc["document_type"] as? String, let status = doc["status"] as? String else { return }
                     
-                    if (docType == "PHONE_NUMBER") {
-                        phoneNumberLabel.isEnabled = false
+                    if (docType == "PHONE_NUMBER_2FA" && status != "SUBMITTED|VALID") {
+                        shouldMoveToPhoneVerification = true
                     }
                 })
             }
         }
         
-        addDoneButtonOnKeyboard()
+        if (shouldMoveToPhoneVerification) {
+            self.complete()
+            return
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -123,6 +117,7 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
         
         let name = "\(firstName) \(lastName)"
         if let uid = currentUser.synapseUID, uid.isBlank == false {
+            log.debug("Adding KYC for existing Synapse user...")
             // User already exists, add KYC
             API().addKYC(email: currentUser.email, phone: phoneNumber, name: name, birthDay: birthDay!, birthMonth: birthMonth!, birthYear: birthYear!, addressStreet: address, addressCity: city, addressState: state, addressPostalCode: zip) { success in
                 if (success) {
@@ -132,6 +127,7 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
                 }
             }
         } else {
+            log.debug("Creating new Synapse user...")
             API().createSynapseUser(email: currentUser.email, phone: phoneNumber, name: name, birthDay: birthDay!, birthMonth: birthMonth!, birthYear: birthYear!, addressStreet: address, addressCity: city, addressState: state, addressPostalCode: zip) { success in
                 if (success) {
                     API().authorizeSynapseUser({ (status) in
@@ -148,6 +144,7 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
         DispatchQueue.main.async {
             self.continueButton.setTitle("VERIFY & CONTINUE", for: .normal)
             self.continueButton.isEnabled = true
+            self.showAlert(message: "Verification failed. Make sure all fields are filled out correctly and try again.")
         }
     }
     

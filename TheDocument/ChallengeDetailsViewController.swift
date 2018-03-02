@@ -247,11 +247,13 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     @IBAction func actionButtonTapped(_ sender: UIButton) {
         switch (challenge.status, challenge.accepted) {
         case (0, 0) where challenge.isMine() == false: // Pending invite
-            let accountBalance = API().getCurrentWalletBalance()
-            if accountBalance < Double(self.challenge.price) {
-                showAlert(message: "You don't have enough funds to join this challenge. Please add more funds on the Settings page.")
-            } else {
-                self.acceptChallenge()
+            
+            API().getCurrentWalletBalance { balance in
+                if balance < Double(self.challenge.price) {
+                    self.showAlert(message: "You don't have enough funds to join this challenge. Please add more funds on the Settings page.")
+                } else {
+                    self.acceptChallenge()
+                }
             }
     
         case (0, 0) where challenge.isMine() == true: // Waiting for opponent
@@ -587,7 +589,7 @@ extension ChallengeDetailsViewController {
             // Get user value
             let value = snapshot.value as? NSDictionary
             if let toID = value?["walletID"] as? String, let fromID = currentUser.walletID {
-                API().processTransaction(from: fromID, to: toID, amount: self.challenge.price) { success in
+                API().processTransaction(challenge: self.challenge, from: fromID, to: toID, amount: self.challenge.price) { success in
                     if (success) {
                         log.info("Processed transaction")
                     } else {

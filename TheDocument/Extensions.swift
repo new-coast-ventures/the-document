@@ -193,7 +193,18 @@ extension String {
     func urlFriendly() -> String {
         let charSet = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890").inverted
         return self.components(separatedBy: charSet).joined()
-
+    }
+    
+    func toNumeric() -> String {
+        return self.replacingOccurrences( of:"[^0-9]", with: "", options: .regularExpression)
+    }
+    
+    func truncate(length: Int, trailing: String = "…") -> String {
+        if self.characters.count > length {
+            return String(self.characters.prefix(length)) + trailing
+        } else {
+            return self
+        }
     }
     
     //Parses raw score string to a win-lose int tuple
