@@ -9,6 +9,7 @@
 import Foundation
 import FacebookCore
 import Firebase
+import Locksmith
 
 public struct SynapseAPIConfiguration {
     let baseURL: URL
@@ -58,15 +59,19 @@ class SynapseAPIService {
             var json: Any? = nil
             if let data = data {
                 json = try? JSONSerialization.jsonObject(with: data, options: [])
-                self.handleError(json)
+                if json != nil {
+                    self.handleError(json)
+                } else {
+                    fail?(NSError(domain: "", code: statusCode, userInfo: ["errorDescription": String(data: data, encoding: .utf8)!]))
+                }
+                
             }
             
             if let fcmError = error  {
                 log.error("statusCode: \(statusCode) fcmError: \(fcmError)")
                 fail?(fcmError)
             } else {
-                log.error("statusCode: \(statusCode)")
-                fail?(NSError(domain: "", code: statusCode, userInfo: ["errorDescription":data ?? Data() ]))
+                fail?(NSError(domain: "", code: statusCode, userInfo: ["errorDescription": ""]))
             }
         })
     }
@@ -126,12 +131,24 @@ class SynapseAPIService {
     }
     
     func userIpAddress() -> String {
-        return UserDefaults.standard.string(forKey: "user_last_ip") ?? "::1"
+        let ip = UserDefaults.standard.string(forKey: "user_last_ip") ?? "::1"
+        log.debug("IP ADDRRESS: \(ip)")
+        return ip
     }
     
     func fingerprint() -> String {
-        if let uuid = UIDevice.current.identifierForVendor?.uuidString {
-            return "\(uuid)-AAPL"
+        if let secureData = Locksmith.loadDataForUserAccount(userAccount: currentUser.uid), let print = secureData["fingerprint"] as? String, print != "0-AAPL" {
+            log.debug("Fingerprint \(print)")
+            return print
+        } else if let uuid = UIDevice.current.identifierForVendor?.uuidString {
+            let print = "\(uuid)-AAPL"
+            do {
+                try Locksmith.updateData(data: ["fingerprint": print], forUserAccount: currentUser.uid)
+                return print
+            } catch {
+                log.error("Unable to save fingerprint to Locksmith")
+                return print
+            }
         } else {
             return "0-AAPL"
         }
@@ -315,6 +332,40 @@ extension API {
         ]
         
         request.endpoint = "/users"
+        request.parameters = payload
+        
+        service.request(request: request, success: { (response) in
+            if let userRef = response as? [String: Any], let uid = userRef["_id"] as? String, let refreshToken = userRef["refresh_token"] as? String {
+                currentUser.synapseData = userRef
+                service.setUserId(id: uid)
+                service.setRefreshToken(token: refreshToken)
+                UserDefaults.standard.set(true, forKey: "is_user_account_verified")
+                UserDefaults.standard.synchronize()
+            }
+            closure?(true)
+        }) { (error) in
+            log.error(error)
+            closure?(false)
+        }
+    }
+    
+    func resendPhoneKYC(documentId: String, phoneNumber: String, phoneDocumentId: String, _ closure : ((Bool) -> Void)? = nil) {
+        
+        let service = SynapseAPIService()
+        let request = SynapseAPIRequest()
+        let payload: [String: Any] = [
+            "documents": [[
+                "id": documentId,
+                "social_docs": [[
+                    "id": phoneDocumentId,
+                    "document_value": phoneNumber.toNumeric(),
+                    "document_type": "PHONE_NUMBER_2FA"
+                    ]]
+                ]]
+        ]
+        
+        request.method = .PATCH
+        request.endpoint = "/users/\(service.userId())"
         request.parameters = payload
         
         service.request(request: request, success: { (response) in

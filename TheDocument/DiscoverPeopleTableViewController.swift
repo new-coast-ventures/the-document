@@ -138,39 +138,6 @@ extension DiscoverPeopleTableViewController {
 
         cell.setup(contact, isSuggestion: true)
         setImage(id: contact.uid, forCell: cell)
-
-//        let contact  = users[indexPath.row]
-//        cell.topLabel.text = CNContactFormatter.string(from: contact, style: .fullName) ?? ""
-//        cell.bottomLabel.text = primaryPhone(contact) ?? ""
-//        cell.isUserInteractionEnabled = true
-//        cell.acceptButton.addTarget(self, action: #selector(inviteOrAddFriend), for: .touchUpInside)
-//        cell.acceptButton.isUserInteractionEnabled = true
-//        
-//        let userRef = Database.database().reference().child("users")
-//        if let phone = primaryPhone(contact) {
-//            let formattedPhone = phone.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
-//            userRef.queryOrdered(byChild: "phone").queryEqual(toValue: formattedPhone).observeSingleEvent(of: .value, with: { snapshot in
-//                if let userObject = snapshot.value as? [String: [String: Any]] {
-//                    if let friendKey = userObject.keys.first {
-//                        self.setImage(id: friendKey, forCell: cell)
-//                        if currentUser.friends.map({ $0.id }).contains(friendKey) {
-//                            cell.acceptButton.isHidden = true
-//                        } else {
-//                            cell.acceptButton.setTitle("Add", for: .normal)
-//                            cell.acceptButton.isHidden = false
-//                        }
-//                    }
-//                } else { // Contact is not a TD user
-//                    cell.itemImageView.backgroundColor = Constants.Theme.grayColor
-//                    cell.setImage(imgData: Data())
-//                    cell.acceptButton.setTitle("Invite", for: .normal)
-//                }
-//            })
-//        } else { // Contact is not a TD user
-//            cell.itemImageView.backgroundColor = Constants.Theme.grayColor
-//            cell.setImage(imgData: Data())
-//            cell.acceptButton.setTitle("Invite", for: .normal)
-//        }
         
         return cell
     }

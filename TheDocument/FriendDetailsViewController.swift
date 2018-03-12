@@ -26,12 +26,12 @@ class FriendDetailsViewController: UIViewController {
         
         cancelButton.isHidden = true
         
-        switch false { //friend.accepted
-            case false:
+        switch friend.accepted ?? 0 {
+            case 0:
                 actionButton.setTitle("\(Constants.acceptButtonTitle)", for: .normal)
                 cancelButton.setTitle("\(Constants.friendRequestRejectTitle)", for: .normal)
                 cancelButton.isHidden = false
-            case true: break;
+            default: break;
         }
     }
     
@@ -43,8 +43,8 @@ class FriendDetailsViewController: UIViewController {
     
     @IBAction func actionButtonTapped(_ sender: UIButton) {
         
-        switch false { //friend.accepted
-            case false:
+        switch friend.accepted ?? 0 {
+            case 0:
                 self.startActivityIndicator()
                 API().acceptFriend(friend: friend) { [weak self] success in
                     guard let sSelf = self else { return }
@@ -52,9 +52,8 @@ class FriendDetailsViewController: UIViewController {
                     sSelf.stopActivityIndicator()
                     
                     if success {
-                        if currentUser.friends.index(where: { $0.uid == sSelf.friend.uid }) != nil {
-                            //currentUser.friends[friendIndex].accepted = true
-                            //currentUser.getScores()
+                        if let sFriendIndex = currentUser.friends.index(where: { $0.uid == sSelf.friend.uid }) {
+                            currentUser.friends[sFriendIndex].accepted = 1
                         } else {
                             currentUser.getFriends()
                         }
@@ -66,16 +65,21 @@ class FriendDetailsViewController: UIViewController {
                         self?.showAlert(message: Constants.Errors.defaultError.rawValue)
                     }
                 }
-            case true:break;
+            default: break;
         
         }
     }
     
     @IBAction func cancelTapped(_ sender: UIButton) {
-        switch false { //friend.accepted
-        case false: break;
-        case true: break;
-            
+        switch friend.accepted ?? 0 {
+        case 0:
+            self.startActivityIndicator()
+            API().endFriendship(with: friend.uid){ [weak self] in
+                DispatchQueue.main.async {
+                    self?.navigationController?.popViewController(animated: true)
+                }
+            }
+        default: break;
         }
     }
 

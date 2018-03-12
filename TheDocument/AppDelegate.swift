@@ -172,16 +172,38 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func isSynapseUserVerified() -> Bool {
-        guard let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]], let document = documents.first, let documentId = document["id"] as? String, let socialDocs = document["social_docs"] as? [[String: Any]], let permission = userRef["permission"] as? String else {
-            log.debug("Failed first guard in isSynapseUserVerified")
+
+        guard let _ = currentUser.synapseUID else {
+            log.debug("no uid")
             self.loadKYCModal()
             return false
         }
         
-        var hasInitiatedMFA = false
-        socialDocs.forEach { doc in
-            if let type = doc["document_type"] as? String, type == "PHONE_NUMBER_2FA" {
-                hasInitiatedMFA = true
+        guard let userRef = currentUser.synapseData else {
+            homeVC?.showAlert(message: "You are currently experiencing network problems. Please try again in a few minutes. If you are connected to a public network such as an office or coffee shop, access to these features may be disabled for your privacy.")
+            return false
+        }
+        
+        guard let documents = userRef["documents"] as? [[String: Any]], let permission = userRef["permission"] as? String else {
+            log.debug("No docs or no permissions")
+            self.loadKYCModal()
+            return false
+        }
+        
+        var hasInitiated2FA = false
+        var hasCompleted2FA = false
+        if let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]] {
+            documents.forEach { document in
+                if let socialDocs = document["social_docs"] as? [[String: Any]] {
+                    socialDocs.forEach { doc in
+                        if let type = doc["document_type"] as? String, let status = doc["status"] as? String, type == "PHONE_NUMBER_2FA" {
+                            hasInitiated2FA = true
+                            if (status == "SUBMITTED|VALID") {
+                                hasCompleted2FA = true
+                            }
+                        }
+                    }
+                }
             }
         }
         
@@ -191,10 +213,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             API().loadUser(uid: currentUser.synapseUID!, { success in
                 if (success) {
                     API().authorizeSynapseUser({ result in
-                        if (result && !hasInitiatedMFA) {
-                            self.loadKYCModal()
+                        if (result) {
+                            if (hasCompleted2FA) {
+                                log.debug("Loading under review modal")
+                                self.loadUnderReviewModal()
+                            } else if (hasInitiated2FA) {
+                                log.debug("Loading 2FA modal")
+                                self.load2FAModal()
+                            } else {
+                                homeVC?.showAlert(message: "You are currently experiencing network problems. Please try again in a few minutes. If you are connected to a public network such as an office or coffee shop, access to these features may be disabled for your privacy.")
+                            }
                         } else {
-                            self.loadUnderReviewModal()
+                            homeVC?.showAlert(message: "You are currently experiencing network problems. Please try again in a few minutes. If you are connected to a public network such as an office or coffee shop, access to these features may be disabled for your privacy.")
                         }
                     })
                 }
@@ -222,8 +252,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-    func applicationDidEnterBackground(_ application: UIApplication) {
+    func load2FAModal() {
         
+        guard let userRef = currentUser.synapseData, let phone = currentUser.phone, let documents = userRef["documents"] as? [[String: Any]] else {
+            log.debug("No docs or no permissions or no phone")
+            return
+        }
+        
+        var phoneDoc: [String: Any] = [:]
+        var mainDoc: [String: Any] = [:]
+        documents.forEach { document in
+            if let socialDocs = document["social_docs"] as? [[String: Any]] {
+                socialDocs.forEach { doc in
+                    if let type = doc["document_type"] as? String, type == "PHONE_NUMBER_2FA" {
+                        phoneDoc = doc
+                        mainDoc = document
+                    }
+                }
+            }
+        }
+        
+        guard let documentId = mainDoc["id"] as? String else { log.debug("Could not find the main document"); return }
+        guard let phoneDocumentId = phoneDoc["id"] as? String else { log.debug("Could not find the PHONE_NUMBER_2FA document"); return }
+        
+        API().resendPhoneKYC(documentId: documentId, phoneNumber: phone, phoneDocumentId: phoneDocumentId) { success in
+            if (success) {
+                self.loadKYCModal()
+            } else {
+                log.debug("Unable to resend phone KYC")
+            }
+        }
+    }
+    
+    func applicationDidEnterBackground(_ application: UIApplication) {
         UserDefaults.standard.set(nil, forKey: "wokenNotification")
         UserDefaults.standard.set(nil, forKey: "wokenNotificationType")
         UserDefaults.standard.synchronize()

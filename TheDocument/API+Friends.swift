@@ -120,38 +120,22 @@ extension API {
     }
     
     func invite(uid: String? = nil, closure: @escaping (Bool)->Void) {
-        
-//        guard let userID = uid, currentUser.friends.index(where: { $0.uid == uid}) == nil else { closure(false); return }
-//
-//        let newFriendData = ["accepted":0, "name":currentUser.name] as [String : Any]
-//        Database.database().reference(withPath: "friends/\(userID)/\(currentUser.uid)").setValue(newFriendData) { error, ref in
-//            let success = error == nil
-//            if success {
-//                Notifier().friendRequest(to: userID)
-//                Database.database().reference(withPath: "users/\(currentUser.uid)/invitations").childByAutoId().setValue(userID)
-//            }
-//            closure(success)
-//        }
-        
-        guard let friendId = uid else { closure(false); return }
-        Database.database().reference(withPath: "friends/\(currentUser.uid)/\(friendId)/accepted").setValue(1) { error, ref in
-            guard error == nil else { log.error(error!); closure(false); return }
-
-            let newFriendData = ["accepted":1,"name":currentUser.name] as [String : Any]
-            Database.database().reference(withPath: "friends/\(friendId)/\(currentUser.uid)").setValue(newFriendData) { error, ref in
-                guard error == nil else { closure(false); return}
-                Notifier().friendRequest(to: friendId) //Notifier().acceptFriend(to: friend.uid)
-                closure(true)
+        guard let userID = uid, currentUser.friends.index(where: { $0.uid == uid}) == nil else { closure(false); return }
+        let newFriendData = ["accepted":0, "name":currentUser.name] as [String : Any]
+        Database.database().reference(withPath: "friends/\(userID)/\(currentUser.uid)").setValue(newFriendData) { error, ref in
+            let success = error == nil
+            if success {
+                Notifier().friendRequest(to: userID)
+                Database.database().reference(withPath: "users/\(currentUser.uid)/invitations").childByAutoId().setValue(userID)
             }
+            closure(success)
         }
     }
     
     //Gets the invitations sent from current user - emails list
     func getInvitedList(closure: @escaping ([String])->Void) {
-        
         Database.database().reference(withPath: "users/\(currentUser.uid)/invitations").observeSingleEvent(of: .value, with: { (snapshot) in
             var list = [String]()
-            
             if snapshot.hasChildren() {
                 for invitedSnap in snapshot.children {
                     if let email = (invitedSnap as? DataSnapshot)?.value as? String {
@@ -159,7 +143,6 @@ extension API {
                     }
                 }
             }
-            
             closure(list)
         })
     }

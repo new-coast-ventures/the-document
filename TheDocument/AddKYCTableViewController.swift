@@ -31,20 +31,25 @@ class AddKYCTableViewController: UITableViewController {
         
         guard let code = textField.text else { showAlert(message: "Please enter the verification code that was sent to your phone"); return }
         
-        guard let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]], let document = documents.first, let documentId = document["id"] as? String else {
-            log.debug("User document did not exist")
+        guard let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]] else {
+            log.debug("No docs or no permissions")
             return
         }
-        
-        guard let socialDocs = document["social_docs"] as? [[String: Any]] else { log.debug("Social documents do not exist"); return }
-        
+
         var phoneDoc: [String: Any] = [:]
-        socialDocs.forEach { doc in
-            if let type = doc["document_type"] as? String, type == "PHONE_NUMBER_2FA" {
-                phoneDoc = doc
+        var mainDoc: [String: Any] = [:]
+        documents.forEach { document in
+            if let socialDocs = document["social_docs"] as? [[String: Any]] {
+                socialDocs.forEach { doc in
+                    if let type = doc["document_type"] as? String, type == "PHONE_NUMBER_2FA" {
+                        phoneDoc = doc
+                        mainDoc = document
+                    }
+                }
             }
         }
         
+        guard let documentId = mainDoc["id"] as? String else { log.debug("Could not find the main document"); return }
         guard let phoneDocumentId = phoneDoc["id"] as? String else { log.debug("Could not find the PHONE_NUMBER_2FA document"); return }
 
         let phone = phoneNumber ?? currentUser.phone

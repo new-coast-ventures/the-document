@@ -43,19 +43,20 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
         addDoneButtonOnKeyboard()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.title = "Verify Me"
         
         var shouldMoveToPhoneVerification = false
-        if let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]], let document = documents.first {
-            if let social_docs = document["social_docs"] as? [[String: Any]] {
-                social_docs.forEach({ doc in
-                    guard let docType = doc["document_type"] as? String, let status = doc["status"] as? String else { return }
-                    
-                    if (docType == "PHONE_NUMBER_2FA" && status != "SUBMITTED|VALID") {
-                        shouldMoveToPhoneVerification = true
+        if let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]] {
+            documents.forEach { document in
+                if let socialDocs = document["social_docs"] as? [[String: Any]] {
+                    socialDocs.forEach { doc in
+                        if let type = doc["document_type"] as? String, let status = doc["status"] as? String, type == "PHONE_NUMBER_2FA" {
+                            shouldMoveToPhoneVerification = true
+                        }
                     }
-                })
+                }
             }
         }
         
@@ -68,11 +69,6 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         self.title = ""
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.title = "Verify Me"
     }
 
     override func didReceiveMemoryWarning() {

@@ -77,6 +77,11 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     var commentsRef: DatabaseReference!
     var declareSubview = UIView(frame: CGRect(x: 0,y: 0,width: side,height: sideH))
     
+    var accountBalance: Float = 0.00
+    var walletBalance: Double = 0.00
+    var ledgerBalance: Double = 0.00
+    var walletAccount: [String: Any]?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(hideControls)))
@@ -156,6 +161,26 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
         default: // TDUser chose winner, Rejected, Win, Other
             actionButton.isHidden = true
         }
+        
+        self.getWallet()
+        self.refreshTransactions()
+        
+        Database.database().reference(withPath: "ledger/\(currentUser.uid)").observe(.value, with: { (snapshot) in
+            // Get user value
+            let dict = snapshot.value as? NSDictionary
+            let _ = dict?.allKeys
+            let fundsHeld = dict?.allValues
+            
+            var totalHeld = 0
+            if let amounts = fundsHeld as? [Int] {
+                amounts.forEach({ amount in
+                    totalHeld += amount
+                })
+            }
+            
+            self.ledgerBalance = Double(totalHeld)
+            self.updateAvailableBalance()
+        })
         
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "\(UserEvents.hideToolbar)"), object: nil)
     }
@@ -247,13 +272,10 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     @IBAction func actionButtonTapped(_ sender: UIButton) {
         switch (challenge.status, challenge.accepted) {
         case (0, 0) where challenge.isMine() == false: // Pending invite
-            
-            API().getCurrentWalletBalance { balance in
-                if balance < Double(self.challenge.price) {
-                    self.showAlert(message: "You don't have enough funds to join this challenge. Please add more funds on the Settings page.")
-                } else {
-                    self.acceptChallenge()
-                }
+            if self.accountBalance < Float(self.challenge.price) {
+                self.showAlert(message: "You don't have enough funds to join this challenge. Please add more funds on the Settings page.")
+            } else {
+                self.acceptChallenge()
             }
     
         case (0, 0) where challenge.isMine() == true: // Waiting for opponent
@@ -661,6 +683,35 @@ extension ChallengeDetailsViewController {
             } else {
                 self.showAlert(message: Constants.Errors.defaultError.rawValue)
             }
+        }
+    }
+    
+    func updateAvailableBalance() {
+        self.accountBalance = Float(walletBalance - ledgerBalance)
+        log.debug("ChallengeDetailsViewController balance is \(self.accountBalance)")
+    }
+    
+    func refreshAccounts() {
+        API().getCurrentWalletBalance { balance in
+            self.walletBalance = balance
+            self.updateAvailableBalance()
+        }
+    }
+    
+    func refreshTransactions() {
+        guard let wallet = currentUser.wallet, let walletId = wallet["_id"] as? String else { return }
+        API().listTransactions(nodeId: walletId)
+    }
+    
+    func getWallet() {
+        if let wallet = currentUser.wallet, let _ = wallet["_id"] as? String {
+            walletAccount = wallet
+            self.refreshAccounts()
+        } else {
+            API().getWallet({ (success) in
+                self.walletAccount = currentUser.wallet
+                self.refreshAccounts()
+            })
         }
     }
 }

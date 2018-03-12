@@ -19,4 +19,5 @@ target 'TheDocument' do
   pod 'SearchTextField'
   pod 'SwiftyBeaver'  
   pod 'Ipify'
+  pod 'Locksmith'
 end

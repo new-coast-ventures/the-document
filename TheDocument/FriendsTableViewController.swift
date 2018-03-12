@@ -16,7 +16,8 @@ class FriendsTableViewController: BaseTableViewController {
     var friendsRef: DatabaseReference!
     
     let kSectionSearchResults = 0
-    let kSectionCurrent = 1
+    let kSectionInvites = 1
+    let kSectionCurrent = 2
     
     @IBOutlet weak var searchBarContainer: UIView!
     
@@ -128,8 +129,7 @@ class FriendsTableViewController: BaseTableViewController {
 extension FriendsTableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let dest = segue.destination as? FriendDetailsViewController, let indexPath = selectedIndexpath {
-            // .filter{ !$0.accepted }
-            let friend = friends[indexPath.row]
+            let friend = friends.filter{ $0.accepted == 0 }[indexPath.row]
             dest.friend = friend
             
         } else if segue.identifier == "show_friend_user_profile", let profileVC = segue.destination as? HeadToHeadViewController, let friend = sender as? TDUser {
@@ -141,7 +141,7 @@ extension FriendsTableViewController {
 //MARK: UITableView delegate & datasource
 extension FriendsTableViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        return 3
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -149,7 +149,9 @@ extension FriendsTableViewController {
         case kSectionSearchResults where searchController.isActive:
             return filteredFriends.count
         case kSectionCurrent where !searchController.isActive:
-            return friends.count
+            return friends.filter{ $0.accepted == 1 }.count
+        case kSectionInvites where !searchController.isActive:
+            return friends.filter{ $0.accepted == 0 }.count
         default:
             return 0
         }
@@ -163,7 +165,9 @@ extension FriendsTableViewController {
         case kSectionSearchResults:
             item = filteredFriends[indexPath.row]
         case kSectionCurrent:
-            item = friends[indexPath.row]
+            item = friends.filter{ $0.accepted == 1 }[indexPath.row]
+        case kSectionInvites:
+            item = friends.filter{ $0.accepted == 0 }[indexPath.row]
         default:
             item = TDUser.empty()
         }
@@ -179,26 +183,30 @@ extension FriendsTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.selectedIndexpath = indexPath
         switch indexPath.section {
         case kSectionSearchResults:
             let friend = filteredFriends[indexPath.row]
             performSegue(withIdentifier: "show_friend_user_profile", sender: friend)
         case kSectionCurrent:
-            let friend = friends[indexPath.row]
+            let friend = friends.filter{ $0.accepted == 1 }[indexPath.row]
             performSegue(withIdentifier: "show_friend_user_profile", sender: friend)
+        case kSectionInvites:
+            let friend = friends.filter{ $0.accepted == 0 }[indexPath.row]
+            performSegue(withIdentifier: "show_friend_details", sender: friend)
         default:
             return
         }
     }
 
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return nil
-        
         if (section > 0 && searchController.isActive) { return nil }
         switch section {
         case kSectionSearchResults where searchController.isActive,
              kSectionCurrent where !friends.isEmpty:
             return "FRIENDS"
+        case kSectionInvites where !friends.filter{ $0.accepted == 0 }.isEmpty:
+            return "INVITES"
         default:
             return nil
         }
@@ -212,7 +220,9 @@ extension FriendsTableViewController {
             case kSectionSearchResults:
                 item = filteredFriends[indexPath.row]
             case kSectionCurrent:
-                item = friends[indexPath.row]
+                item = friends.filter{ $0.accepted == 1 }[indexPath.row]
+            case kSectionInvites:
+                item = friends.filter{ $0.accepted == 0 }[indexPath.row]
             default:
                 item = TDUser.empty()
             }
