@@ -173,7 +173,7 @@ extension MyWalletViewController: UITableViewDelegate, UITableViewDataSource {
             if let toBlock = transaction["to"] as? [String: Any], let type = toBlock["type"] as? String {
                 if (type == "ACH-US") {
                     accountName = "Withdrawal to Bank"
-                    amountString = "-$\(String(format: "%.2f", amount)) - \(accountName)"
+                    amountString = "-$\(String(format: "%.2f", amount))"
                     amountLabel.textColor = .red
                 }
             }
