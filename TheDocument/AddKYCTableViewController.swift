@@ -51,7 +51,7 @@ class AddKYCTableViewController: UITableViewController {
         
         guard let documentId = mainDoc["id"] as? String else { log.debug("Could not find the main document"); return }
         guard let phoneDocumentId = phoneDoc["id"] as? String else { log.debug("Could not find the PHONE_NUMBER_2FA document"); return }
-
+        
         let phone = phoneNumber ?? currentUser.phone
         API().updatePhoneKYC(documentId: documentId, phoneNumber: phone!, phoneDocumentId: phoneDocumentId, code: code) { success in
             if (success) {

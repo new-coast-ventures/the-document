@@ -160,20 +160,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
+    func refreshSynapseCredentials() {
+        guard let synapseUID = currentUser.synapseUID, synapseUID != "" else { return }
+        API().loadUser(uid: synapseUID, { success in
+            if (success) {
+                API().authorizeSynapseUser()
+            }
+        })
+    }
+    
     func initSynapse() {
         log.debug("Init Synapse")
         if let synapseID = currentUser.synapseUID, !synapseID.isBlank {
-            API().loadUser(uid: synapseID, { success in
-                if (success) {
-                    API().authorizeSynapseUser()
-                }
-            })
+            self.refreshSynapseCredentials()
         }
     }
     
     func isSynapseUserVerified() -> Bool {
 
-        guard let _ = currentUser.synapseUID else {
+        guard let synapseUID = currentUser.synapseUID, synapseUID != "" else {
             log.debug("no uid")
             self.loadKYCModal()
             return false
@@ -192,44 +197,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         var hasInitiated2FA = false
         var hasCompleted2FA = false
-        if let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]] {
-            documents.forEach { document in
-                if let socialDocs = document["social_docs"] as? [[String: Any]] {
-                    socialDocs.forEach { doc in
-                        if let type = doc["document_type"] as? String, let status = doc["status"] as? String, type == "PHONE_NUMBER_2FA" {
-                            hasInitiated2FA = true
-                            if (status == "SUBMITTED|VALID") {
-                                hasCompleted2FA = true
-                            }
+        documents.forEach { document in
+            if let socialDocs = document["social_docs"] as? [[String: Any]] {
+                socialDocs.forEach { doc in
+                    if let type = doc["document_type"] as? String, let status = doc["status"] as? String, type == "PHONE_NUMBER_2FA" {
+                        hasInitiated2FA = true
+                        if (status == "SUBMITTED|VALID") {
+                            hasCompleted2FA = true
                         }
                     }
                 }
             }
         }
         
-        if (permission == "SEND-AND-RECEIVE") {
+        if (permission == "SEND-AND-RECEIVE" || hasCompleted2FA) {
             return true
+        } else if (hasInitiated2FA) {
+            log.debug("User has initiated 2FA, but it is still pending")
+            self.load2FAModal()
+            return false
         } else {
-            API().loadUser(uid: currentUser.synapseUID!, { success in
-                if (success) {
-                    API().authorizeSynapseUser({ result in
-                        if (result) {
-                            if (hasCompleted2FA) {
-                                log.debug("Loading under review modal")
-                                self.loadUnderReviewModal()
-                            } else if (hasInitiated2FA) {
-                                log.debug("Loading 2FA modal")
-                                self.load2FAModal()
-                            } else {
-                                homeVC?.showAlert(message: "You are currently experiencing network problems. Please try again in a few minutes. If you are connected to a public network such as an office or coffee shop, access to these features may be disabled for your privacy.")
-                            }
-                        } else {
-                            homeVC?.showAlert(message: "You are currently experiencing network problems. Please try again in a few minutes. If you are connected to a public network such as an office or coffee shop, access to these features may be disabled for your privacy.")
-                        }
-                    })
-                }
-            })
-            
+            self.loadUnderReviewModal()
+            self.refreshSynapseCredentials()
             return false
         }
     }

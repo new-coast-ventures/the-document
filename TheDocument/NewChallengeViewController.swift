@@ -151,11 +151,15 @@ class NewChallengeViewController: BaseViewController {
     
     func startChallenge() {
         if let challengeToId = toId {
-            challenge.toId = challengeToId
-            challenge.fromId = currentUser.uid
+            self.challenge.toId = challengeToId
+            self.challenge.fromId = currentUser.uid
             self.startActivityIndicator()
             
-            API().challengeFriends(challenge: challenge, friendsIds: [challenge.toId]) {
+            API().challengeFriends(challenge: self.challenge, friendsIds: [challenge.toId]) {
+                self.challenge.participants = [
+                    [Challenge.Participant(uid: self.challenge.toId, accepted: -1)],
+                    [Challenge.Participant(uid: currentUser.uid, accepted: 1)]
+                ]
                 self.loadChallengeDetailsView(challenge: self.challenge)
             }
         } else {

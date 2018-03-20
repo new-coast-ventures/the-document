@@ -64,7 +64,6 @@ extension API {
         //let userId = uid ?? currentUser.uid
         Database.database().reference().child("users").observeSingleEvent(of: .value, with: {(snapshot) in
             var friendsArray = [TDUser]()
-            
             if let friendsList = snapshot.value as? [String : [String:Any]]  {
                 for key in friendsList.keys {
                     guard let friend = friendsList[key] else { break }

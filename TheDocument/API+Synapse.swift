@@ -46,11 +46,13 @@ class SynapseAPIService {
         ]
         
         log.debug("Loading Synapse URL: \(logData)")
+        log.debug("Params: \(request.parameters)")
         
         service.request(url: url, method: request.method, params: request.parameters, headers: headers!, success: { data in
             var json: Any? = nil
             if let data = data {
                 json = try? JSONSerialization.jsonObject(with: data, options: [])
+                log.debug(json)
             }
             success?(json)
             
