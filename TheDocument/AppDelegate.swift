@@ -154,8 +154,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             if let base = homeVC {
                 log.debug("Presenting MFA VC")
                 base.present(mfaVC, animated: true, completion: nil)
-            } else {
-                log.debug("homeVC was not defined")
             }
         }
     }
@@ -179,13 +177,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func isSynapseUserVerified() -> Bool {
 
         guard let synapseUID = currentUser.synapseUID, synapseUID != "" else {
-            log.debug("no uid")
             self.loadKYCModal()
             return false
         }
         
         guard let userRef = currentUser.synapseData else {
-            homeVC?.showAlert(message: "You are currently experiencing network problems. Please try again in a few minutes. If you are connected to a public network such as an office or coffee shop, access to these features may be disabled for your privacy.")
+            self.refreshSynapseCredentials()
+            homeVC?.showAlert(message: "Unable to verify your account. Please try again in a few minutes. If you are connected to a public network such as an office or coffee shop, access to these features may be disabled for your privacy.")
             return false
         }
         
@@ -195,35 +193,42 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return false
         }
         
-        var hasInitiated2FA = false
-        var hasCompleted2FA = false
+        var phone2FAStatus = ""
         documents.forEach { document in
             if let socialDocs = document["social_docs"] as? [[String: Any]] {
                 socialDocs.forEach { doc in
                     if let type = doc["document_type"] as? String, let status = doc["status"] as? String, type == "PHONE_NUMBER_2FA" {
-                        hasInitiated2FA = true
-                        if (status == "SUBMITTED|VALID") {
-                            hasCompleted2FA = true
-                        }
+                        phone2FAStatus = status
                     }
                 }
             }
         }
         
-        if (permission == "SEND-AND-RECEIVE" || hasCompleted2FA) {
+        if (permission == "SEND-AND-RECEIVE") {
             return true
-        } else if (hasInitiated2FA) {
-            log.debug("User has initiated 2FA, but it is still pending")
+        }
+        
+        switch phone2FAStatus {
+        case "SUBMITTED",
+             "SUBMITTED|REVIEWING":
+            self.loadUnderReviewModal()
+            return false
+        case "SUBMITTED|MFA_PENDING":
+            loadPhoneVerificationModal()
+            return false
+        case "SUBMITTED|INVALID":
             self.load2FAModal()
             return false
-        } else {
-            self.loadUnderReviewModal()
-            self.refreshSynapseCredentials()
+        case "SUBMITTED|VALID":
+            return true
+        default:
+            self.loadKYCModal()
             return false
         }
     }
     
     func loadUnderReviewModal() {
+        self.refreshSynapseCredentials()
         DispatchQueue.main.async {
             let vc = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "sp_user_review") as! UserReviewViewController
             if let base = homeVC {
@@ -241,9 +246,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
+    func loadPhoneVerificationModal() {
+        DispatchQueue.main.async {
+            let vc = self.window?.rootViewController?.storyboard?.instantiateViewController(withIdentifier: "sp_user_verify") as! UINavigationController
+            if let base = homeVC {
+                base.present(vc, animated: true, completion: nil)
+            }
+        }
+    }
+    
     func load2FAModal() {
-        
-        guard let userRef = currentUser.synapseData, let phone = currentUser.phone, let documents = userRef["documents"] as? [[String: Any]] else {
+        guard let userRef = currentUser.synapseData, let documents = userRef["documents"] as? [[String: Any]], let phones = userRef["phone_numbers"] as? [String], let phoneNumber = phones.first else {
             log.debug("No docs or no permissions or no phone")
             return
         }
@@ -264,9 +277,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let documentId = mainDoc["id"] as? String else { log.debug("Could not find the main document"); return }
         guard let phoneDocumentId = phoneDoc["id"] as? String else { log.debug("Could not find the PHONE_NUMBER_2FA document"); return }
         
-        API().resendPhoneKYC(documentId: documentId, phoneNumber: phone, phoneDocumentId: phoneDocumentId) { success in
+        API().resendPhoneKYC(documentId: documentId, phoneNumber: phoneNumber, phoneDocumentId: phoneDocumentId) { success in
             if (success) {
-                self.loadKYCModal()
+                self.loadPhoneVerificationModal()
             } else {
                 log.debug("Unable to resend phone KYC")
             }

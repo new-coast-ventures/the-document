@@ -103,7 +103,6 @@ class SynapseAPIService {
                     API().authorizeSynapseUser()
                 }
             })
-            API().authorizeSynapseUser()
         default:
             log.info("ERROR WITH CODE \(error_code): \(json)")
         }
@@ -134,7 +133,6 @@ class SynapseAPIService {
     
     func userIpAddress() -> String {
         let ip = UserDefaults.standard.string(forKey: "user_last_ip") ?? "::1"
-        log.debug("IP ADDRRESS: \(ip)")
         return ip
     }
     

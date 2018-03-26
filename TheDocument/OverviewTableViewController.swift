@@ -73,9 +73,17 @@ class OverviewTableViewController: BaseTableViewController {
         }
     }
     
-    override func rowsCount() -> Int { return !leaderboardMode ? futureChallenges.count + currentChallenges.count + pastChallenges.count : leaderboardDatasource.count }
+    func loadDiscoverFriends() {
+        DispatchQueue.main.async {
+            let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+            if let viewController = mainStoryboard.instantiateViewController(withIdentifier: "discover_friends_nvc") as? UINavigationController {
+                self.present(viewController, animated: true, completion: nil)
+            }
+        }
+    }
     
-    override func emptyViewAction() { homeVC?.performSegue(withIdentifier: Constants.newChallengeStoryboardSegueIdentifier, sender: self) }
+    override func rowsCount() -> Int { return !leaderboardMode ? futureChallenges.count + currentChallenges.count + pastChallenges.count : leaderboardDatasource.count }
+    override func emptyViewAction() { self.loadDiscoverFriends() }
 }
 
 //MARK: IB

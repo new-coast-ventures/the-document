@@ -95,10 +95,16 @@ class DiscoverPeopleTableViewController: BaseTableViewController {
     }
     
     @IBAction func shareInvite(_ sender: Any) {
-        branchInviteObject.showShareSheet(withShareText: "Join me on The Document", completion: { (activityType, completed) in
-            if (completed) {
-            }
-        })
+        let linkProperties: BranchLinkProperties = BranchLinkProperties()
+        linkProperties.feature = "invites"
+        linkProperties.channel = "app"
+        branchInviteObject.showShareSheet(with: linkProperties, andShareText: "Join me on The Document", from: self, completion: nil)
+    }
+    
+    @IBAction func closeModal(_ sender: Any) {
+        DispatchQueue.main.async {
+            self.navigationController!.dismiss(animated: true, completion: nil)
+        }
     }
     
     //MARK: BaseTableVC

@@ -90,9 +90,9 @@ enum Constants {
         ] ,
         "OverviewTableViewController" : [
             "offset": CGFloat(60.0),
-            "title" : "Zero Challenges" ,
-            "subtitle" : "It looks like you haven't created a challenge yet. Get started by creating your first challenge",
-            "buttonTitle" : "CREATE CHALLENGE"
+            "title" : "Invite Your Friends" ,
+            "subtitle" : "It's not fun challenging yourself. Invite your friends to join in on the action.",
+            "buttonTitle" : "ADD FRIENDS"
         ] ,
         "FriendsTableViewController" : [
             "offset": CGFloat(45.0),

@@ -120,9 +120,22 @@ class FriendsTableViewController: BaseTableViewController {
         return nil
     }
     
+    func loadDiscoverFriends() {
+        DispatchQueue.main.async {
+            let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+            if let viewController = mainStoryboard.instantiateViewController(withIdentifier: "discover_friends_nvc") as? UINavigationController {
+                self.present(viewController, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    @IBAction func discoverFriendsIconPressed(_ sender: Any) {
+        self.loadDiscoverFriends()
+    }
+    
     //MARK: BaseTableVC
     override func rowsCount() -> Int { return currentUser.friends.count }
-    override func emptyViewAction() { performSegue(withIdentifier: "discover_friends", sender: self) }
+    override func emptyViewAction() { self.loadDiscoverFriends() }
 }
 
 //MARK: IBActions

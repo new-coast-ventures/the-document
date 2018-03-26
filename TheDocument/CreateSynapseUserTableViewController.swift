@@ -126,9 +126,7 @@ class CreateSynapseUserTableViewController: UITableViewController, UITextFieldDe
             log.debug("Creating new Synapse user...")
             API().createSynapseUser(email: currentUser.email, phone: phoneNumber, name: name, birthDay: birthDay!, birthMonth: birthMonth!, birthYear: birthYear!, addressStreet: address, addressCity: city, addressState: state, addressPostalCode: zip) { success in
                 if (success) {
-                    API().authorizeSynapseUser({ (status) in
-                        self.complete()
-                    })
+                    self.complete()
                 } else {
                     self.handleError()
                 }
