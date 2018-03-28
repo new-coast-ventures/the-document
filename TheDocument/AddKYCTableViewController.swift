@@ -54,13 +54,14 @@ class AddKYCTableViewController: UITableViewController {
         guard let phoneDocumentId = phoneDoc["id"] as? String else { log.debug("Could not find the PHONE_NUMBER_2FA document"); return }
         
         API().resendPhoneKYC(documentId: documentId, phoneNumber: phoneNumber, phoneDocumentId: phoneDocumentId) { success in
-            self.verifyButton.isEnabled = false
-            self.resendButton.isEnabled = false
-            if (success) {
-                self.resendButton.setTitle("Verification text sent!", for: .normal)
-            } else {
-                self.resendButton.setTitle("Unable to send text. Please try again.", for: .normal)
-                log.debug("Unable to resend phone KYC")
+            DispatchQueue.main.async {
+                self.verifyButton.isEnabled = true
+                self.resendButton.isEnabled = true
+                if (success) {
+                    self.resendButton.setTitle("Verification text sent!", for: .normal)
+                } else {
+                    self.resendButton.setTitle("Unable to send text. Tap here to try again.", for: .normal)
+                }
             }
         }
     }

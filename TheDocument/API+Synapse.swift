@@ -341,6 +341,9 @@ extension API {
                 service.setRefreshToken(token: refreshToken)
                 UserDefaults.standard.set(true, forKey: "is_user_account_verified")
                 UserDefaults.standard.synchronize()
+                
+                // After user account is created, perform authentication to get oauth token
+                self.authorizeSynapseUser()
             }
             closure?(true)
         }) { (error) in
