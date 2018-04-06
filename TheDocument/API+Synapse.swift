@@ -573,6 +573,7 @@ extension API {
             closure?(response)
         }) { (error) in
             log.error(error)
+            closure?(error)
         }
     }
     

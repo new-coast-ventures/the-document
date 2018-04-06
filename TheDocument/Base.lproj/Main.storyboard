@@ -4483,6 +4483,10 @@
                                                     <color key="textColor" red="0.21960784310000001" green="0.61176470589999998" blue="0.76470588240000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="MRS-7a-JUs">
+                                                    <rect key="frame" x="339" y="14" width="20" height="20"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                </activityIndicatorView>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstAttribute="bottom" secondItem="HuF-kl-6yV" secondAttribute="bottom" constant="14.5" id="6bP-6z-lZ9"/>
@@ -4503,6 +4507,8 @@
                     <size key="freeformSize" width="375" height="667"/>
                     <connections>
                         <outlet property="bankLogo" destination="zo1-pq-gXe" id="rxI-v4-rRk"/>
+                        <outlet property="continueLabel" destination="HuF-kl-6yV" id="UM6-R4-CtI"/>
+                        <outlet property="loadingSpinner" destination="MRS-7a-JUs" id="uzW-qu-Spg"/>
                         <outlet property="userIdTextField" destination="3CE-MA-dej" id="ntY-Th-iss"/>
                         <outlet property="userPwTextField" destination="jBk-Jq-sGF" id="7Hc-pc-r1k"/>
                         <segue destination="YMc-kW-M3T" kind="show" identifier="showBankMFA" id="6Km-kY-d7H"/>
@@ -4587,6 +4593,10 @@
                                                     <color key="textColor" red="0.21960784310000001" green="0.61176470589999998" blue="0.76470588240000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="D1g-VS-BQr">
+                                                    <rect key="frame" x="347" y="14" width="20" height="20"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                </activityIndicatorView>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="Nhf-cs-vFs" firstAttribute="leading" secondItem="dWg-Bk-XUK" secondAttribute="leading" constant="8" id="3Qz-Pl-xtI"/>
@@ -4607,6 +4617,8 @@
                     <size key="freeformSize" width="375" height="667"/>
                     <connections>
                         <outlet property="bankLogo" destination="p8f-oQ-z1H" id="DHs-FE-vkF"/>
+                        <outlet property="continueLabel" destination="Nhf-cs-vFs" id="7Vw-nH-a8C"/>
+                        <outlet property="loadingSpinner" destination="D1g-VS-BQr" id="li8-SL-Cro"/>
                         <outlet property="mfaTextField" destination="Ip7-Bl-vRY" id="MXY-an-rSg"/>
                     </connections>
                 </tableViewController>
