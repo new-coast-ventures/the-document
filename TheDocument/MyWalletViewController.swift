@@ -79,6 +79,22 @@ class MyWalletViewController: UIViewController {
             self.transactions = response
             DispatchQueue.main.async {
                 self.transactionsTableView.reloadData()
+                Database.database().reference(withPath: "ledger/\(currentUser.uid)").observe(.value, with: { (snapshot) in
+                    // Get user value
+                    let dict = snapshot.value as? NSDictionary
+                    let _ = dict?.allKeys
+                    let fundsHeld = dict?.allValues
+                    
+                    var totalHeld = 0
+                    if let amounts = fundsHeld as? [Int] {
+                        amounts.forEach({ amount in
+                            totalHeld += amount
+                        })
+                    }
+                    
+                    self.ledgerBalance = Double(totalHeld)
+                    self.updateAvailableBalance()
+                })
             }
         }
     }
@@ -104,7 +120,6 @@ class MyWalletViewController: UIViewController {
         
         DispatchQueue.main.async {  
             self.transactionsTableView.reloadData()
-            
         }
     }
     

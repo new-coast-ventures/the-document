@@ -102,7 +102,9 @@ class FriendsTableViewController: BaseTableViewController {
             }
         })
         
-        self.refresh()
+        currentUser.getFriends() {
+            self.refresh()
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -274,8 +276,12 @@ extension FriendsTableViewController: UISearchResultsUpdating, UISearchControlle
     }
     
     func filterData( _ searchTerm: String) -> Void {
-        guard searchTerm.count > 1 else {  return }
-        
+        if (searchTerm == nil || searchTerm.count == 0) {
+            filteredFriends = friends
+            refresh()
+            return
+        }
+
         filteredFriends = friends.filter { friend -> Bool in
             return friend.name.lowercased().contains(searchTerm.lowercased())
         }

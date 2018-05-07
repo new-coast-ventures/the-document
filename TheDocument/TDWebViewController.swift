@@ -25,6 +25,9 @@ class TDWebViewController: UIViewController, UIWebViewDelegate {
         } else if (url.absoluteString == "https://the-document-prod.herokuapp.com/terms") {
             self.title = "Terms of Use"
             loadPDF(titled: "terms")
+        } else if (url.absoluteString == "https://the-document-prod.herokuapp.com/faq") {
+            self.title = "Frequently Asked Questions"
+            loadPDF(titled: "faq")
         } else {
             webview.loadRequest(URLRequest(url: url))
         }

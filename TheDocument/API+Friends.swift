@@ -62,7 +62,9 @@ extension API {
     
     func getFriendRecs(uid: String? = nil, closure: @escaping ( [TDUser] )->Void) {
         //let userId = uid ?? currentUser.uid
-        Database.database().reference().child("users").observeSingleEvent(of: .value, with: {(snapshot) in
+        let friendsRef = Database.database().reference().child("users")
+        friendsRef.keepSynced(true)
+        friendsRef.observeSingleEvent(of: .value, with: {(snapshot) in
             var friendsArray = [TDUser]()
             if let friendsList = snapshot.value as? [String : [String:Any]]  {
                 for key in friendsList.keys {
@@ -75,7 +77,6 @@ extension API {
                     }
                 }
             }
-            
             closure(friendsArray)
         })
     }

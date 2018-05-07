@@ -25,7 +25,7 @@ struct API {
             currentUser.checkForGroups(userInfo["groups"] as? [String : Any])
             
             self.profilePhotoExists { exists in
-                UserDefaults.standard.set(exists, forKey: Constants.shouldGetPhotoKey)
+                // UserDefaults.standard.set(exists, forKey: Constants.shouldGetPhotoKey)
                 currentUser.getFriends() { closure(true) }
             }
         })

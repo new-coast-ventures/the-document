@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6F091BF01FD9C6FC00EDC951 /* AccountsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F091BEF1FD9C6FC00EDC951 /* AccountsTableViewController.swift */; };
+		6F1206F2209BB5EB002C4807 /* faq.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 6F1206F1209BB5EB002C4807 /* faq.pdf */; };
 		6F1409841FFECE5E007E0B95 /* ChangePasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1409831FFECE5E007E0B95 /* ChangePasswordViewController.swift */; };
 		6F18039A1F1E571A0002902C /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1803991F1E571A0002902C /* Comment.swift */; };
 		6F18039D1F1ECAFE0002902C /* CommentTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F18039B1F1ECAFE0002902C /* CommentTableViewCell.swift */; };
@@ -123,6 +124,7 @@
 
 /* Begin PBXFileReference section */
 		6F091BEF1FD9C6FC00EDC951 /* AccountsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsTableViewController.swift; sourceTree = "<group>"; };
+		6F1206F1209BB5EB002C4807 /* faq.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = faq.pdf; sourceTree = "<group>"; };
 		6F1409831FFECE5E007E0B95 /* ChangePasswordViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordViewController.swift; sourceTree = "<group>"; };
 		6F1803991F1E571A0002902C /* Comment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 		6F18039B1F1ECAFE0002902C /* CommentTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentTableViewCell.swift; sourceTree = "<group>"; };
@@ -274,6 +276,7 @@
 		6F276BD2203CB4EF003FC945 /* Files */ = {
 			isa = PBXGroup;
 			children = (
+				6F1206F1209BB5EB002C4807 /* faq.pdf */,
 				6F1EB6EF206181F100312AA8 /* terms.pdf */,
 				6F276BD4203CB516003FC945 /* privacy.pdf */,
 			);
@@ -721,6 +724,7 @@
 				EC445E241EB0B11100C843F0 /* OpenSans-SemiboldItalic.ttf in Resources */,
 				6FB4C32D1FD3825D00CAD556 /* Synapse-Info.plist in Resources */,
 				EC445E201EB0B11100C843F0 /* OpenSans-Light.ttf in Resources */,
+				6F1206F2209BB5EB002C4807 /* faq.pdf in Resources */,
 				EC445E221EB0B11100C843F0 /* OpenSans-Regular.ttf in Resources */,
 				EC445E1E1EB0B11100C843F0 /* OpenSans-ExtraBoldItalic.ttf in Resources */,
 			);

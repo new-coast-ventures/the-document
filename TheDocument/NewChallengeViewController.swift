@@ -200,7 +200,26 @@ class NewChallengeViewController: BaseViewController {
     
     func refreshTransactions() {
         guard let wallet = currentUser.wallet, let walletId = wallet["_id"] as? String else { return }
-        API().listTransactions(nodeId: walletId)
+        API().listTransactions(nodeId: walletId) { response in
+            DispatchQueue.main.async {
+                Database.database().reference(withPath: "ledger/\(currentUser.uid)").observe(.value, with: { (snapshot) in
+                    // Get user value
+                    let dict = snapshot.value as? NSDictionary
+                    let _ = dict?.allKeys
+                    let fundsHeld = dict?.allValues
+                    
+                    var totalHeld = 0
+                    if let amounts = fundsHeld as? [Int] {
+                        amounts.forEach({ amount in
+                            totalHeld += amount
+                        })
+                    }
+                    
+                    self.ledgerBalance = Double(totalHeld)
+                    self.updateAvailableBalance()
+                })
+            }
+        }
     }
     
     func getWallet() {

@@ -65,7 +65,7 @@ class BaseTableViewController: UITableViewController {
             } else {
                 self.tableView.reloadData()
             }
-                        
+            
             if self.rowsCount() > 0 {
                 self.tableView.tableFooterView?.isHidden = false
                 self.view.viewWithTag(self.emptyViewTag)?.removeFromSuperview()
