@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import FirebaseStorageUI
 
 class FriendDetailsViewController: UIViewController {
     
@@ -20,9 +21,14 @@ class FriendDetailsViewController: UIViewController {
         
         friendNameLabel.text = friend.name
         friendImageView.contentMode = .scaleAspectFill
-        if let imgData = downloadedImages[friend.uid] {
-            friendImageView.image = UIImage(data: imgData)
-        }
+        
+        // Get a reference to the storage service using the default Firebase App
+        let storage = Storage.storage()
+        
+        // Create a storage reference from our storage service
+        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/photos/\(friend.uid)")
+        
+        friendImageView.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
         
         cancelButton.isHidden = true
         

@@ -5,7 +5,6 @@
 
 import UIKit
 import FirebaseStorageUI
-//import SDWebImage
 
 class BaseTableViewController: UITableViewController {
     
@@ -40,35 +39,15 @@ class BaseTableViewController: UITableViewController {
     }
     
     func setImage(id: String, forCell cell: ItemTableViewCell, type: String = "photos") {
-        guard let challengerId = id.components(separatedBy: ",").first, challengerId != "" else { return }
+        cell.loader.isHidden = true
         
         // Get a reference to the storage service using the default Firebase App
         let storage = Storage.storage()
         
         // Create a storage reference from our storage service
-        // gs://the-document.appspot.com/photos/2RmJ6VS3BkWnUIyp2OyEdpHXecT2
-        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/photos/\(id)")
+        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/\(type)/\(id)")
         
-        let imageView = cell.itemImageView!
-        
-        let placeholderImage = UIImage(named: "logo-mark-square")
-        
-        imageView.sd_setImage(with: photoRef, placeholderImage: placeholderImage)
-        
-//        if let imageData = downloadedImages[challengerId] {
-//            cell.setImage(imgData: imageData)
-//        } else {
-//            cell.setImageLoading()
-//            appDelegate.downloadImageFor(id: id, section: type) { success in
-//                DispatchQueue.main.async {
-//                    guard success, let ip = self.tableView.indexPath(for: cell) else {
-//                        cell.setGenericImage()
-//                        return
-//                    }
-//                    self.reloadRow(at: ip)
-//                }
-//            }
-//        }
+        cell.itemImageView!.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
     }
     
     func rowsCount() -> Int { return 0 }

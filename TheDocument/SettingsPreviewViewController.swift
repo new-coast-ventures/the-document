@@ -5,6 +5,7 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseStorageUI
 
 var webview: UIWebView!
 var loadingIcon: UIActivityIndicatorView?
@@ -25,14 +26,13 @@ class SettingsPreviewViewController: BaseTableViewController {
         photoImageView.layer.cornerRadius = photoImageView.frame.width/2
         userNameLabel.text = currentUser.name
         
-        if let imageData = downloadedImages["\(currentUser.uid)"] {
-            setPhotoWithData(imageData: imageData)
-        } else {
-            appDelegate.downloadImageFor(id: "\(currentUser.uid)", section: "photos"){[weak self] success in
-                guard success, let sSelf = self,  let imageData = downloadedImages["\(currentUser.uid)"]  else { return }
-                sSelf.setPhotoWithData(imageData: imageData)
-            }
-        }
+        // Get a reference to the storage service using the default Firebase App
+        let storage = Storage.storage()
+        
+        // Create a storage reference from our storage service
+        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/photos/\(currentUser.uid)")
+        
+        self.photoImageView.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
     }
     
     override func viewWillAppear(_ animated: Bool) {

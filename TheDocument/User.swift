@@ -184,10 +184,6 @@ extension TDUser {
     var isEmpty:Bool {
         return uid=="" && name==""
     }
-    
-    func avatarImageData() -> Data? {
-        return downloadedImages[self.uid]
-    }
 }
 
 extension Array where Element == TDUser {

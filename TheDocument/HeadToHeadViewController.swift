@@ -190,22 +190,15 @@ extension HeadToHeadViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func setImage(id: String, forCell cell: ItemTableViewCell, type: String = "photos") {
-        guard let challengerId = id.components(separatedBy: ",").first else { return }
+        cell.loader.isHidden = true
         
-        if let imageData = downloadedImages[challengerId] {
-            cell.setImage(imgData: imageData)
-        } else {
-            cell.setImageLoading()
-            appDelegate.downloadImageFor(id: id, section: type) { success in
-                DispatchQueue.main.sync {
-                    guard success, let ip = self.resultsTableView.indexPath(for: cell) else {
-                        cell.setGenericImage()
-                        return
-                    }
-                    self.reloadRow(at: ip)
-                }
-            }
-        }
+        // Get a reference to the storage service using the default Firebase App
+        let storage = Storage.storage()
+        
+        // Create a storage reference from our storage service
+        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/\(type)/\(id)")
+        
+        cell.itemImageView!.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
     }
     
     func reloadRow(at indexPath: IndexPath) {

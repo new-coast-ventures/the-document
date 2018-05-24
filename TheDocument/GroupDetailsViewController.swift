@@ -85,26 +85,13 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
         
         groupNameLabel.text = group.name
         
-        appDelegate.downloadImageFor(id: group.id, section: "groups"){[weak self] success in
-            DispatchQueue.main.async {
-                guard let sSelf = self, let iv = sSelf.groupImageView else { return }
-                
-                iv.backgroundColor = .clear
-                iv.contentMode = .scaleAspectFill
-                iv.layer.cornerRadius = iv.frame.size.height / 2.0
-                iv.layer.masksToBounds = true
-                iv.layer.borderWidth = 0
-                iv.isHidden = false
+        // Get a reference to the storage service using the default Firebase App
+        let storage = Storage.storage()
         
-                if success == false {
-                    iv.backgroundColor = Constants.Theme.mainColor
-                    iv.image = UIImage(named: "logo-mark-square")
-                    iv.contentMode = .scaleAspectFit
-                } else if let imgData = downloadedImages[sSelf.group.id] {
-                    iv.image = UIImage(data: imgData)
-                }
-            }
-        }
+        // Create a storage reference from our storage service
+        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/groups/\(group.id)")
+        
+        self.groupImageView.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
         
         comments.removeAll()
         
@@ -176,21 +163,15 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func setImage(id: String, forCell cell: ItemTableViewCell, type: String = "photos") {
-        guard let challengerId = id.components(separatedBy: ",").first else { return }
+        cell.loader.isHidden = true
         
-        if let imageData = downloadedImages[challengerId] {
-            cell.setImage(imgData: imageData)
-        } else {
-            cell.setImageLoading()
-            appDelegate.downloadImageFor(id: id, section: type) { success in
-                DispatchQueue.main.sync {
-                    guard success, let ip = self.tableView.indexPath(for: cell) else { return }
-                    if self.tableView.indexPathsForVisibleRows?.contains(ip) == true {
-                        self.tableView.reloadRows(at: [ip], with: .none)
-                    }
-                }
-            }
-        }
+        // Get a reference to the storage service using the default Firebase App
+        let storage = Storage.storage()
+        
+        // Create a storage reference from our storage service
+        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/\(type)/\(id)")
+        
+        cell.itemImageView!.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
     }
     
     @objc func refreshMembers() {
@@ -352,14 +333,19 @@ class GroupDetailsViewController: BaseViewController, UITableViewDelegate, UITab
             }
         
             if let imageId = commentDict?["uid"] as? String {
-                if let imageData = downloadedImages[imageId] {
-                    cell.setImage(imgData: imageData)
-                } else {
-                    appDelegate.downloadImageFor(id: imageId, section: "photos") { [weak self] success in
-                        guard success, let sSelf = self else { return }
-                        sSelf.tableView.reloadRows(at: [indexPath], with: .automatic)
-                    }
-                }
+                // Get a reference to the storage service using the default Firebase App
+                let storage = Storage.storage()
+                
+                // Create a storage reference from our storage service
+                let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/photos/\(imageId)")
+
+                cell.authorImageView.backgroundColor = .clear
+                cell.authorImageView.contentMode = .scaleAspectFill
+                cell.authorImageView.layer.cornerRadius = cell.authorImageView.frame.size.height / 2.0
+                cell.authorImageView.layer.masksToBounds = true
+                cell.authorImageView.layer.borderWidth = 0
+                cell.authorImageView.isHidden = false
+                cell.authorImageView.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
             }
             return cell
             

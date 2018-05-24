@@ -5,6 +5,7 @@
 
 
 import UIKit
+import FirebaseStorageUI
 
 class BaseViewController: UIViewController {
 
@@ -24,19 +25,12 @@ class BaseViewController: UIViewController {
 extension UIImageView {
     
     func loadAvatar(_for friend: TDUser, retry: Bool = false) {
-        if let imageData = friend.avatarImageData() {
-            setAvatarWithData(imageData)
-        } else if retry == false {
-            appDelegate.downloadImageFor(id: friend.uid, section: "photos") { success in
-                guard success else { return }
-                self.loadAvatar(_for: friend, retry: true)
-            }
-        }
-    }
-    
-    func setAvatarWithData(_ imgData: Data) {
-        DispatchQueue.main.async {
-            self.image = UIImage(data: imgData)
-        }
+        // Get a reference to the storage service using the default Firebase App
+        let storage = Storage.storage()
+        
+        // Create a storage reference from our storage service
+        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/photos/\(friend.uid)")
+
+        self.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
     }
 }

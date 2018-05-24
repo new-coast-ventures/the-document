@@ -30,14 +30,13 @@ class SettingsViewController: BaseViewController {
         editPhoto.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(takePhoto)))
         photoImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(takePhoto)))
         
-        if let imageData = downloadedImages["\(currentUser.uid)"] {
-            setPhotoWithData(imageData: imageData)
-        } else {
-            appDelegate.downloadImageFor(id: "\(currentUser.uid)", section: "photos"){[weak self] success in
-                guard success, let sSelf = self,  let imageData = downloadedImages["\(currentUser.uid)"]  else { return }
-                sSelf.setPhotoWithData(imageData: imageData)
-            }
-        }
+        // Get a reference to the storage service using the default Firebase App
+        let storage = Storage.storage()
+        
+        // Create a storage reference from our storage service
+        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/photos/\(currentUser.uid)")
+        
+        self.photoImageView.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
         
         nameTextField.text = currentUser.name
         emailTextField.text = currentUser.email
@@ -74,12 +73,6 @@ class SettingsViewController: BaseViewController {
         self.present(pickerView, animated: true, completion: nil)
     }
     
-    func setPhotoWithData(imageData:Data) {
-        DispatchQueue.main.async {
-            self.photoImageView.image = UIImage(data: imageData)
-        }
-    }
-    
     @IBAction func saveButtonTapped(_ sender: UIButton? = nil) {
         self.startActivityIndicator()
         
@@ -105,9 +98,7 @@ class SettingsViewController: BaseViewController {
     }
     
     func uploadImage() {
-        if newImageSet, let image = photoImageView.image, let imageData = UIImageJPEGRepresentation(image, 0.9) {
-            downloadedImages["\(currentUser.uid)"] = imageData
-            
+        if newImageSet, let image = photoImageView.image, let imageData = UIImageJPEGRepresentation(image, 0.9) {            
             Storage.storage().reference(withPath: "photos/\(currentUser.uid)").putData(imageData, metadata: nil, completion: { (metadata, error) in
                 guard let metadata = metadata else { return }
                 log.debug(metadata)

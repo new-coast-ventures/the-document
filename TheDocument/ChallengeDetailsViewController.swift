@@ -226,18 +226,13 @@ class ChallengeDetailsViewController: UIViewController, UITextFieldDelegate {
     }
     
     fileprivate func setCompetitorPhoto(uid: String, imageView: CircleImageView) {
-        if let imageData = downloadedImages[uid] {
-            DispatchQueue.main.async {
-                imageView.image = UIImage(data: imageData)
-            }
-        } else {
-            appDelegate.downloadImageFor(id: uid, section: "photos") { [weak self] success in
-                guard success, let imageData = downloadedImages[uid] else { return }
-                DispatchQueue.main.async {
-                    imageView.image = UIImage(data: imageData)
-                }
-            }
-        }
+        // Get a reference to the storage service using the default Firebase App
+        let storage = Storage.storage()
+        
+        // Create a storage reference from our storage service
+        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/photos/\(uid)")
+        
+        imageView.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
     }
     
     @objc func hideControls() {
@@ -482,16 +477,13 @@ extension ChallengeDetailsViewController: UITableViewDelegate, UITableViewDataSo
         }
         
         if let imageId = commentDict?["uid"] as? String {
-            if let imageData = downloadedImages[imageId] {
-                cell.setImage(imgData: imageData)
-            } else {
-                appDelegate.downloadImageFor(id: imageId, section: "photos") { [weak self] success in
-                    guard success, let sSelf = self else { return }
-                    DispatchQueue.main.async {
-                        sSelf.chatterTable.reloadRows(at: [indexPath], with: .automatic)
-                    }
-                }
-            }
+            // Get a reference to the storage service using the default Firebase App
+            let storage = Storage.storage()
+            
+            // Create a storage reference from our storage service
+            let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/photos/\(imageId)")
+            
+            cell.authorImageView.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
         }
         
         return cell

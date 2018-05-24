@@ -393,35 +393,3 @@ extension AppDelegate : MessagingDelegate {
     // [END ios_10_data_message]
 }
 
-//MARK: Remote resources
-
-var downloadedImages = [String:Data]()
-
-extension AppDelegate {
-    
-    func downloadImageFor(id:String, section:String, closure: ((Bool)->Void)? = nil) {
-        
-        log.debug("Download image for \(section) - \(id)")
-        
-        // Get a reference to the storage service using the default Firebase App
-        let storage = Storage.storage()
-        
-        // Create a storage reference from our storage service
-        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/\(section)/\(id)?alt=media")
-        
-        // Create a reference to the file you want to download
-        // let photoRef = storageRef.child("\(section)/\(id)")
-        let localURL = URL(string: id)!
-        
-        // Download in memory with a maximum allowed size of 1MB (1 * 1024 * 1024 bytes)
-        photoRef.getData(maxSize: 1 * 1024 * 1024) { data, error in
-            if let error = error {
-                closure?(false)
-            } else {
-                downloadedImages[id] = data!
-                closure?(true)
-            }
-        }
-    }
-}
-

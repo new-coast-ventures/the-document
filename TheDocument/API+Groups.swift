@@ -76,7 +76,6 @@ extension API {
         Database.database().reference().updateChildValues(childUpdates) { (error, ref) in
             
             if let image = imgData {
-                downloadedImages[key] = image
                 Storage.storage().reference(withPath: "groups/\(key)").putData(image)
             }
         
