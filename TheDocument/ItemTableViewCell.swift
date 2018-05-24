@@ -167,7 +167,7 @@ class ItemTableViewCell: UITableViewCell {
     }
     
     //Invite Friends
-    func setup(_ item:TDUser, selected: Bool) {
+    func setup(_ item: TDUser, selected: Bool) {
         self.item = item
         
         topLabel.text = item.name

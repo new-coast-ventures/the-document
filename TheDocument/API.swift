@@ -128,7 +128,6 @@ struct API {
 
     //Checks if there is a user registered with email address
     func emailRegistered(email: String, closure:@escaping (Bool)->Void) {
-        
         Auth.auth().fetchProviders(forEmail: email) { (listArray, error) in
             closure( listArray != nil )
         }

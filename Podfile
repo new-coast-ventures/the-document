@@ -8,6 +8,7 @@ target 'TheDocument' do
   pod 'Firebase/Auth'
   pod 'Firebase/Messaging'
   pod 'Firebase/Storage'
+  pod 'FirebaseUI/Storage'
   pod 'FacebookCore'
   pod 'FacebookLogin'
   pod 'FacebookShare'
@@ -20,4 +21,5 @@ target 'TheDocument' do
   pod 'SwiftyBeaver'  
   pod 'Ipify'
   pod 'Locksmith'
+  pod 'SDWebImage', '~> 4.0'
 end

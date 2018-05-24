@@ -398,29 +398,30 @@ extension AppDelegate : MessagingDelegate {
 var downloadedImages = [String:Data]()
 
 extension AppDelegate {
+    
     func downloadImageFor(id:String, section:String, closure: ((Bool)->Void)? = nil) {
-        guard downloadedImages["\(id)"] == nil else { closure?(true); return }
-        guard let imageURL = URL(string: "\(Constants.FIRStoragePublicURL)\(section)%2F\(id)?alt=media") else { closure?(false); return }
         
-        URLSession.shared.dataTask(with: imageURL, completionHandler: { (data, response, error) -> Void in
-            
-            guard let imgData = data, error == nil else {
-                log.error(error)
+        log.debug("Download image for \(section) - \(id)")
+        
+        // Get a reference to the storage service using the default Firebase App
+        let storage = Storage.storage()
+        
+        // Create a storage reference from our storage service
+        let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/\(section)/\(id)?alt=media")
+        
+        // Create a reference to the file you want to download
+        // let photoRef = storageRef.child("\(section)/\(id)")
+        let localURL = URL(string: id)!
+        
+        // Download in memory with a maximum allowed size of 1MB (1 * 1024 * 1024 bytes)
+        photoRef.getData(maxSize: 1 * 1024 * 1024) { data, error in
+            if let error = error {
                 closure?(false)
-                return
+            } else {
+                downloadedImages[id] = data!
+                closure?(true)
             }
-            
-            if let httpResponse = response as? HTTPURLResponse {
-                let statusCode = httpResponse.statusCode
-                if statusCode != 200 {
-                    closure?(false)
-                    return
-                }
-            }
-
-            downloadedImages["\(id)"] = imgData
-            closure?(true)
-        }).resume()
+        }
     }
 }
 
