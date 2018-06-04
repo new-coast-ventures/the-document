@@ -46,6 +46,7 @@ class OverviewTableViewController: BaseTableViewController {
         if !challengesReady{
             self.refreshChallenges()
         }
+        
         buildLeaderboard()
     }
     
@@ -196,9 +197,11 @@ extension OverviewTableViewController {
     }
     
     func buildLeaderboard() {
-        leaderboardDatasource = (currentUser.friends + [currentUser]).sortByWilsonRanking()
-        if leaderboardMode {
-            refresh()
+        currentUser.getFriendRecs {
+            self.leaderboardDatasource = (currentUser.friends + [currentUser]).sortByWilsonRanking()
+            if self.leaderboardMode {
+                self.refresh()
+            }
         }
     }
     

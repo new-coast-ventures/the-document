@@ -276,11 +276,7 @@ extension FriendsTableViewController: UISearchResultsUpdating, UISearchControlle
     }
     
     func filterData( _ searchTerm: String) -> Void {
-        if (searchTerm == nil || searchTerm.count == 0) {
-            filteredFriends = friends
-            refresh()
-            return
-        }
+        guard searchTerm.count > 1 else { filteredFriends = friends; refresh(); return }
 
         filteredFriends = friends.filter { friend -> Bool in
             return friend.name.lowercased().contains(searchTerm.lowercased())

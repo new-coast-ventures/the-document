@@ -245,8 +245,7 @@ extension InviteFriendsTableViewController: UISearchResultsUpdating, UISearchCon
     }
     
     func filterData( _ searchTerm: String) -> Void {
-        
-        guard searchTerm.count > 2 else {  return }
+        guard searchTerm.count > 1 else { filteredFriends = friends; refresh(); return }
         
         filteredFriends = friends.filter { friend -> Bool in
             return friend.name.lowercased().contains(searchTerm.lowercased())

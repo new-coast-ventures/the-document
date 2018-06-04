@@ -60,6 +60,28 @@ extension API {
         })
     }
     
+    func loadTDUser(uid: String, _ closure : ((TDUser) -> Void)? = nil) {
+        Database.database().reference().child("users/\(uid)").observeSingleEvent(of: .value, with: { (userSnap) in
+            guard let userData = userSnap.value as? [String: Any] else { return }
+            
+            log.debug("Got data: \(userData)")
+            var friendData = userData
+            friendData["uid"] = uid
+            if let friend = self.friendFromJSON(friendData) {
+                log.debug("Friend from JSON: \(friend)")
+                friend.record.totalWins = userData["totalWins"] as? Int ?? 0
+                friend.record.totalLosses = userData["totalLosses"] as? Int ?? 0
+                
+                // Add to current friends list
+                if (!currentUser.friends.contains(friend)) {
+                    currentUser.friends.append(friend)
+                }
+                
+                closure?(friend)
+            }
+        })
+    }
+    
     func getFriendRecs(uid: String? = nil, closure: @escaping ( [TDUser] )->Void) {
         //let userId = uid ?? currentUser.uid
         let friendsRef = Database.database().reference().child("users")

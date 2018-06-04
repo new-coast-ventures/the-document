@@ -94,8 +94,8 @@ extension Challenge {
     }
     
     func participantIds()->[String] {
-        let a_ids = teamA().map { $0.uid }
-        let b_ids = teamB().map { $0.uid }
+        let a_ids = teamAParticipants().map { $0.uid }
+        let b_ids = teamBParticipants().map { $0.uid }
         return a_ids + b_ids
     }
     
@@ -112,10 +112,10 @@ extension Challenge {
     }
     
     func pendingConfirmation()->Bool {
-        if teamA().map({ $0.uid }).contains(currentUser.uid) {
-            return teamA().map({ $0.uid }).contains(declarator)
+        if teamAParticipants().map({ $0.uid }).contains(currentUser.uid) {
+            return teamAParticipants().map({ $0.uid }).contains(declarator)
         } else {
-            return teamB().map { $0.uid }.contains(declarator)
+            return teamBParticipants().map { $0.uid }.contains(declarator)
         }
     }
     
@@ -138,7 +138,7 @@ extension Challenge {
     }
     
     func teammateIds() -> String {
-        if teamA().contains(currentUser) {
+        if teamAIds().contains(currentUser.uid) {
             return teamAIds()
         } else {
             return teamBIds()
@@ -146,7 +146,7 @@ extension Challenge {
     }
     
     func teammateNames() -> String {
-        if teamA().contains(currentUser) {
+        if teamAIds().contains(currentUser.uid) {
             return teamANames()
         } else {
             return teamBNames()
@@ -154,7 +154,7 @@ extension Challenge {
     }
     
     func competitorIds() -> String {
-        if teamA().contains(currentUser) {
+        if teamAIds().contains(currentUser.uid) {
             return teamBIds()
         } else {
             return teamAIds()
@@ -162,7 +162,7 @@ extension Challenge {
     }
     
     func competitorNames() -> String {
-        if teamA().contains(currentUser) {
+        if teamAIds().contains(currentUser.uid) {
             return teamBNames()
         } else {
             return teamANames()
@@ -170,13 +170,27 @@ extension Challenge {
     }
     
     func teamAIds() -> String {
-        return teamA().map { $0.uid }.joined(separator: ",")
+        return teamAParticipants().map { $0.uid }.joined(separator: ",")
     }
     
     func teamANames() -> String {
         return teamA().map { user in
             return user.name
             }.joined(separator: ", ")
+    }
+    
+    func teamAParticipants() -> [Participant] {
+        if let team = participants.first {
+            return team
+        }
+        return []
+    }
+    
+    func teamBParticipants() -> [Participant] {
+        if let team = participants.last {
+            return team
+        }
+        return []
     }
 
     func teamA() -> [TDUser] {
@@ -187,7 +201,7 @@ extension Challenge {
     }
     
     func teamBIds() -> String {
-        return teamB().map { $0.uid }.joined(separator: ",")
+        return teamBParticipants().map { $0.uid }.joined(separator: ",")
     }
     
     func teamBNames() -> String {
@@ -205,7 +219,11 @@ extension Challenge {
     
     func mapParticipantsToUsers(team: [Participant]) -> [TDUser] {
         return team.map({ p in
-            return currentUser.friends[p.uid]
+            if let friendIndex = currentUser.friends.index(of: currentUser.friends[p.uid]) {
+                return currentUser.friends[friendIndex]
+            } else {
+                return currentUser.friendRecommendations[p.uid]
+            }
         })
     }
 }

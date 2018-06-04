@@ -483,6 +483,12 @@ extension ChallengeDetailsViewController: UITableViewDelegate, UITableViewDataSo
             // Create a storage reference from our storage service
             let photoRef = storage.reference(forURL: "gs://the-document.appspot.com/photos/\(imageId)")
             
+            cell.authorImageView.backgroundColor = .clear
+            cell.authorImageView.contentMode = .scaleAspectFill
+            cell.authorImageView.layer.cornerRadius = cell.authorImageView.frame.size.height / 2.0
+            cell.authorImageView.layer.masksToBounds = true
+            cell.authorImageView.layer.borderWidth = 0
+            cell.authorImageView.isHidden = false
             cell.authorImageView.sd_setImage(with: photoRef, placeholderImage: UIImage(named: "logo-mark-square"))
         }
         
